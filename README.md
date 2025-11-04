@@ -1,94 +1,128 @@
-# 10x Astro Starter
+## 1. Project name
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+PlantsPlaner
 
-## Tech Stack
+[![Node](https://img.shields.io/badge/node-22.14.0-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Astro](https://img.shields.io/badge/astro-5.x-FF5D01?logo=astro&logoColor=white)](https://astro.build/)
+[![React](https://img.shields.io/badge/react-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/typescript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind](https://img.shields.io/badge/tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+![Status](https://img.shields.io/badge/status-MVP%20in%20progress-blue)
+![License](https://img.shields.io/badge/license-TBD-lightgrey)
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+## 2. Project description
 
-## Prerequisites
+PlantsPlaner is a web application that helps plan and assess the placement of garden plants on a grid-based plot plan. The MVP enables users to:
+- Define a plot (real-world dimensions, grid unit 10/25/50/100 cm, location, orientation), generate a grid, and assign cell types (soil, path, water, building).
+- Add plants to cells (rule: 1 plant = 1 cell; soil only) with guardrails and confirmations.
+- Use maps (Leaflet + OpenStreetMap) for plot location and geocoding.
+- Fetch local weather data (Open‑Meteo) and leverage AI to evaluate plant–location fit using a strict JSON schema with sanity checks and a 10 s timeout.
+- Track minimal analytics (4 events) for core funnel insights.
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+Additional docs:
+- Product Requirements (PRD): `.ai/prd.md`
+- Tech stack details: `.ai/tech-stack.md`
 
-## Getting Started
+## Table of contents
 
-1. Clone the repository:
+- 1. Project name
+- 2. Project description
+- 3. Tech stack
+- 4. Getting started locally
+- 5. Available scripts
+- 6. Project scope
+- 7. Project status
+- 8. License
 
+## 3. Tech stack
+
+- Application: Astro 5, React 19, TypeScript 5
+- Rendering/adapter: `@astrojs/node` (standalone), SSR where needed
+- Astro integrations: `@astrojs/react`, `@astrojs/sitemap`
+- Styling/UI: Tailwind CSS 4 (via `@tailwindcss/vite`), shadcn/ui, Radix UI primitives, `lucide-react`
+- Backend/DB/Auth: Supabase (Postgres, Auth, Storage) – planned per PRD; client under `src/db/`
+- Validation and quality: Zod (validation), ESLint 9, Prettier, Husky, lint-staged
+- Project config: `tsconfig` with `jsx: react-jsx`, `jsxImportSource: react`, and path alias `@/*`
+
+## 4. Getting started locally
+
+Prerequisites:
+- Node.js 22.14.0 (see `.nvmrc`)
+- npm (bundled with Node)
+
+Setup:
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
-
-2. Install dependencies:
-
-```bash
+# install dependencies
 npm install
-```
 
-3. Run the development server:
-
-```bash
+# start dev server
 npm run dev
-```
 
-4. Build for production:
-
-```bash
+# production build
 npm run build
+
+# preview production build locally
+npm run preview
 ```
 
-## Available Scripts
+Notes:
+- Astro dev server typically serves on `http://localhost:4321` (the CLI will confirm the exact port).
+- Code quality:
+  - Lint: `npm run lint`
+  - Fix lint: `npm run lint:fix`
+  - Format: `npm run format`
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+## 5. Available scripts
 
-## Project Structure
+- `dev`: Start Astro development server
+- `build`: Build for production
+- `preview`: Preview the production build
+- `astro`: Direct access to the Astro CLI
+- `lint`: Run ESLint
+- `lint:fix`: Run ESLint with autofix
+- `format`: Run Prettier over the repo
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+## 6. Project scope
 
-## AI Development Support
+MVP (high-level):
+- Authentication & profile:
+  - Email/password sign up, login, logout (no email verification in MVP).
+  - Profile page to save language and theme preferences.
+- Plot plans:
+  - Create plan with name, location (geocoding), orientation (0–359°), real dimensions, grid unit (10/25/50/100 cm), limit 200×200 cells.
+  - Generate grid and assign rectangular areas to types: soil/path/water/building, with confirmations if plants would be removed.
+  - Save grid and plan state.
+- Plants:
+  - Add a plant to a single soil cell (1 plant = 1 cell), remove plant, clear messages when not allowed.
+- Maps & location:
+  - Leaflet + OSM for map and geocoding; set plot pin with accuracy notice.
+- Weather (Open‑Meteo):
+  - One-time fetch after setting location or before first AI use; monthly per-plan cache and refresh.
+  - Normalized metrics: sunlight (shortwave_radiation + sunshine_duration), humidity (relative_humidity_2m), precipitation (precipitation_sum).
+- AI (search and fit evaluation):
+  - Search plants by name with user confirmation.
+  - Strict JSON response schema with sanity-check and a 10 s timeout.
+  - Scores 1–5 with thresholds (≥90=5, 80–89=4, 70–79=3, 60–69=2, <60=1).
+  - Weighted months: Apr–Sep weight 2, others 1; auto hemisphere, manual override available.
+- Analytics (minimal):
+  - `plan_created`, `grid_saved`, `area_typed`, `plant_confirmed`.
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+Out of scope (MVP):
+- Plan sharing
+- Internal plant requirement database
+- Advanced transplanting assistant
+- Year-round care plan assistant
+- Undo/redo, drag & drop, layered editing
+- Email verification, password reset, CAPTCHA
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+## 7. Project status
 
-### Cursor IDE
+- Status: MVP in progress. This repository already includes the Astro 5 + React 19 + Tailwind 4 foundation, shadcn/ui setup, and quality tooling.
+- Backend/Auth/DB (Supabase), Leaflet/OSM, Open‑Meteo, and AI integration are planned per PRD and may be delivered incrementally.
+- Success criteria (MVP targets):
+  - 90% of users have at least one fully populated plan (≥5 plants).
+  - 75% of users create a plan and add ≥5 plants within a year.
 
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
-
-### GitHub Copilot
-
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
-
-### Windsurf
-
-The `.windsurfrules` file contains AI configuration for Windsurf.
-
-## Contributing
-
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
-
-## License
+## 8. License
 
 MIT
