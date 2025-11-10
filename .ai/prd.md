@@ -88,7 +88,7 @@ Poza zakresem MVP:
 - Zaawansowany asystent przesadzania roślin.
 - Asystent planów pielęgnacji w ciągu roku.
 - Drag&drop, cofanie, warstwy edycji.
-- Weryfikacja e‑mail, reset hasła, polityka złożoności haseł, CAPTCHA.
+- Weryfikacja e‑mail, polityka złożoności haseł, CAPTCHA.
 
 Ograniczenia i decyzje świadome:
 - Limit siatki 200 × 200.
@@ -108,7 +108,9 @@ US-001
 Tytuł: Rejestracja konta e‑mail/hasło
 Opis: Jako nowy użytkownik chcę założyć konto, aby zapisywać swoje plany.
 Kryteria akceptacji:
+- Rejestracja odbywają się na dedykowanych stronach.
 - Formularz przyjmuje e‑mail i hasło; walidacja formatu e‑mail.
+- Rejestracja wymaga podania adresu email, hasła i potwierdzenia hasła.
 - Utworzenie konta zapisuje użytkownika w bazie; loguje po sukcesie.
 - Błędy (e‑mail zajęty, brak sieci) wyświetlają komunikat i nie tworzą konta.
 
@@ -116,9 +118,12 @@ US-002
 Tytuł: Logowanie do aplikacji
 Opis: Jako użytkownik chcę się zalogować, aby uzyskać dostęp do swoich planów.
 Kryteria akceptacji:
+- Logowanie odbywają się na dedykowanych stronach.
 - Formularz e‑mail/hasło; błędne dane zwracają komunikat.
 - Po zalogowaniu widoczna jest lista moich planów.
 - Sesja trwa między odsłonami przeglądarki do wylogowania.
+- Nie korzystamy z zewnętrznych serwisów logowania (np. Google, GitHub).
+- Odzyskiwanie hasła powinno być możliwe.
 
 US-003
 Tytuł: Wylogowanie
