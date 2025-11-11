@@ -126,17 +126,14 @@
    - Eksportuj funkcję:
 
 ```ts
-import type { SupabaseClient } from '@/db/supabase.client';
-import type { ProfileDto } from '@/types';
+import type { SupabaseClient } from "@/db/supabase.client";
+import type { ProfileDto } from "@/types";
 
-export async function getProfileByUserId(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<ProfileDto | null> {
+export async function getProfileByUserId(supabase: SupabaseClient, userId: string): Promise<ProfileDto | null> {
   const { data, error, status } = await supabase
-    .from('profiles')
-    .select('id, language_code, theme, created_at, updated_at')
-    .eq('id', userId)
+    .from("profiles")
+    .select("id, language_code, theme, created_at, updated_at")
+    .eq("id", userId)
     .maybeSingle(); // zwraca null gdy brak, bez wyjątku
 
   if (error && status !== 406) {
@@ -151,12 +148,12 @@ export async function getProfileByUserId(
 2. Dodaj helper do odpowiedzi błędów (opcjonalnie wspólny): `src/lib/http/errors.ts`
 
 ```ts
-import type { ApiErrorResponse } from '@/types';
+import type { ApiErrorResponse } from "@/types";
 
 export function errorResponse(
-  code: ApiErrorResponse['error']['code'],
+  code: ApiErrorResponse["error"]["code"],
   message: string,
-  details?: ApiErrorResponse['error']['details']
+  details?: ApiErrorResponse["error"]["details"]
 ): ApiErrorResponse {
   return { error: { code, message, details } };
 }
@@ -165,74 +162,72 @@ export function errorResponse(
 3. Zaimplementuj endpoint: `src/pages/api/profile.ts`
 
 ```ts
-import type { APIContext } from 'astro';
-import { z } from 'zod';
-import type { ApiItemResponse, ProfileDto } from '@/types';
-import { errorResponse } from '@/lib/http/errors';
-import { getProfileByUserId } from '@/lib/services/profile.service';
+import type { APIContext } from "astro";
+import { z } from "zod";
+import type { ApiItemResponse, ProfileDto } from "@/types";
+import { errorResponse } from "@/lib/http/errors";
+import { getProfileByUserId } from "@/lib/services/profile.service";
 
 export const prerender = false;
 
 export async function GET(ctx: APIContext) {
   const supabase = ctx.locals.supabase; // zapewnione przez middleware
   if (!supabase) {
-    return new Response(
-      JSON.stringify(errorResponse('Unauthorized', 'Authentication required.')),
-      { status: 401, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify(errorResponse("Unauthorized", "Authentication required.")), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const { data: userData } = await supabase.auth.getUser();
   const user = userData?.user;
   if (!user) {
-    return new Response(
-      JSON.stringify(errorResponse('Unauthorized', 'Authentication required.')),
-      { status: 401, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify(errorResponse("Unauthorized", "Authentication required.")), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   // sanity-check id użytkownika
   const idSchema = z.string().uuid();
   const parse = idSchema.safeParse(user.id);
   if (!parse.success) {
-    return new Response(
-      JSON.stringify(errorResponse('Unprocessable', 'Invalid user id.')),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify(errorResponse("Unprocessable", "Invalid user id.")), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
     const profile = await getProfileByUserId(supabase, user.id);
     if (!profile) {
-      return new Response(
-        JSON.stringify(errorResponse('NotFound', 'Profile not found.')),
-        { status: 404, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify(errorResponse("NotFound", "Profile not found.")), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const body: ApiItemResponse<ProfileDto> = { data: profile };
-    return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (e: any) {
     // heurystyka dla 403 (RLS) – zależnie od treści błędu Supabase
-    const msg = String(e?.message ?? 'Unexpected server error.');
+    const msg = String(e?.message ?? "Unexpected server error.");
     const isForbidden =
-      msg.toLowerCase().includes('permission') ||
-      msg.toLowerCase().includes('rls') ||
-      e?.code === 'PGRST301';
+      msg.toLowerCase().includes("permission") || msg.toLowerCase().includes("rls") || e?.code === "PGRST301";
 
     if (isForbidden) {
-      return new Response(
-        JSON.stringify(errorResponse('Forbidden', 'Access denied.')),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify(errorResponse("Forbidden", "Access denied.")), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // log
-    console.error('GET /api/profile error:', e);
-    return new Response(
-      JSON.stringify(errorResponse('InternalError', 'Unexpected server error.')),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    console.error("GET /api/profile error:", e);
+    return new Response(JSON.stringify(errorResponse("InternalError", "Unexpected server error.")), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 ```
@@ -265,5 +260,3 @@ curl -i -H "Cookie: <brak>" https://localhost:4321/api/profile
 - Dla usera bez rekordu w `profiles` zwraca 404.
 - Błędy RLS zwracają 403.
 - Brak błędów lint/typów, zgodność z regułami projektu (Astro, Supabase, Zod, middleware).
-
-

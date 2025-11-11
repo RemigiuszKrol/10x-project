@@ -13,6 +13,7 @@ PlantsPlaner
 ## 2. Project description
 
 PlantsPlaner is a web application that helps plan and assess the placement of garden plants on a grid-based plot plan. The MVP enables users to:
+
 - Define a plot (real-world dimensions, grid unit 10/25/50/100 cm, location, orientation), generate a grid, and assign cell types (soil, path, water, building).
 - Add plants to cells (rule: 1 plant = 1 cell; soil only) with guardrails and confirmations.
 - Use maps (Leaflet + OpenStreetMap) for plot location and geocoding.
@@ -20,6 +21,7 @@ PlantsPlaner is a web application that helps plan and assess the placement of ga
 - Track minimal analytics (4 events) for core funnel insights.
 
 Additional docs:
+
 - Product Requirements (PRD): `.ai/prd.md`
 - Tech stack details: `.ai/tech-stack.md`
 
@@ -47,13 +49,19 @@ Additional docs:
 ## 4. Getting started locally
 
 Prerequisites:
+
 - Node.js 22.14.0 (see `.nvmrc`)
 - npm (bundled with Node)
+- Docker (for Supabase local development)
 
 Setup:
+
 ```bash
 # install dependencies
 npm install
+
+# start Supabase locally (required for auth and database)
+npx supabase start
 
 # start dev server
 npm run dev
@@ -66,7 +74,13 @@ npm run preview
 ```
 
 Notes:
+
 - Astro dev server typically serves on `http://localhost:4321` (the CLI will confirm the exact port).
+- Supabase services:
+  - API: `http://localhost:54321`
+  - Studio: `http://localhost:54323`
+  - **Inbucket (email testing)**: `http://localhost:54324` 📧
+- **Testing emails locally**: All auth emails (password reset, email verification) are captured by Inbucket. Open `http://localhost:54324` to view them. See `.ai/quick-start-inbucket.md` for details.
 - Code quality:
   - Lint: `npm run lint`
   - Fix lint: `npm run lint:fix`
@@ -85,6 +99,7 @@ Notes:
 ## 6. Project scope
 
 MVP (high-level):
+
 - Authentication & profile:
   - Email/password sign up, login, logout (no email verification in MVP).
   - Profile page to save language and theme preferences.
@@ -108,12 +123,15 @@ MVP (high-level):
   - `plan_created`, `grid_saved`, `area_typed`, `plant_confirmed`.
 
 Out of scope (MVP):
+
 - Plan sharing
 - Internal plant requirement database
 - Advanced transplanting assistant
 - Year-round care plan assistant
 - Undo/redo, drag & drop, layered editing
-- Email verification, password reset, CAPTCHA
+- CAPTCHA
+
+Note: Email verification and password reset are **implemented** but marked as out of scope for initial MVP. They are available for testing locally via Inbucket.
 
 ## 7. Project status
 

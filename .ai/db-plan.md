@@ -30,7 +30,8 @@ CREATE TABLE public.profiles (
 ```
 
 Ograniczenia i uwagi:
-- `id` = `auth.users.id` (1:1). 
+
+- `id` = `auth.users.id` (1:1).
 
 ### 1.3 Tabela: plans
 
@@ -145,7 +146,6 @@ CREATE TABLE public.analytics_events (
 );
 ```
 
-
 ## 2. Relacje między tabelami
 
 - `profiles (id)` 1:1 → `auth.users(id)`.
@@ -156,10 +156,10 @@ CREATE TABLE public.analytics_events (
 - `analytics_events (plan_id)` N:1 → `plans(id)` (ON DELETE SET NULL); N:1 → `auth.users(id)`.
 
 Kardynalności i zasady:
+
 - 1 komórka siatki może mieć 0 lub 1 roślinę.
 - Roślina może istnieć tylko w komórce typu `soil` (wymuszane triggerami).
 - Zmiana typu komórki na inny niż `soil` usuwa roślinę w tej komórce.
-
 
 ## 3. Indeksy
 
@@ -181,7 +181,6 @@ CREATE INDEX idx_plants_plan_name ON public.plant_placements (plan_id, plant_nam
 CREATE INDEX idx_analytics_user_created_at ON public.analytics_events (user_id, created_at DESC);
 CREATE INDEX idx_analytics_plan_created_at ON public.analytics_events (plan_id, created_at DESC);
 ```
-
 
 ## 4. Zasady PostgreSQL (RLS)
 
@@ -270,7 +269,6 @@ CREATE POLICY ae_select ON public.analytics_events
 CREATE POLICY ae_insert ON public.analytics_events
 	FOR INSERT WITH CHECK (user_id = auth.uid());
 ```
-
 
 ## 5. Triggery i funkcje pomocnicze
 
@@ -372,7 +370,6 @@ CREATE TRIGGER trg_purge_plant_on_cell_type_change
 	AFTER UPDATE OF type ON public.grid_cells
 	FOR EACH ROW EXECUTE FUNCTION public.purge_plant_on_cell_type_change();
 ```
-
 
 ## 6. Dodatkowe uwagi projektowe
 
