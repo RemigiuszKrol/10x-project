@@ -47,15 +47,9 @@ export const POST: APIRoute = async ({ request, locals, url }) => {
     const resetPasswordUrl = `${origin}/auth/reset-password`;
 
     // Wyślij email z linkiem do resetowania hasła
-    const { error } = await locals.supabase.auth.resetPasswordForEmail(email, {
+    await locals.supabase.auth.resetPasswordForEmail(email, {
       redirectTo: resetPasswordUrl,
     });
-
-    if (error) {
-      // Loguj błąd, ale nie ujawniaj użytkownikowi czy email istnieje w systemie
-      // (ze względów bezpieczeństwa)
-      console.error("Forgot password error:", error);
-    }
 
     // UWAGA: Ze względów bezpieczeństwa, zawsze zwracamy sukces,
     // nawet jeśli email nie istnieje w systemie.
@@ -70,10 +64,7 @@ export const POST: APIRoute = async ({ request, locals, url }) => {
         "Content-Type": "application/json",
       },
     });
-  } catch (error) {
-    // Błąd serwera
-    console.error("Forgot password error:", error);
-
+  } catch {
     const response: AuthResponse = {
       success: false,
       error: {

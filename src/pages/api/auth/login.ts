@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { z } from "zod";
 
 import type { AuthResponse, LoginDto } from "../../../types.ts";
 import { loginSchema } from "../../../lib/validation/auth.ts";
@@ -40,7 +39,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { email, password } = validationResult.data as LoginDto;
 
     // Próba zalogowania przez Supabase
-    const { data, error } = await locals.supabase.auth.signInWithPassword({
+    const { error } = await locals.supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -76,10 +75,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         "Content-Type": "application/json",
       },
     });
-  } catch (error) {
-    // Błąd serwera
-    console.error("Login error:", error);
-
+  } catch {
     const response: AuthResponse = {
       success: false,
       error: {

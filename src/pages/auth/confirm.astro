@@ -1,14 +1,14 @@
 ---
 /**
  * Strona potwierdzenia emaila
- * 
+ *
  * Supabase przekierowuje tutaj użytkownika po kliknięciu w link potwierdzający
  * w emailu. Supabase automatycznie obsługuje token z URL i tworzy sesję.
- * 
+ *
  * Ta strona po prostu sprawdza czy użytkownik jest zalogowany i przekierowuje
  * do odpowiedniego miejsca.
  */
-
+ 
 // Jeśli użytkownik jest zalogowany (email został potwierdzony), przekieruj do planów
 if (Astro.locals.user) {
   return Astro.redirect("/plans");

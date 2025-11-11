@@ -66,7 +66,7 @@ export function ResetPasswordForm() {
           general: data.error?.message || "Wystąpił błąd podczas resetowania hasła",
         });
       }
-    } catch (error) {
+    } catch {
       setErrors({
         general: "Nie udało się połączyć z serwerem. Sprawdź połączenie i spróbuj ponownie.",
       });
@@ -91,7 +91,6 @@ export function ResetPasswordForm() {
         disabled={isLoading}
         required
         autoComplete="new-password"
-        autoFocus
       />
 
       <FormField

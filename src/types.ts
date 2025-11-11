@@ -24,21 +24,21 @@ export type AnalyticsEventType = Enums<"analytics_event_type">;
 export type Cursor = string;
 export type SortOrder = "asc" | "desc";
 
-export type PaginationQuery = {
+export interface PaginationQuery {
   limit?: number; // 1..100
   cursor?: Cursor;
-};
+}
 
-export type ApiListResponse<TItem> = {
+export interface ApiListResponse<TItem> {
   data: TItem[];
   pagination: { next_cursor: Cursor | null };
-};
+}
 
-export type ApiItemResponse<TItem> = {
+export interface ApiItemResponse<TItem> {
   data: TItem;
-};
+}
 
-export type ApiErrorResponse = {
+export interface ApiErrorResponse {
   error: {
     code:
       | "ValidationError"
@@ -53,7 +53,7 @@ export type ApiErrorResponse = {
     message: string;
     details?: { field_errors?: Record<string, string> };
   };
-};
+}
 
 /**
  * 2.1 Profile
@@ -86,7 +86,7 @@ export type PlanDto = Pick<
 
 // POST /api/plans – dane wejściowe od klienta (bez user_id, id, grid_*)
 // Używamy typów z DbPlan dla zachowania spójności; zawężamy nullability tam gdzie ma sens biznesowy.
-export type PlanCreateCommand = {
+export interface PlanCreateCommand {
   name: DbPlan["name"];
   latitude?: NonNullable<DbPlan["latitude"]>;
   longitude?: NonNullable<DbPlan["longitude"]>;
@@ -95,14 +95,14 @@ export type PlanCreateCommand = {
   cell_size_cm: DbPlan["cell_size_cm"];
   orientation: DbPlan["orientation"];
   hemisphere?: NonNullable<DbPlan["hemisphere"]>;
-};
+}
 
 // PATCH /api/plans/:planId – częściowa aktualizacja
 export type PlanUpdateCommand = Partial<PlanCreateCommand>;
-export type PlanUpdateQuery = {
+export interface PlanUpdateQuery {
   // confirm_regenerate=true aby potwierdzić zmiany wpływające na wymiary siatki
   confirm_regenerate?: boolean;
-};
+}
 
 /**
  * 2.3 Komórki siatki (GridCells)
@@ -127,20 +127,20 @@ export type GridCellListQuery = PaginationQuery & {
 export type GridCellUpdateCommand = Pick<DbGridCell, "type">;
 
 // POST /grid/area-type – body
-export type GridAreaTypeCommand = {
+export interface GridAreaTypeCommand {
   x1: number;
   y1: number;
   x2: number;
   y2: number;
   type: GridCellType;
   confirm_plant_removal?: boolean;
-};
+}
 
 // POST /grid/area-type – wynik
-export type GridAreaTypeResultDto = {
+export interface GridAreaTypeResultDto {
   affected_cells: number;
   removed_plants: number;
-};
+}
 
 /**
  * 2.4 Nasadzenia (PlantPlacements)
@@ -164,13 +164,13 @@ export type PlantPlacementListQuery = PaginationQuery & {
 };
 
 // PUT /plants/:x/:y – body
-export type PlantPlacementUpsertCommand = {
+export interface PlantPlacementUpsertCommand {
   plant_name: DbPlantPlacement["plant_name"];
   sunlight_score?: NonNullable<DbPlantPlacement["sunlight_score"]>;
   humidity_score?: NonNullable<DbPlantPlacement["humidity_score"]>;
   precip_score?: NonNullable<DbPlantPlacement["precip_score"]>;
   overall_score?: NonNullable<DbPlantPlacement["overall_score"]>;
-};
+}
 
 /**
  * 2.5 Pogoda miesięczna (WeatherMonthly)
@@ -180,47 +180,47 @@ export type WeatherMonthlyDto = Pick<
   "year" | "month" | "sunlight" | "humidity" | "precip" | "last_refreshed_at"
 >;
 
-export type WeatherRefreshCommand = {
+export interface WeatherRefreshCommand {
   force?: boolean;
-};
+}
 
-export type WeatherRefreshResultDto = {
+export interface WeatherRefreshResultDto {
   refreshed: boolean;
   months: number;
-};
+}
 
 /**
  * 2.6 AI – wyszukiwanie i ocena dopasowania
  * Typy te nie mają bezpośredniej encji w DB, ale odnoszą się do planu/pozycji i plant_name.
  */
-export type PlantSearchCommand = {
+export interface PlantSearchCommand {
   query: string;
-};
+}
 
-export type PlantSearchCandidateDto = {
+export interface PlantSearchCandidateDto {
   name: string;
   latin_name?: string;
   source: "ai";
-};
+}
 
-export type PlantSearchResultDto = {
+export interface PlantSearchResultDto {
   candidates: PlantSearchCandidateDto[];
-};
+}
 
-export type PlantFitCommand = {
+export interface PlantFitCommand {
   plan_id: DbPlan["id"];
   x: DbGridCell["x"];
   y: DbGridCell["y"];
   plant_name: DbPlantPlacement["plant_name"];
-};
+}
 
-export type PlantFitResultDto = {
+export interface PlantFitResultDto {
   sunlight_score: NonNullable<DbPlantPlacement["sunlight_score"]>;
   humidity_score: NonNullable<DbPlantPlacement["humidity_score"]>;
   precip_score: NonNullable<DbPlantPlacement["precip_score"]>;
   overall_score: NonNullable<DbPlantPlacement["overall_score"]>;
   explanation?: string;
-};
+}
 
 /**
  * 2.7 Zdarzenia analityczne (AnalyticsEvents)
@@ -239,35 +239,35 @@ export type AnalyticsEventListQuery = PaginationQuery & {
 /**
  * 2.8 Autentykacja (Auth)
  */
-export type AuthError = {
+export interface AuthError {
   code: string;
   message: string;
   field?: "email" | "password" | "confirmPassword";
-};
+}
 
-export type AuthResponse<T = unknown> = {
+export interface AuthResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: AuthError;
   redirectTo?: string;
-};
+}
 
-export type LoginDto = {
+export interface LoginDto {
   email: string;
   password: string;
-};
+}
 
-export type RegisterDto = {
+export interface RegisterDto {
   email: string;
   password: string;
   confirmPassword: string;
-};
+}
 
-export type ForgotPasswordDto = {
+export interface ForgotPasswordDto {
   email: string;
-};
+}
 
-export type ResetPasswordDto = {
+export interface ResetPasswordDto {
   password: string;
   confirmPassword: string;
-};
+}

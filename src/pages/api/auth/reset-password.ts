@@ -66,8 +66,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
 
     if (error) {
-      console.error("Reset password error:", error);
-
       const response: AuthResponse = {
         success: false,
         error: {
@@ -96,10 +94,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         "Content-Type": "application/json",
       },
     });
-  } catch (error) {
-    // Błąd serwera
-    console.error("Reset password error:", error);
-
+  } catch {
     const response: AuthResponse = {
       success: false,
       error: {

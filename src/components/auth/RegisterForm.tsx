@@ -83,7 +83,7 @@ export function RegisterForm() {
           });
         }
       }
-    } catch (error) {
+    } catch {
       setErrors({
         general: "Nie udało się połączyć z serwerem. Sprawdź połączenie i spróbuj ponownie.",
       });
@@ -108,7 +108,6 @@ export function RegisterForm() {
         disabled={isLoading}
         required
         autoComplete="email"
-        autoFocus
       />
 
       <FormField

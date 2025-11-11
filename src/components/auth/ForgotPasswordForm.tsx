@@ -67,7 +67,7 @@ export function ForgotPasswordForm() {
           });
         }
       }
-    } catch (error) {
+    } catch {
       setErrors({
         general: "Nie udało się połączyć z serwerem. Sprawdź połączenie i spróbuj ponownie.",
       });
@@ -135,7 +135,6 @@ export function ForgotPasswordForm() {
         disabled={isLoading}
         required
         autoComplete="email"
-        autoFocus
       />
 
       <SubmitButton isLoading={isLoading}>Wyślij link resetujący</SubmitButton>

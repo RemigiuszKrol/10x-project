@@ -30,7 +30,6 @@ export function FormField({
   disabled = false,
   required = false,
   autoComplete,
-  autoFocus = false,
 }: FormFieldProps) {
   const errorId = `${id}-error`;
   const hasError = Boolean(error);
@@ -51,7 +50,6 @@ export function FormField({
         disabled={disabled}
         required={required}
         autoComplete={autoComplete}
-        autoFocus={autoFocus}
         aria-invalid={hasError}
         aria-describedby={hasError ? errorId : undefined}
         className={cn(hasError && "border-red-500 focus-visible:ring-red-500/20")}

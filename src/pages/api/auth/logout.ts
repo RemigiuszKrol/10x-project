@@ -14,8 +14,6 @@ export const POST: APIRoute = async ({ locals, redirect }) => {
     const { error } = await locals.supabase.auth.signOut();
 
     if (error) {
-      console.error("Logout error:", error);
-
       const response: AuthResponse = {
         success: false,
         error: {
@@ -34,9 +32,7 @@ export const POST: APIRoute = async ({ locals, redirect }) => {
 
     // Sukces - przekieruj do strony logowania
     return redirect("/auth/login");
-  } catch (error) {
-    console.error("Logout error:", error);
-
+  } catch {
     const response: AuthResponse = {
       success: false,
       error: {

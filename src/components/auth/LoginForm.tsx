@@ -74,7 +74,7 @@ export function LoginForm() {
           });
         }
       }
-    } catch (error) {
+    } catch {
       setErrors({
         general: "Nie udało się połączyć z serwerem. Sprawdź połączenie i spróbuj ponownie.",
       });
@@ -99,7 +99,6 @@ export function LoginForm() {
         disabled={isLoading}
         required
         autoComplete="email"
-        autoFocus
       />
 
       <FormField
