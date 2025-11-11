@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zresetuj hasło - PlantsPlaner</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background-color: #f3f4f6;
+        color: #1f2937;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .email-wrapper {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        color: #ffffff;
+        padding: 40px 30px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0 0 10px 0;
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .header p {
+        margin: 0;
+        font-size: 16px;
+        opacity: 0.9;
+      }
+      .content {
+        padding: 40px 30px;
+      }
+      .content h2 {
+        color: #16a34a;
+        font-size: 20px;
+        margin: 0 0 20px 0;
+      }
+      .content p {
+        line-height: 1.6;
+        margin: 0 0 20px 0;
+        font-size: 16px;
+      }
+      .button-container {
+        text-align: center;
+        margin: 30px 0;
+      }
+      .button {
+        display: inline-block;
+        background-color: #16a34a;
+        color: #ffffff !important;
+        padding: 14px 32px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: background-color 0.2s;
+      }
+      .button:hover {
+        background-color: #15803d;
+      }
+      .warning-box {
+        background-color: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 16px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .warning-box p {
+        margin: 0;
+        font-size: 14px;
+        color: #92400e;
+      }
+      .info-box {
+        background-color: #f0fdf4;
+        border-left: 4px solid #16a34a;
+        padding: 16px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .info-box p {
+        margin: 0;
+        font-size: 14px;
+        color: #15803d;
+      }
+      .footer {
+        background-color: #f9fafb;
+        padding: 30px;
+        text-align: center;
+        font-size: 14px;
+        color: #6b7280;
+        border-top: 1px solid #e5e7eb;
+      }
+      .footer p {
+        margin: 5px 0;
+      }
+      .footer a {
+        color: #16a34a;
+        text-decoration: none;
+      }
+      .divider {
+        border: 0;
+        height: 1px;
+        background: #e5e7eb;
+        margin: 30px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="email-wrapper">
+        <div class="header">
+          <h1>🌱 PlantsPlaner</h1>
+          <p>Resetowanie hasła</p>
+        </div>
+
+        <div class="content">
+          <h2>Otrzymaliśmy prośbę o zresetowanie hasła</h2>
+
+          <p>
+            Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta w PlantsPlaner. Aby ustawić nowe hasło, kliknij w
+            poniższy przycisk:
+          </p>
+
+          <div class="button-container">
+            <a href="{{ .ConfirmationURL }}" class="button">Zresetuj hasło</a>
+          </div>
+
+          <div class="info-box">
+            <p>
+              <strong>Ważne:</strong> Link jest ważny przez 1 godzinę. Po tym czasie będziesz musiał ponownie poprosić o
+              reset hasła.
+            </p>
+          </div>
+
+          <div class="warning-box">
+            <p>
+              <strong>⚠️ Bezpieczeństwo:</strong> Link do resetowania hasła można użyć tylko raz. Po ustawieniu nowego
+              hasła, stary link stanie się nieaktywny.
+            </p>
+          </div>
+
+          <hr class="divider" />
+
+          <p style="font-size: 14px; color: #6b7280">
+            Jeśli przycisk nie działa, skopiuj i wklej poniższy adres do przeglądarki:
+          </p>
+          <p style="font-size: 12px; word-break: break-all; color: #9ca3af">{{ .ConfirmationURL }}</p>
+
+          <hr class="divider" />
+
+          <p style="font-size: 14px; color: #6b7280">
+            <strong>Nie prosiłeś o reset hasła?</strong><br />
+            Jeśli nie próbowałeś zresetować hasła, zignoruj tę wiadomość. Twoje hasło pozostanie bez zmian, a Twoje konto
+            jest bezpieczne. Możesz również rozważyć zmianę hasła dla dodatkowego bezpieczeństwa.
+          </p>
+        </div>
+
+        <div class="footer">
+          <p><strong>PlantsPlaner</strong></p>
+          <p>Twój asystent w planowaniu ogrodu</p>
+          <p style="margin-top: 15px">Masz pytania? <a href="{{ .SiteURL }}/contact">Skontaktuj się z nami</a></p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
