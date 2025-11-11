@@ -1,6 +1,5 @@
 ## REST API Plan
 
-
 ## 1. Zasoby
 
 - **Profile** → tabela: `public.profiles`
@@ -11,14 +10,15 @@
 - **Zdarzenia analityczne (AnalyticsEvents)** → tabela: `public.analytics_events`
 
 Uwagi projektowe:
+
 - RLS (Row Level Security) włączone dla wszystkich tabel domenowych; wzorzec owner-only oparty o `auth.uid()`.
 - Indeksy pod listowanie i typowe filtry: m.in. `(user_id, updated_at desc)` dla planów, `(plan_id, type)` dla komórek, `(plan_id, plant_name)` dla nasadzeń, `(user_id, created_at desc)` i `(plan_id, created_at desc)` dla analityki.
 - Ograniczenia walidacyjne w bazie, kluczowe dla API: rozmiary siatki i jednostka kratki (10/25/50/100), granice współrzędnych komórek względem `grid_width/grid_height`, typ komórki `soil` wymagany do posadzenia rośliny, skale ocen (1–5) i metryk pogody (0–100), zakres orientacji (0–359). Triggery utrzymują spójność (`updated_at`, granice komórek, rośliny tylko na `soil`, purge roślin przy zmianie typu pola).
 
-
 ## 2. Endpointy
 
 Konwencje ogólne:
+
 - Base URL: `/api`
 - Autoryzacja: Supabase JWT w nagłówku `Authorization: Bearer <token>` (lub cookie). Serwer używa klienta Supabase ze względu na RLS.
 - Paginacja: `?limit=<1..100>&cursor=<opaque>` (cursor-based). Odpowiedź zawiera `pagination.next_cursor` lub `null`.
@@ -27,19 +27,25 @@ Konwencje ogólne:
 - Format sukcesu (listy):
   ```json
   {
-    "data": [ /* ... */ ],
+    "data": [
+      /* ... */
+    ],
     "pagination": { "next_cursor": "string|null" }
   }
   ```
 - Format sukcesu (pojedynczy zasób):
   ```json
-  { "data": { /* ... */ } }
+  {
+    "data": {
+      /* ... */
+    }
+  }
   ```
 - Format błędu (spójny w całym API):
   ```json
   {
     "error": {
-      "code": "string",    // np. ValidationError, Unauthorized, Forbidden, NotFound, Conflict, RateLimited, UpstreamTimeout
+      "code": "string", // np. ValidationError, Unauthorized, Forbidden, NotFound, Conflict, RateLimited, UpstreamTimeout
       "message": "string",
       "details": { "field_errors": { "field": "reason" } } // opcjonalnie
     }
@@ -189,9 +195,7 @@ Konwencje ogólne:
   - Odpowiedź 200 (fragment):
     ```json
     {
-      "data": [
-        { "x": 0, "y": 0, "type": "soil", "updated_at": "iso-datetime" }
-      ],
+      "data": [{ "x": 0, "y": 0, "type": "soil", "updated_at": "iso-datetime" }],
       "pagination": { "next_cursor": null }
     }
     ```
@@ -215,8 +219,10 @@ Konwencje ogólne:
   - Body (JSON):
     ```json
     {
-      "x1": 0, "y1": 0,
-      "x2": 5, "y2": 5,
+      "x1": 0,
+      "y1": 0,
+      "x2": 5,
+      "y2": 5,
       "type": "water",
       "confirm_plant_removal": true
     }
@@ -246,7 +252,8 @@ Konwencje ogólne:
     {
       "data": [
         {
-          "x": 3, "y": 7,
+          "x": 3,
+          "y": 7,
           "plant_name": "tomato",
           "sunlight_score": 4,
           "humidity_score": 3,
@@ -280,7 +287,8 @@ Konwencje ogólne:
     ```json
     {
       "data": {
-        "x": 3, "y": 7,
+        "x": 3,
+        "y": 7,
         "plant_name": "tomato",
         "sunlight_score": 4,
         "humidity_score": 3,
@@ -342,9 +350,7 @@ Konwencje ogólne:
     ```json
     {
       "data": {
-        "candidates": [
-          { "name": "tomato", "latin_name": "Solanum lycopersicum", "source": "ai" }
-        ]
+        "candidates": [{ "name": "tomato", "latin_name": "Solanum lycopersicum", "source": "ai" }]
       }
     }
     ```
@@ -407,7 +413,6 @@ Konwencje ogólne:
   - Odpowiedź 200: lista zdarzeń z paginacją.
   - Błędy: 401, 403
 
-
 ## 3. Uwierzytelnianie i autoryzacja
 
 - Mechanizm: Supabase Auth (e‑mail/hasło w MVP). API przyjmuje token JWT w `Authorization: Bearer` (lub sesję w cookie). Po stronie serwera wykorzystywany jest klient Supabase z kontekstem użytkownika.
@@ -419,7 +424,6 @@ Konwencje ogólne:
   - Odświeżanie pogody (`/weather/refresh`) wymaga roli `service_role` (sekret serwerowy przekazywany wyłącznie z backendu) i dodatkowego nagłówka np. `X-Internal-Key`.
 - Strefa zaufania:
   - Endpointy AI i pogody działają tylko z serwera (SSR/route handler) i nigdy z przeglądarki bezpośrednio do dostawców.
-
 
 ## 4. Walidacja i logika biznesowa
 
@@ -457,12 +461,14 @@ Walidacja (poza constraintami DB) implementowana Zodem po stronie API. Kluczowe 
   - `attributes` dowolny `jsonb` (rozsądny rozmiar; można limitować do np. 8KB).
 
 Logika biznesowa ponad CRUD (odwzorowana w endpointach):
+
 - Edycja obszaru siatki z potwierdzeniem możliwej utraty roślin (`/grid/area-type`).
 - Wstawienie rośliny wyłącznie na `soil` (wymuszane triggerem; API zwraca 422).
 - Cache pogody per plan z odświeżaniem kontrolowanym i rate limit.
 - AI: twardy schemat JSON, sanity-check, timeout 10 s, mapowanie metryk do ocen 1–5 z wagami sezonów (IV–IX waga 2; półkula wg planu, z możliwością ręcznej korekty).
 
 Bezpieczeństwo i wydajność:
+
 - Rate limiting (zalecenia na poziomie API gateway/adaptera):
   - AI: np. 10/min/user na `/api/ai/*`
   - Weather refresh: np. 2/h/plan na `/weather/refresh`
@@ -477,10 +483,9 @@ Bezpieczeństwo i wydajność:
   - Nie ujawniać komunikatów SQL do klienta; mapować na spójne kody i komunikaty.
 
 Implementacja (Astro/TypeScript, zgodnie ze stackiem):
+
 - Lokalizacja endpointów: `src/pages/api/**` (route handlers).
 - Klient DB/Auth: `src/db/supabase.client.ts` — tworzenie klienta z tokenem użytkownika (SSR) lub z rolą serwisową (tylko dla wewnętrznych akcji).
 - Walidacja: Zod schematy dla body/query i serializacji odpowiedzi.
 - Obsługa błędów: wczesne zwroty, spójny kształt błędu.
 - i18n: komunikaty błędów po polsku (MVP min. PL); kody błędów stałe po angielsku.
-
-

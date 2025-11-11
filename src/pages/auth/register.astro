@@ -1,0 +1,13 @@
+---
+import AuthLayout from "../../layouts/AuthLayout.astro";
+import { RegisterForm } from "../../components/auth/RegisterForm";
+
+// Jeśli użytkownik jest już zalogowany, przekieruj do planów
+if (Astro.locals.user) {
+  return Astro.redirect("/plans");
+}
+---
+
+<AuthLayout title="Rejestracja - PlantsPlaner" description="Utwórz darmowe konto w PlantsPlaner">
+  <RegisterForm client:load />
+</AuthLayout>

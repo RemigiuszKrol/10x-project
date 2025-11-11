@@ -1,0 +1,74 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = "PlantsPlaner", description = "Planowanie rozmieszczenia roślin ogrodowych" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50">
+    <div class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+      <!-- Logo i nagłówek -->
+      <div class="w-full max-w-md mb-8 text-center">
+        <div
+          class="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="w-8 h-8 text-white"
+          >
+            <path d="M12 2a3 3 0 0 0-3 3v4a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+            <path d="M12 9v13"></path>
+            <path d="M8 12a3 3 0 0 0 0 6h8a3 3 0 0 0 0-6"></path>
+          </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+          {title}
+        </h1>
+        <p class="text-sm text-gray-600">
+          {description}
+        </p>
+      </div>
+
+      <!-- Panel z formularzem -->
+      <div class="w-full max-w-md">
+        <div class="bg-white rounded-2xl shadow-xl border border-green-100 p-8">
+          <slot />
+        </div>
+      </div>
+
+      <!-- Stopka -->
+      <div class="mt-8 text-center text-sm text-gray-500">
+        <p>&copy; {new Date().getFullYear()} PlantsPlaner. Wszystkie prawa zastrzeżone.</p>
+      </div>
+    </div>
+  </body>
+</html>
+
+<style>
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    min-height: 100%;
+  }
+</style>

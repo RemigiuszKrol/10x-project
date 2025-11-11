@@ -1,0 +1,153 @@
+---
+/**
+ * Strona potwierdzenia emaila
+ * 
+ * Supabase przekierowuje tutaj użytkownika po kliknięciu w link potwierdzający
+ * w emailu. Supabase automatycznie obsługuje token z URL i tworzy sesję.
+ * 
+ * Ta strona po prostu sprawdza czy użytkownik jest zalogowany i przekierowuje
+ * do odpowiedniego miejsca.
+ */
+
+// Jeśli użytkownik jest zalogowany (email został potwierdzony), przekieruj do planów
+if (Astro.locals.user) {
+  return Astro.redirect("/plans");
+}
+
+// Jeśli wystąpił błąd (token nieważny lub wygasły), pobierz informację z URL
+const error = Astro.url.searchParams.get("error");
+const errorDescription = Astro.url.searchParams.get("error_description");
+
+import AuthLayout from "../../layouts/AuthLayout.astro";
+---
+
+<AuthLayout
+  title="Potwierdzanie emaila - PlantsPlaner"
+  description="Weryfikacja adresu email"
+>
+  <div class="w-full max-w-md space-y-6">
+    {
+      error ? (
+        <>
+          {/* Błąd potwierdzenia */}
+          <div class="flex justify-center">
+            <div
+              class="rounded-full bg-red-100 p-6"
+              role="img"
+              aria-label="Ikona błędu"
+            >
+              <svg
+                class="h-16 w-16 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+              Nie udało się potwierdzić emaila
+            </h1>
+            <p class="text-gray-600 mb-4">
+              {errorDescription || "Link weryfikacyjny jest nieprawidłowy lub wygasł"}
+            </p>
+          </div>
+
+          <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <h2 class="text-sm font-semibold text-red-900 mb-2">
+              Co możesz zrobić?
+            </h2>
+            <ul class="list-disc list-inside space-y-2 text-sm text-red-800">
+              <li>Sprawdź czy link w emailu jest kompletny</li>
+              <li>Spróbuj zarejestrować się ponownie</li>
+              <li>Skontaktuj się z pomocą techniczną</li>
+            </ul>
+          </div>
+
+          <div class="text-center pt-4">
+            <a
+              href="/auth/register"
+              class="inline-block px-6 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Wróć do rejestracji
+            </a>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Ładowanie - użytkownik powinien być automatycznie przekierowany */}
+          <div class="flex justify-center">
+            <div
+              class="rounded-full bg-blue-100 p-6"
+              role="img"
+              aria-label="Ładowanie"
+            >
+              <svg
+                class="h-16 w-16 text-blue-600 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+              Potwierdzanie emaila...
+            </h1>
+            <p class="text-gray-600">
+              Poczekaj chwilę, weryfikujemy Twój adres email
+            </p>
+          </div>
+
+          <div class="text-center pt-4">
+            <p class="text-sm text-gray-600 mb-2">
+              Jeśli nie zostaniesz automatycznie przekierowany:
+            </p>
+            <a
+              href="/auth/login"
+              class="inline-block px-6 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Przejdź do logowania
+            </a>
+          </div>
+        </>
+      )
+    }
+  </div>
+
+  {/* Auto-refresh po 3 sekundach jeśli nie ma błędu */}
+  {
+    !error && (
+      <script>
+        setTimeout(() => {
+          window.location.href = "/auth/login";
+        }, 3000);
+      </script>
+    )
+  }
+</AuthLayout>
+

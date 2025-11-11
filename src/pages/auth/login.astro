@@ -1,0 +1,13 @@
+---
+import AuthLayout from "../../layouts/AuthLayout.astro";
+import { LoginForm } from "../../components/auth/LoginForm";
+
+// Jeśli użytkownik jest już zalogowany, przekieruj do planów
+if (Astro.locals.user) {
+  return Astro.redirect("/plans");
+}
+---
+
+<AuthLayout title="Logowanie - PlantsPlaner" description="Zaloguj się do swojego konta PlantsPlaner">
+  <LoginForm client:load />
+</AuthLayout>

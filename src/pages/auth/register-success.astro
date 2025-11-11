@@ -1,0 +1,93 @@
+---
+import AuthLayout from "../../layouts/AuthLayout.astro";
+
+// Pobierz email z parametru URL (jeśli został przekazany)
+const email = Astro.url.searchParams.get("email");
+
+// Jeśli użytkownik jest już zalogowany (potwierdził email), przekieruj do planów
+if (Astro.locals.user) {
+  return Astro.redirect("/plans");
+}
+---
+
+<AuthLayout title="Potwierdź swój adres email - PlantsPlaner" description="Sprawdź swoją skrzynkę pocztową">
+  <div class="w-full max-w-md space-y-6">
+    {/* Ikona sukcesu */}
+    <div class="flex justify-center">
+      <div class="rounded-full bg-green-100 p-6" role="img" aria-label="Ikona sukcesu">
+        <svg
+          class="h-16 w-16 text-green-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"
+          ></path>
+        </svg>
+      </div>
+    </div>
+
+    {/* Tytuł i opis */}
+    <div class="text-center">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Sprawdź swoją skrzynkę pocztową</h1>
+      <p class="text-gray-600">
+        {
+          email ? (
+            <>
+              Wysłaliśmy link aktywacyjny na adres <strong>{email}</strong>
+            </>
+          ) : (
+            "Wysłaliśmy link aktywacyjny na Twój adres email"
+          )
+        }
+      </p>
+    </div>
+
+    {/* Instrukcje */}
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <h2 class="text-sm font-semibold text-blue-900 mb-2">Co dalej?</h2>
+      <ol class="list-decimal list-inside space-y-2 text-sm text-blue-800">
+        <li>Otwórz swoją skrzynkę pocztową</li>
+        <li>Znajdź wiadomość od PlantsPlaner</li>
+        <li>Kliknij w link aktywacyjny</li>
+        <li>Zaloguj się na swoje konto</li>
+      </ol>
+    </div>
+
+    {/* Dodatkowe informacje */}
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+      <div class="text-sm text-gray-700">
+        <p class="font-semibold mb-1">Nie otrzymałeś wiadomości?</p>
+        <ul class="list-disc list-inside space-y-1 ml-2">
+          <li>Sprawdź folder spam lub wiadomości niechciane</li>
+          <li>Upewnij się, że podałeś poprawny adres email</li>
+          <li>Poczekaj kilka minut - dostarczenie może zająć chwilę</li>
+        </ul>
+      </div>
+    </div>
+
+    {/* Link do strony logowania */}
+    <div class="text-center pt-4">
+      <p class="text-sm text-gray-600 mb-2">Potwierdziłeś już swój adres email?</p>
+      <a
+        href="/auth/login"
+        class="inline-block px-6 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+      >
+        Przejdź do logowania
+      </a>
+    </div>
+
+    {/* Link do ponownego wysłania (opcjonalnie możesz to dodać później) */}
+    <div class="text-center text-sm text-gray-600 border-t pt-4">
+      Problemy z rejestracją?{" "}
+      <a href="/auth/register" class="text-green-600 hover:text-green-700 font-medium hover:underline">
+        Spróbuj ponownie
+      </a>
+    </div>
+  </div>
+</AuthLayout>
