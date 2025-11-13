@@ -103,6 +103,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
+    // Profil jest tworzony automatycznie przez trigger bazy danych (handle_new_user)
+    // Nie ma potrzeby ręcznego tworzenia profilu w kodzie aplikacji
+
     // Sukces - użytkownik został utworzony
     // Supabase automatycznie wysłał email weryfikacyjny
     const response: AuthResponse = {
