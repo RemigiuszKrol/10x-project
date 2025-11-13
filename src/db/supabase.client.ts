@@ -3,11 +3,18 @@ import { createBrowserClient, createServerClient, type CookieOptionsWithName } f
 
 import type { Database } from "../db/database.types.ts";
 
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
-
 // Client-side Supabase client (używany w komponentach React po stronie przeglądarki)
-export const supabaseClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+// Tworzymy lazy - tylko gdy jest wywoływany w przeglądarce
+let _supabaseClient: ReturnType<typeof createBrowserClient<Database>> | null = null;
+
+export const getSupabaseClient = () => {
+  if (!_supabaseClient) {
+    const supabaseClientUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
+    const supabaseClientAnonKey = import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.SUPABASE_KEY;
+    _supabaseClient = createBrowserClient<Database>(supabaseClientUrl, supabaseClientAnonKey);
+  }
+  return _supabaseClient;
+};
 
 // Typ dla Supabase Client używany w aplikacji
 export type SupabaseClient = ReturnType<typeof createSupabaseServerInstance>;
@@ -15,7 +22,7 @@ export type SupabaseClient = ReturnType<typeof createSupabaseServerInstance>;
 // Opcje cookies dla Supabase Auth
 export const cookieOptions: CookieOptionsWithName = {
   path: "/",
-  secure: true,
+  secure: import.meta.env.PROD, // tylko HTTPS w produkcji, HTTP OK w dev
   httpOnly: true,
   sameSite: "lax",
 };
@@ -30,7 +37,11 @@ function parseCookieHeader(cookieHeader: string): { name: string; value: string 
 
 // Server-side Supabase client (używany w API routes i SSR)
 export const createSupabaseServerInstance = (context: { headers: Headers; cookies: AstroCookies }) => {
-  const supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+  // Zmienne dla server-side
+  const supabaseServerUrl = import.meta.env.SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL;
+  const supabaseServerAnonKey = import.meta.env.SUPABASE_KEY || import.meta.env.PUBLIC_SUPABASE_KEY;
+
+  const supabase = createServerClient<Database>(supabaseServerUrl, supabaseServerAnonKey, {
     cookieOptions,
     cookies: {
       getAll() {

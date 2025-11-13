@@ -1,0 +1,18 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import ProfilePageWrapper from "@/components/profile/ProfilePageWrapper";
+
+// SSR guard - strona wymaga zalogowania
+const user = Astro.locals.user;
+
+if (!user) {
+  return Astro.redirect("/auth/login");
+}
+
+// Przekaż dane użytkownika do komponentu React
+const userId = user.id;
+---
+
+<Layout title="Profil - PlantsPlaner" showNavbar={true}>
+  <ProfilePageWrapper client:only="react" userId={userId} />
+</Layout>

@@ -1,4 +1,6 @@
 ---
+import Layout from "@/layouts/Layout.astro";
+
 // Strona wymaga zalogowania - middleware sprawdzi sesję
 const user = Astro.locals.user;
 
@@ -7,17 +9,11 @@ if (!user) {
 }
 ---
 
-<!doctype html>
-<html lang="pl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Moje Plany - PlantsPlaner</title>
-  </head>
-  <body class="bg-gray-50 min-h-screen">
+<Layout title="Moje Plany - PlantsPlaner" showNavbar={true}>
+  <main class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50">
     <div class="container mx-auto px-4 py-8">
       <div class="max-w-4xl mx-auto">
-        <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="bg-white shadow-xl rounded-2xl border border-green-100 p-8">
           <h1 class="text-3xl font-bold text-gray-900 mb-4">Witaj w PlantsPlaner!</h1>
 
           <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
@@ -32,20 +28,9 @@ if (!user) {
             <p class="text-gray-600">
               User ID: <code class="bg-gray-100 px-2 py-1 rounded">{user.id}</code>
             </p>
-
-            <div class="mt-6 pt-6 border-t border-gray-200">
-              <form action="/api/auth/logout" method="POST">
-                <button
-                  type="submit"
-                  class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Wyloguj się
-                </button>
-              </form>
-            </div>
           </div>
         </div>
       </div>
     </div>
-  </body>
-</html>
+  </main>
+</Layout>

@@ -1,0 +1,105 @@
+---
+interface Props {
+  userEmail?: string;
+  currentPath?: string;
+}
+
+const { userEmail, currentPath = "" } = Astro.props;
+
+// Sprawdź które linki są aktywne
+const isPlansActive = currentPath === "/plans" || currentPath.startsWith("/plans/");
+const isProfileActive = currentPath === "/profile";
+---
+
+<nav class="bg-white border-b border-green-100 shadow-sm sticky top-0 z-50">
+  <div class="container mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <!-- Logo i nazwa -->
+      <a href="/plans" class="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity">
+        <div
+          class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 shadow"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="w-5 h-5 sm:w-6 sm:h-6 text-white"
+          >
+            <path d="M12 2a3 3 0 0 0-3 3v4a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+            <path d="M12 9v13"></path>
+            <path d="M8 12a3 3 0 0 0 0 6h8a3 3 0 0 0 0-6"></path>
+          </svg>
+        </div>
+        <span class="text-lg sm:text-xl font-bold text-gray-900">PlantsPlaner</span>
+      </a>
+
+      <!-- Nawigacja - środek -->
+      <div class="flex items-center gap-1">
+        <a
+          href="/plans"
+          class:list={[
+            "px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+            isPlansActive
+              ? "bg-green-50 text-green-700"
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+          ]}
+        >
+          <span class="hidden sm:inline">Moje plany</span>
+          <span class="sm:hidden">Plany</span>
+        </a>
+        <a
+          href="/profile"
+          class:list={[
+            "px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+            isProfileActive
+              ? "bg-green-50 text-green-700"
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+          ]}
+        >
+          Profil
+        </a>
+      </div>
+
+      <!-- Użytkownik i wylogowanie -->
+      <div class="flex items-center gap-2 sm:gap-4">
+        {
+          userEmail && (
+            <span class="text-xs sm:text-sm text-gray-600 hidden md:block">
+              <span class="text-gray-400">zalogowany jako</span>
+              <span class="ml-1 font-medium text-gray-900">{userEmail}</span>
+            </span>
+          )
+        }
+        <a
+          href="/api/auth/logout"
+          class="px-3 sm:px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+          title={userEmail ? `Wyloguj (${userEmail})` : "Wyloguj"}
+        >
+          <span class="hidden sm:inline">Wyloguj</span>
+          <span class="sm:hidden" aria-label="Wyloguj">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="w-5 h-5"
+              aria-hidden="true"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
