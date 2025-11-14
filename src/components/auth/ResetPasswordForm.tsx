@@ -114,8 +114,8 @@ export function ResetPasswordForm() {
       <SubmitButton isLoading={isLoading}>Ustaw nowe hasło</SubmitButton>
 
       <div className="text-center text-sm text-gray-600">
-        <a href="/auth/login" className="text-green-600 hover:text-green-700 hover:underline">
-          ← Wróć do logowania
+        <a href="/profile" className="text-green-600 hover:text-green-700 hover:underline">
+          ← Wróć do profilu
         </a>
       </div>
     </AuthFormShell>

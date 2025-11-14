@@ -59,6 +59,23 @@ export function ProfileContent({
         fieldErrors={fieldErrors}
       />
 
+      {/* Sekcja bezpieczeństwa */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Bezpieczeństwo</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-medium text-gray-900">Hasło</h3>
+            <p className="text-sm text-gray-600">Zmień hasło do swojego konta</p>
+          </div>
+          <a
+            href="/auth/reset-password"
+            className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+          >
+            Zmień hasło
+          </a>
+        </div>
+      </div>
+
       {/* Podsumowanie profilu */}
       <PreferenceSummary createdAt={data.createdAt} updatedAt={data.updatedAt} />
     </div>

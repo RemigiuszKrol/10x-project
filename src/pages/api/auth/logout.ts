@@ -5,10 +5,10 @@ import type { AuthResponse } from "../../../types.ts";
 export const prerender = false;
 
 /**
- * POST /api/auth/logout
  * Wylogowanie użytkownika
+ * Obsługuje GET i POST
  */
-export const POST: APIRoute = async ({ locals, redirect }) => {
+const handleLogout = async ({ locals, redirect }: Parameters<APIRoute>[0]) => {
   try {
     // Wylogowanie przez Supabase
     const { error } = await locals.supabase.auth.signOut();
@@ -49,3 +49,15 @@ export const POST: APIRoute = async ({ locals, redirect }) => {
     });
   }
 };
+
+/**
+ * GET /api/auth/logout
+ * Wylogowanie użytkownika (link z nawigacji)
+ */
+export const GET: APIRoute = handleLogout;
+
+/**
+ * POST /api/auth/logout
+ * Wylogowanie użytkownika (programatyczne)
+ */
+export const POST: APIRoute = handleLogout;

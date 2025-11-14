@@ -7,7 +7,7 @@ export const prerender = false;
 
 /**
  * POST /api/auth/reset-password
- * Ustawia nowe hasło użytkownika (po kliknięciu w link w emailu)
+ * Ustawia nowe hasło użytkownika (po kliknięciu w link w emailu lub z profilu)
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -82,10 +82,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    // Sukces - przekieruj na stronę logowania
+    // Sukces - przekieruj na plans
     const response: AuthResponse = {
       success: true,
-      redirectTo: "/auth/login",
+      redirectTo: "/plans",
     };
 
     return new Response(JSON.stringify(response), {

@@ -1,8 +1,11 @@
 ---
-import Welcome from "../components/Welcome.astro";
-import Layout from "../layouts/Layout.astro";
----
+// Strona główna - przekierowanie w zależności od stanu logowania
+// Zalogowani użytkownicy -> /plans
+// Niezalogowani użytkownicy -> /auth/login
 
-<Layout>
-  <Welcome />
-</Layout>
+if (Astro.locals.user) {
+  return Astro.redirect("/plans");
+} else {
+  return Astro.redirect("/auth/login");
+}
+---

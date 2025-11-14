@@ -4,6 +4,8 @@ import { createSupabaseServerInstance } from "../db/supabase.client.ts";
 
 // Ścieżki publiczne - dostępne bez logowania
 const PUBLIC_PATHS = [
+  // Strona główna
+  "/",
   // Strony autentykacji
   "/auth/login",
   "/auth/register",
