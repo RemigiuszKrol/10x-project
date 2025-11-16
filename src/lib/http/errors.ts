@@ -1,6 +1,26 @@
 import type { ApiErrorResponse } from "@/types";
 
 /**
+ * Błąd rzucany gdy zmiana wymiarów siatki wymaga potwierdzenia użytkownika
+ */
+export class GridChangeRequiresConfirmationError extends Error {
+  constructor(message = "Grid dimension changes require confirmation") {
+    super(message);
+    this.name = "GridChangeRequiresConfirmationError";
+  }
+}
+
+/**
+ * Błąd walidacji rzucany w serwisie (powinien być mapowany na 400 ValidationError w endpoincie)
+ */
+export class ValidationError extends Error {
+  constructor(message: string, public field?: string) {
+    super(message);
+    this.name = "ValidationError";
+  }
+}
+
+/**
  * Tworzy standardową strukturę odpowiedzi błędu API
  * @param code - Kod błędu (ValidationError, Unauthorized, itp.)
  * @param message - Komunikat dla użytkownika

@@ -48,7 +48,41 @@ export const createSupabaseServerInstance = (context: { headers: Headers; cookie
         return parseCookieHeader(context.headers.get("Cookie") ?? "");
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => context.cookies.set(name, value, options));
+        // Sprawdź czy cookies mogą być ustawione przed próbą
+        // W Astro, cookies mogą być ustawione tylko przed wysłaniem odpowiedzi
+        try {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // Sprawdź czy cookie już istnieje - jeśli tak, możemy spróbować go zaktualizować
+            // Jeśli nie, ustaw nowy cookie tylko jeśli odpowiedź jeszcze nie została wysłana
+            try {
+              context.cookies.set(name, value, options);
+            } catch (cookieError) {
+              // Ignoruj błędy związane z już wysłaną odpowiedzią
+              // To może się zdarzyć gdy Supabase próbuje odświeżyć tokeny asynchronicznie
+              if (
+                cookieError instanceof Error &&
+                (cookieError.message.includes("already been sent") ||
+                  cookieError.message.includes("cookies had already been sent"))
+              ) {
+                // Cicho zignoruj - tokeny będą odświeżone przy następnym żądaniu
+                return;
+              }
+              // Re-throw innych błędów
+              throw cookieError;
+            }
+          });
+        } catch (error) {
+          // Fallback dla błędów na poziomie forEach
+          if (
+            error instanceof Error &&
+            (error.message.includes("already been sent") || error.message.includes("cookies had already been sent"))
+          ) {
+            // Cicho zignoruj
+            return;
+          }
+          // Re-throw innych błędów
+          throw error;
+        }
       },
     },
   });

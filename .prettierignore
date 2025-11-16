@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+package-lock.json
+
+# Build outputs
+dist
+build
+.astro
+
+# Testing scripts - excluded from formatting
+.ai/testing/scripts/*.js
+.ai/testing/scripts/*.cjs
+.ai/testing/scripts/*-browser.js
+
+# Environment
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
+

@@ -4,8 +4,6 @@ import { createSupabaseServerInstance } from "../db/supabase.client.ts";
 
 // Ścieżki publiczne - dostępne bez logowania
 const PUBLIC_PATHS = [
-  // Strona główna
-  "/",
   // Strony autentykacji
   "/auth/login",
   "/auth/register",
@@ -31,17 +29,43 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, url, request
   // Ustaw supabase w locals dla późniejszego użycia w API routes
   locals.supabase = supabase;
 
-  // Pomiń sprawdzanie autentykacji dla ścieżek publicznych
-  if (PUBLIC_PATHS.includes(url.pathname)) {
-    return next();
-  }
-
   // Pomiń sprawdzanie dla zasobów statycznych
   if (url.pathname.startsWith("/_astro/") || url.pathname === "/favicon.ico" || url.pathname.startsWith("/assets/")) {
     return next();
   }
 
-  // Pobierz sesję użytkownika
+  // Pomiń sprawdzanie autentykacji dla ścieżek publicznych (ale sprawdź sesję dla ustawienia locals.user)
+  if (PUBLIC_PATHS.includes(url.pathname)) {
+    // Dla ścieżek publicznych, sprawdź sesję tylko jeśli potrzebna (np. dla przekierowania zalogowanych)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      locals.user = {
+        id: user.id,
+        email: user.email || "",
+      };
+    }
+    return next();
+  }
+
+  // Dla strony głównej, sprawdź autentykację ale nie przekierowuj - pozwól index.astro obsłużyć przekierowanie
+  if (url.pathname === "/") {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      locals.user = {
+        id: user.id,
+        email: user.email || "",
+      };
+    }
+    return next();
+  }
+
+  // Dla pozostałych ścieżek - wymagana autentykacja
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -52,11 +76,10 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, url, request
       id: user.id,
       email: user.email || "",
     };
-  } else if (!PUBLIC_PATHS.includes(url.pathname)) {
+    return next();
+  } else {
     // Użytkownik niezalogowany próbuje dostać się do chronionej strony
     // Przekieruj do logowania (po zalogowaniu zawsze idzie na /plans)
     return redirect("/auth/login");
   }
-
-  return next();
 });
