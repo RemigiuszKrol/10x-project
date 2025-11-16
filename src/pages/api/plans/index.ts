@@ -81,7 +81,6 @@ export async function POST(ctx: APIContext) {
     }
 
     // Nieoczekiwany błąd
-    console.error("Unexpected error in POST /api/plans:", e);
     return jsonResponse(errorResponse("InternalError", "Unexpected server error."), 500);
   }
 }
@@ -157,7 +156,6 @@ export async function GET(ctx: APIContext) {
     }
 
     // Nieoczekiwany błąd
-    console.error("Unexpected error in GET /api/plans:", e);
     return jsonResponse(errorResponse("InternalError", "Unexpected server error."), 500);
   }
 }

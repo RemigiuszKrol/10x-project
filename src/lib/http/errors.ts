@@ -14,7 +14,10 @@ export class GridChangeRequiresConfirmationError extends Error {
  * Błąd walidacji rzucany w serwisie (powinien być mapowany na 400 ValidationError w endpoincie)
  */
 export class ValidationError extends Error {
-  constructor(message: string, public field?: string) {
+  constructor(
+    message: string,
+    public field?: string
+  ) {
     super(message);
     this.name = "ValidationError";
   }

@@ -48,10 +48,12 @@ export interface ApiErrorResponse {
       | "Conflict"
       | "RateLimited"
       | "UpstreamTimeout"
-      | "Unprocessable"
+      | "UnprocessableEntity"
       | "InternalError";
     message: string;
-    details?: { field_errors?: Record<string, string> };
+    details?: {
+      field_errors?: Record<string, string>;
+    };
   };
 }
 
@@ -271,3 +273,147 @@ export interface ResetPasswordDto {
   password: string;
   confirmPassword: string;
 }
+
+/**
+ * 2.9 Typy ViewModeli dla kreatora planu
+ * Typy specyficzne dla komponentów frontendu kreatora planu, służące do zarządzania stanem formularza.
+ */
+
+/**
+ * Typ dla pojedynczego kroku kreatora
+ */
+export type PlanCreatorStep = "basics" | "location" | "dimensions" | "summary";
+
+/**
+ * Konfiguracja kroków kreatora
+ */
+export interface StepConfig {
+  key: PlanCreatorStep;
+  label: string;
+  order: number;
+  description?: string;
+}
+
+/**
+ * Dane z kroku "Podstawy"
+ */
+export interface PlanBasicsFormData {
+  name: string;
+}
+
+/**
+ * Dane z kroku "Lokalizacja"
+ */
+export interface PlanLocationFormData {
+  latitude?: number;
+  longitude?: number;
+  address?: string; // Opcjonalny, tylko dla wyświetlania
+}
+
+/**
+ * Dane z kroku "Wymiary"
+ */
+export interface PlanDimensionsFormData {
+  width_cm: number;
+  height_cm: number;
+  cell_size_cm: 10 | 25 | 50 | 100;
+  orientation: number; // 0..359
+  hemisphere: "northern" | "southern";
+}
+
+/**
+ * Pełne dane formularza (suma wszystkich kroków)
+ */
+export interface PlanCreateFormData extends PlanBasicsFormData, PlanLocationFormData, PlanDimensionsFormData {}
+
+/**
+ * Obliczone wymiary siatki (do walidacji i podglądu)
+ */
+export interface GridDimensions {
+  gridWidth: number;
+  gridHeight: number;
+  isValid: boolean;
+  errorMessage?: string;
+}
+
+/**
+ * Wynik geokodowania (z OpenStreetMap Nominatim)
+ */
+export interface GeocodeResult {
+  lat: number;
+  lon: number;
+  display_name: string;
+  type?: string;
+  importance?: number;
+}
+
+/**
+ * Stan kreatora (dla hooka)
+ */
+export interface PlanCreatorState {
+  currentStep: PlanCreatorStep;
+  completedSteps: Set<PlanCreatorStep>;
+  formData: Partial<PlanCreateFormData>;
+  errors: Partial<Record<keyof PlanCreateFormData, string>>;
+  isSubmitting: boolean;
+  apiError: string | null;
+}
+
+/**
+ * Draft zapisywany w localStorage
+ */
+export interface PlanDraft {
+  formData: Partial<PlanCreateFormData>;
+  savedAt: string; // ISO timestamp
+  version: number; // Wersja schematu (dla przyszłych migracji)
+}
+
+/**
+ * Konfiguracja kroków kreatora
+ */
+export const STEP_CONFIGS: StepConfig[] = [
+  {
+    key: "basics",
+    label: "Podstawy",
+    order: 1,
+    description: "Nazwa planu",
+  },
+  {
+    key: "location",
+    label: "Lokalizacja",
+    order: 2,
+    description: "Położenie działki",
+  },
+  {
+    key: "dimensions",
+    label: "Wymiary",
+    order: 3,
+    description: "Rozmiar i orientacja",
+  },
+  {
+    key: "summary",
+    label: "Podsumowanie",
+    order: 4,
+    description: "Przegląd danych",
+  },
+];
+
+/**
+ * Domyślne wartości formularza
+ */
+export const DEFAULT_FORM_DATA: Partial<PlanCreateFormData> = {
+  name: "",
+  latitude: undefined,
+  longitude: undefined,
+  address: undefined,
+  width_cm: 1000,
+  height_cm: 1000,
+  cell_size_cm: 25,
+  orientation: 0,
+  hemisphere: "northern",
+};
+
+/**
+ * Wersja schematu draftu (dla przyszłych migracji)
+ */
+export const DRAFT_VERSION = 1;

@@ -1,0 +1,23 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { PlanCreator } from "@/components/plans/PlanCreator";
+
+// Weryfikacja sesji użytkownika
+const supabase = Astro.locals.supabase;
+if (!supabase) {
+  return Astro.redirect("/auth/login");
+}
+
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+if (!user) {
+  return Astro.redirect("/auth/login");
+}
+
+export const prerender = false;
+---
+
+<Layout title="Nowy plan - PlantsPlaner" showNavbar={true}>
+  <PlanCreator client:only="react" />
+</Layout>

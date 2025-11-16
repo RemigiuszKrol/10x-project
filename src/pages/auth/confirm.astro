@@ -140,14 +140,12 @@ import AuthLayout from "../../layouts/AuthLayout.astro";
   </div>
 
   {/* Auto-refresh po 3 sekundach jeśli nie ma błędu */}
-  {
-    !error && (
-      <script>
-        setTimeout(() => {
-          window.location.href = "/auth/login";
-        }, 3000);
-      </script>
-    )
-  }
+  {!error && (
+    <script>
+      setTimeout(() => {
+        window.location.href = "/auth/login";
+      }, 3000);
+    </script>
+  )}
 </AuthLayout>
 
