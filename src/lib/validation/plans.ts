@@ -253,3 +253,29 @@ export const PlanListQuerySchema = z
  * Typ wejściowy dla listowania planów (wynikowy z Zod schema)
  */
 export type PlanListQueryInput = z.infer<typeof PlanListQuerySchema>;
+
+/**
+ * Schemat walidacji dla parametrów ścieżki GET /api/plans/:plan_id/grid
+ * Używany do walidacji plan_id w endpoincie metadanych siatki
+ */
+export const PlanGridParamsSchema = z.object({
+  plan_id: z.string().uuid("Plan ID must be a valid UUID"),
+});
+
+/**
+ * Typ wejściowy dla parametrów ścieżki metadanych siatki (wynikowy z Zod schema)
+ */
+export type PlanGridParams = z.infer<typeof PlanGridParamsSchema>;
+
+/**
+ * Schemat walidacji dla parametrów ścieżki GET /api/plans/:plan_id/weather
+ * Używany do walidacji plan_id w endpoincie danych pogodowych
+ */
+export const PlanWeatherParamsSchema = z.object({
+  plan_id: z.string().uuid("Plan ID must be a valid UUID"),
+});
+
+/**
+ * Typ wejściowy dla parametrów ścieżki danych pogodowych (wynikowy z Zod schema)
+ */
+export type PlanWeatherParams = z.infer<typeof PlanWeatherParamsSchema>;

@@ -1,11 +1,13 @@
 # API Endpoint Implementation Plan: PUT /api/plans/:plan_id/grid/cells/:x/:y
 
 ## 1. Przegląd punktu końcowego
+
 - Ustawia typ pojedynczej komórki siatki w planie działki, aktualizując stan powierzchni (`soil`, `path`, `water`, `building`, `blocked`).
 - Zmiana typu komórki może uruchomić triggery w bazie (np. automatyczne usunięcie nasadzeń przy przejściu na typ inny niż `soil`), dlatego operacja musi przebiegać atomowo.
 - Endpoint jest dostępny wyłącznie dla właściciela planu dzięki Supabase RLS i wymaga ważnego tokena JWT przesyłanego w nagłówku `Authorization`.
 
 ## 2. Szczegóły żądania
+
 - Metoda HTTP: `PUT`
 - URL: `/api/plans/:plan_id/grid/cells/:x/:y`
 - Nagłówki:
@@ -17,17 +19,22 @@
   - `y` – wymagane całkowite `>= 0`; walidacja `z.coerce.number().int().min(0)`.
 - Parametry zapytania: brak.
 - Body (JSON, walidowane schematem `GridCellUpdateSchema`):
+
   ```json
   { "type": "soil" | "path" | "water" | "building" | "blocked" }
   ```
+
   - Wewnętrzny typ komend: `GridCellUpdateCommand`.
   - Schemat powinien być restrykcyjny (`strict()`), aby odrzucać nieznane pola.
+
 - Walidacja dodatkowa:
   - Po pobraniu planu należy sprawdzić, czy `0 <= x < grid_width` oraz `0 <= y < grid_height`.
   - Upewnić się, że wartość `type` należy do enumu `grid_cell_type` z Supabase (`GridCellType` z `src/types.ts`), dzięki czemu mapowanie jest spójne z definicją bazy.
 
 ## 3. Szczegóły odpowiedzi
+
 - Sukces (`200 OK`):
+
   ```json
   {
     "data": {
@@ -38,11 +45,14 @@
     }
   }
   ```
+
   - Struktura zgodna z `ApiItemResponse<GridCellDto>`. W `select()` należy pobrać `x, y, type, updated_at`, aby interfejs pozostał zgodny z DTO.
+
 - Błędy: patrz sekcja 6 – wszystkie odpowiedzi błędów korzystają z helpera `errorResponse` i `jsonResponse`.
 - Nagłówki odpowiedzi: `Content-Type: application/json`.
 
 ## 4. Przepływ danych
+
 1. Pobranie `supabase` z `ctx.locals`; w razie braku – zwrócenie `401 Unauthorized`.
 2. Wywołanie `supabase.auth.getUser()` dla kontekstu requestu; brak użytkownika => `401`.
 3. Walidacja `user.id` jako UUID (Zod) w celu wykrycia anomalii tokenu.
@@ -56,6 +66,7 @@
 9. Endpoint formatuje sukces za pomocą `jsonResponse({ data: gridCell }, 200)` i zwraca.
 
 ## 5. Względy bezpieczeństwa
+
 - Uwierzytelnianie: wymagany token JWT Supabase; brak tokenu kończy się `401`.
 - Autoryzacja: rely on Supabase RLS (owner-only), ale dodatkowe filtrowanie po `user_id` w zapytaniu do `plans` minimalizuje niejednoznaczności i ogranicza wycieki czasowe.
 - Walidacja wejścia: pełna walidacja Zod dla parametrów i body, aby uniknąć wstrzyknięć (np. `NaN`, ciągi SQL).
@@ -63,6 +74,7 @@
 - Dane wrażliwe: endpoint nie zwraca informacji poza zakresem danej komórki; brak logowania szczegółów domenowych poza `console.error` przy błędach 500.
 
 ## 6. Obsługa błędów
+
 - `400 Bad Request / ValidationError` – nieprawidłowy JSON, brak wymaganych pól, błędny format `plan_id`, `x`, `y` lub wartości spoza zakresu przed wejściem do bazy.
 - `401 Unauthorized` – brak Supabase clienta w `ctx.locals` lub brak sesji użytkownika.
 - `403 Forbidden` – naruszenie RLS (wyjątki `PGRST301`, komunikaty o braku uprawnień); odpowiedź `errorResponse("Forbidden", "Access denied.")`.
@@ -71,6 +83,7 @@
 - `500 Internal Server Error` – nieoczekiwane błędy Supabase/IO; logować przez `console.error` (lub docelowo mechanizm obserwacyjny) przed zwróceniem odpowiedzi.
 
 ## 7. Rozważania dotyczące wydajności
+
 - Operacja wymaga dwóch kwerend: odczyt planu (małe payload) oraz `upsert/update` komórki; obie korzystają z istniejących indeksów (`plans (user_id, updated_at)` oraz PK `grid_cells(plan_id,x,y)`), co zapewnia O(1) dostęp.
 - Użycie `select(...).single()` ogranicza przesyłane dane i zapobiega niekontrolowanym listom.
 - Włączenie `upsert({ onConflict: "plan_id,x,y", ignoreDuplicates: false })` zapewni idempotencję i atomiczność bez dodatkowych zapytań.
@@ -78,6 +91,7 @@
 - W przypadku dużej liczby aktualizacji seryjnych można w przyszłości rozważyć batching (POST area-type), lecz pojedynczy endpoint pozostaje lekki.
 
 ## 8. Kroki implementacji
+
 1. **Walidacja** – utwórz `GridCellUpdateSchema` (np. `src/lib/validation/grid.ts`) z `z.object({ type: z.enum(["soil", "path", "water", "building", "blocked"]) }).strict()`, eksportując typ `GridCellUpdateInput`.
 2. **Serwis danych** – dodaj `src/lib/services/grid-cells.service.ts` z funkcjami:
    - `getPlanGridMetadata(supabase, userId, planId)` → zwraca `grid_width`, `grid_height`.
@@ -99,4 +113,3 @@
    - zmiana typu na nie-`soil` i weryfikacja, że powiązane nasadzenia znikają (trigger).
 6. **Dokumentacja** – zaktualizuj dokumentację API (np. w repozytorium `.ai` lub README) jeśli obowiązuje; odnotuj nowe endpointy/kontrakty.
 7. **Monitorowanie** – upewnij się, że błędy `500` są logowane (`console.error`) i w przyszłości można je powiązać z systemem alertów.
-
