@@ -7,6 +7,7 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 ## 2. Lista widoków
 
 ### Widok: Logowanie
+
 - Ścieżka widoku: `/auth/login`
 - Główny cel: Umożliwić użytkownikom zalogowanie się przy użyciu e-maila i hasła.
 - Kluczowe informacje do wyświetlenia: pola `email`, `password`, komunikaty błędów walidacji i serwera, link do odzyskania hasła.
@@ -14,6 +15,7 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 - UX, dostępność i względy bezpieczeństwa: wymuszenie focusu na pierwszym polu, maskowanie hasła, komunikaty błędów po polsku, obsługa 401/422 inline, wsparcie klawiatury, zabezpieczenie przed brute force poprzez informację o limitach (UI) i blokada kopiowania tokenów.
 
 ### Widok: Rejestracja
+
 - Ścieżka widoku: `/auth/register`
 - Główny cel: Pozwolić nowym użytkownikom założyć konto.
 - Kluczowe informacje do wyświetlenia: pola `email`, `password`, `passwordConfirm`, walidacje formatów, informacje o podstawowych zasadach haseł i polityce prywatności.
@@ -21,6 +23,7 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 - UX, dostępność i względy bezpieczeństwa: informowanie o wymaganiach hasła przed wysyłką, aria-describedBy dla walidacji, minimalizacja błędów dzięki potwierdzeniu hasła, sanitizacja wejścia, obsługa błędów 409 (email zajęty) w postaci bannera.
 
 ### Widok: Potwierdzenie e-mail (opcjonalny przepływ Supabase)
+
 - Ścieżka widoku: `/auth/confirm`
 - Główny cel: Obsługa przekierowania po linku aktywacyjnym lub otwarciu aplikacji z tokenem.
 - Kluczowe informacje do wyświetlenia: status potwierdzenia, spinner, przyciski powrotu do logowania lub listy planów.
@@ -28,6 +31,7 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 - UX, dostępność i względy bezpieczeństwa: aria-live polite dla statusu, fallback manualnego odświeżenia, komunikaty o błędach tokenu lub wygaśnięciu.
 
 ### Widok: Lista planów
+
 - Ścieżka widoku: `/plans`
 - Główny cel: Wyświetlić listę planów użytkownika i wejście do edytora.
 - Kluczowe informacje do wyświetlenia: nazwa planu, lokalizacja (adres/koordynaty), data modyfikacji, skrócone statystyki (liczba roślin), status danych pogodowych (ostatnie odświeżenie), CTA do edycji i usunięcia.
@@ -35,6 +39,7 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 - UX, dostępność i względy bezpieczeństwa: rola `main`, sortowanie po `updated_at`, filtry tekstowe, potwierdzenie usunięcia z informacją o konsekwencjach, integracja z React Query (GET `/api/plans`), fallback offline (pokazanie szkicu zapisanych progresów), aria-labels dla ikon akcji.
 
 ### Widok: Kreator nowego planu
+
 - Ścieżka widoku: `/plans/new`
 - Główny cel: Przeprowadzić użytkownika przez etapowe utworzenie planu przed finalnym zapisem.
 - Kluczowe informacje do wyświetlenia: postęp kroków, pola nazwy, lokalizacji (mapa i wyszukiwarka), wymiary działki, jednostka kratki, orientacja, półkula, podsumowanie.
@@ -42,6 +47,7 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 - UX, dostępność i względy bezpieczeństwa: możliwość zapisu i wznowienia szkicu (local storage + ostrzeżenie), walidacje limitu siatki (komunikat 200×200), confirm dialog przed finalnym POST, informacja o braku cofania, aria-live dla błędów geokodowania, blokada przejścia bez spełnienia wymagań.
 
 ### Widok: Edytor planu – Siatka
+
 - Ścieżka widoku: `/plans/:id`
 - Główny cel: Umożliwić edycję planu: typowanie obszarów, dodawanie roślin, przegląd danych pogodowych i parametrów.
 - Kluczowe informacje do wyświetlenia: reprezentacja siatki, typy pól, zaznaczenie obszarów, informacje o wybranej komórce, lista roślin, status AI i pogody.
@@ -49,6 +55,7 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 - UX, dostępność i względy bezpieczeństwa: obsługa klawiatury dla nawigacji po siatce, aria rola `application`, focus ring dla aktualnej komórki, ostrzeżenia przed operacjami destrukcyjnymi, brak zoomu – dynamiczne skalowanie komórek, pionowy scroll dla mniejszych ekranów, tryb wysokiego kontrastu, automatyczne wysyłanie zdarzeń analitycznych (hook) przy `grid_saved`, `area_typed`, `plant_confirmed`.
 
 ### Podwidok edytora: Drawer „Parametry planu”
+
 - Ścieżka (komponent w `/plans/:id`)
 - Główny cel: Edycja parametrów planu (nazwa, orientacja, półkula, jednostki) z kontrolą wpływu na siatkę.
 - Kluczowe informacje do wyświetlenia: formularz parametrów, ostrzeżenia o wpływie zmian, podsumowanie rozmiarów siatki, przycisk zapisz.
@@ -56,6 +63,7 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 - UX, dostępność i względy bezpieczeństwa: guard clause zapobiegający utracie danych bez potwierdzenia, aria-live dla komunikatów walidacji, focus trap w modalach, integracja z PATCH `/api/plans/:id` z parametrem `confirm_regenerate`.
 
 ### Podwidok edytora: Drawer „Rośliny”
+
 - Ścieżka (komponent w `/plans/:id`)
 - Główny cel: Zarządzanie roślinami przypisanymi do komórek oraz wywołania AI.
 - Kluczowe informacje do wyświetlenia: lista roślin w planie, wyszukiwarka, szczegóły zaznaczonej komórki (status `soil`/occupied), wyniki dopasowania AI (scores), historia działań.
@@ -63,6 +71,7 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 - UX, dostępność i względy bezpieczeństwa: blokada dodania rośliny na nie-soil (422) z komunikatem aria-live, możliwość filtrowania listy roślin, przechowywanie ostatnich wyników AI, informowanie o sanitize JSON (US-027), logowanie zdarzeń analitycznych.
 
 ### Podwidok edytora: Drawer „Pogoda”
+
 - Ścieżka (komponent w `/plans/:id`)
 - Główny cel: Prezentacja danych pogodowych i ręczne odświeżanie cache.
 - Kluczowe informacje do wyświetlenia: tabela/miesięczny wykres metryk (nasłonecznienie, wilgotność, opady), data ostatniego odświeżenia, status półkuli i wag sezonowych.
@@ -70,6 +79,7 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 - UX, dostępność i względy bezpieczeństwa: aria-live polite dla statusów, potwierdzenie odświeżenia przy ograniczeniach (429), informacja o degradacji gdy dane niedostępne (US-019), zabezpieczenie przy błędach upstream (504) z możliwością ponowienia.
 
 ### Widok: Profil użytkownika
+
 - Ścieżka widoku: `/profile`
 - Główny cel: Umożliwić aktualizację preferencji językowych i motywu.
 - Kluczowe informacje do wyświetlenia: aktualne preferencje, dostępne języki, tryby motywu, ostatnia aktualizacja.
@@ -77,6 +87,7 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 - UX, dostępność i względy bezpieczeństwa: natychmiastowe zastosowanie motywu (preview), informacja o zapisie i fallbacku przy błędach (toast), integracja z GET/PUT `/api/profile`, przechowywanie języka w kontekście i i18n.
 
 ### Widok: Globalny modal odnowienia sesji
+
 - Ścieżka: overlay dostępny w dowolnym widoku
 - Główny cel: Informować o utracie sesji Supabase i wymuszać ponowne zalogowanie bez utraty danych.
 - Kluczowe informacje do wyświetlenia: komunikat o wylogowaniu, countdown/informacja o utrzymaniu stanu szkicu, przyciski „Zaloguj ponownie” i „Wyloguj”.

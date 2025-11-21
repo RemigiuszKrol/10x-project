@@ -77,4 +77,3 @@ Endpoint usuwa plan działki oraz powiązane komórki siatki i nasadzenia. Opera
 5. **Mapowanie błędów** – w handlerze przechwycić wyjątki; przygotować helper do budowy `ApiErrorResponse`.
 6. **Odpowiedź** – po sukcesie zwrócić `new Response(null, { status: 204 })`.
 7. **Testy jednostkowe/integracyjne** – dodać scenariusze do .ai/testing/plans-manual-tests.md: sukces, brak auth, zły UUID, nieistniejący plan, plan innego użytkownika, błąd Supabase.
-

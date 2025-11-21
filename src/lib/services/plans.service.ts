@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@/db/supabase.client";
-import type { PlanDto, PlanCreateCommand, PlanUpdateCommand } from "@/types";
+import type { PlanDto, PlanCreateCommand, PlanUpdateCommand, GridMetadataDto } from "@/types";
 import { GridChangeRequiresConfirmationError, ValidationError } from "@/lib/http/errors";
 import { encodePlanCursor, type PlanCursorKey } from "@/lib/validation/plans";
 
@@ -335,4 +335,38 @@ export async function listPlans(
     items,
     nextCursor,
   };
+}
+
+/**
+ * Pobiera metadane siatki dla planu działki należącego do użytkownika
+ * Zwraca grid_width, grid_height, cell_size_cm, orientation
+ * @param supabase - Klient Supabase z kontekstu
+ * @param userId - UUID użytkownika (z sesji)
+ * @param planId - UUID planu do pobrania
+ * @returns Metadane siatki lub null jeśli plan nie istnieje/nie należy do użytkownika
+ * @throws Błąd jeśli operacja nie powiodła się (np. błąd bazy danych, naruszenie RLS)
+ */
+export async function getPlanGridMetadata(
+  supabase: SupabaseClient,
+  userId: string,
+  planId: string
+): Promise<GridMetadataDto | null> {
+  // Pobierz tylko metadane siatki z weryfikacją własności (user_id)
+  const { data, error } = await supabase
+    .from("plans")
+    .select("grid_width, grid_height, cell_size_cm, orientation")
+    .eq("id", planId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  // Jeśli data jest null, plan nie istnieje lub nie należy do użytkownika
+  if (!data) {
+    return null;
+  }
+
+  return data as GridMetadataDto;
 }

@@ -26,7 +26,7 @@ export async function GET(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const parse = idSchema.safeParse(user.id);
   if (!parse.success) {
-    return jsonResponse(errorResponse("Unprocessable", "Invalid user id."), 400);
+    return jsonResponse(errorResponse("UnprocessableEntity", "Invalid user id."), 400);
   }
 
   try {
@@ -72,7 +72,7 @@ export async function PUT(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const idParse = idSchema.safeParse(user.id);
   if (!idParse.success) {
-    return jsonResponse(errorResponse("Unprocessable", "Invalid user id."), 400);
+    return jsonResponse(errorResponse("UnprocessableEntity", "Invalid user id."), 400);
   }
 
   // 3. Parsuj i waliduj body

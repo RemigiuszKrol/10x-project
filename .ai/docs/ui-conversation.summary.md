@@ -1,5 +1,6 @@
 <conversation_summary>
 <decisions>
+
 1. Główna nawigacja opiera się na stałym topbarze z globalnymi przełącznikami oraz bocznym panelem kontekstowym w edytorze planu, który zawiera akcje i informacje związane z bieżącym planem.
 2. Tworzenie planu odbywa się w wieloetapowym kreatorze z możliwością zapisu szkicu i przywrócenia przerwanego procesu przed finalnym wywołaniem `POST /api/plans`.
 3. Po wejściu do edytora domyślnie prezentowana jest zakładka „Siatka”, a panel parametrów planu działa jako wysuwany drawer, aby nie zasłaniać widoku.
@@ -10,9 +11,10 @@
 8. Błędy 409 obsługiwane są modalem potwierdzającym konsekwencje, a błędy 422 komunikowane inline w formularzu wraz z toastem informacyjnym.
 9. W panelu parametrów znajduje się sekcja „Pogoda” z datą ostatniego odświeżenia oraz przyciskiem do wywołania `/api/plans/:id/weather/refresh`; dane pogodowe są tylko odczytywane z bazy i odświeżane na żądanie.
 10. Zdarzenia analityczne są wysyłane automatycznie przez wspólny hook (np. plan_created, grid_saved, area_typed, plant_confirmed) bez dedykowanego widoku w UI; raportowanie odbywa się poza interfejsem.
-</decisions>
+    </decisions>
 
 <matched_recommendations>
+
 1. Utrzymanie topbaru i bocznego panelu kontekstowego w edytorze.
 2. Zaprojektowanie kreatora planu z lokalnym zapisem postępu i szkicu.
 3. Domyślne ustawienie zakładki „Siatka” z wysuwanym panelem parametrów.
@@ -23,7 +25,7 @@
 8. Spójne wzorce obsługi błędów 409 (modal) i 422 (walidacja + toast).
 9. Sekcja „Pogoda” z timestampem i przyciskiem odświeżania danych z `/weather/refresh`.
 10. Hook do automatycznego wywoływania `POST /api/analytics/events` bez ekspozycji w interfejsie.
-</matched_recommendations>
+    </matched_recommendations>
 
 <ui_architecture_planning_summary>
 Główne wymagania UI obejmują: listę planów, wieloetapowy kreator tworzenia nowego planu, edytor planu z siatką i panelem parametrów oraz stronę profilu (język, motyw). Edytor zapewnia pełnoekranowy widok siatki z bocznym drawerem zawierającym parametry planu, sekcję pogody i kontrolę roślin; dostępne są operacje zaznaczania obszarów, zmiany typów pól i dodawania roślin zgodnie z API (`/grid`, `/plants`, `/ai`).

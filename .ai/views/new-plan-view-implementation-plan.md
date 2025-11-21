@@ -9,10 +9,12 @@ Widok kreatora nowego planu (`/plans/new`) to wieloetapowy proces tworzenia plan
 **Ścieżka:** `/plans/new`
 
 **Wymagania dostępu:**
+
 - Widok wymaga aktywnej sesji użytkownika (middleware Astro/Supabase)
 - Brak sesji → przekierowanie do `/login`
 
 **Nawigacja:**
+
 - Dostęp z listy planów (`/plans`) poprzez przycisk "Nowy plan"
 - Po zapisie planu przekierowanie do `/plans/{plan_id}` (widok edytora siatki)
 
@@ -54,11 +56,13 @@ PlanCreatePage (strona Astro: src/pages/plans/new.astro)
 Główny kontener dla całego procesu tworzenia planu. Zarządza stanem formularza, krokami wizarda, walidacją oraz zapisem lokalnym i wysyłką do API.
 
 **Główne elementy:**
+
 - `PlanCreatorStepper` - wskaźnik postępu kroków
 - Komponenty kroków (warunkowe renderowanie na podstawie `currentStep`)
 - `PlanCreatorActions` - nawigacja między krokami i zapis
 
 **Obsługiwane interakcje:**
+
 - Przełączanie między krokami (poprzedni/następny)
 - Zapisywanie danych kroku do stanu formularza
 - Walidacja danych przed przejściem do następnego kroku
@@ -68,12 +72,14 @@ Główny kontener dla całego procesu tworzenia planu. Zarządza stanem formular
 - Obsługa sukcesu i błędów z API
 
 **Obsługiwana walidacja:**
+
 - Walidacja każdego kroku przed umożliwieniem przejścia dalej
 - Walidacja globalna przed finałem (wszystkie wymagane pola)
 - Walidacja limitu siatki (200 × 200) w kroku wymiarów
 - Sprawdzenie podzielności wymiarów przez rozmiar kratki
 
 **Typy:**
+
 - `PlanCreateFormData` (ViewModel)
 - `PlanCreateCommand` (DTO do API)
 - `ApiItemResponse<PlanDto>` (odpowiedź API)
@@ -88,23 +94,28 @@ Komponent główny nie przyjmuje propsów - jest to top-level komponent dla stro
 Komponent wizualizujący postęp w kreatorze w formie poziomego/pionowego paska kroków. Wyświetla numery kroków, etykiety i status (aktywny, ukończony, nieaktywny).
 
 **Główne elementy:**
+
 - Lista kroków z numerami (1, 2, 3, 4)
 - Etykiety kroków ("Podstawy", "Lokalizacja", "Wymiary", "Podsumowanie")
 - Ikonki statusu (checkmark dla ukończonych, numer dla aktywnego/nieaktywnego)
 - Linia łącząca kroki
 
 **Obsługiwane interakcje:**
+
 - Kliknięcie na ukończony krok pozwala wrócić do niego (jeśli wcześniej był wypełniony)
 - Kliknięcie na nieukończony krok jest zablokowane
 
 **Obsługiwana walidacja:**
+
 - Brak - komponent tylko wyświetla
 
 **Typy:**
+
 - `PlanCreatorStep` (enum lub type union: 'basics' | 'location' | 'dimensions' | 'summary')
 - `StepConfig` (interfejs: `{ key: PlanCreatorStep, label: string, order: number }`)
 
 **Propsy:**
+
 ```typescript
 interface PlanCreatorStepperProps {
   currentStep: PlanCreatorStep;
@@ -119,24 +130,29 @@ interface PlanCreatorStepperProps {
 Pierwszy krok kreatora - zbiera podstawowe dane: nazwę planu. Może zawierać również placeholder na opis (opcjonalny w przyszłości).
 
 **Główne elementy:**
+
 - `<Input>` dla nazwy planu (wymagane)
 - `<Label>` z opisem pola
 - `ValidationMessage` - komunikat o błędzie walidacji
 
 **Obsługiwane interakcje:**
+
 - Wpisywanie nazwy planu
 - Walidacja w czasie rzeczywistym (onChange/onBlur)
 - Automatyczne trimowanie białych znaków
 - Focus na input przy montowaniu komponentu
 
 **Obsługiwana walidacja:**
+
 - Nazwa jest wymagana (min. 1 znak po trim)
 - Maksymalna długość nazwy (np. 100 znaków)
 
 **Typy:**
+
 - `PlanBasicsFormData` (ViewModel: `{ name: string }`)
 
 **Propsy:**
+
 ```typescript
 interface PlanCreatorStepBasicsProps {
   data: PlanBasicsFormData;
@@ -151,6 +167,7 @@ interface PlanCreatorStepBasicsProps {
 Drugi krok kreatora - ustawienie lokalizacji działki za pomocą mapy i wyszukiwarki adresu (geokodowanie). Pozwala na ręczne przesunięcie pinezki lub wyszukanie adresu.
 
 **Główne elementy:**
+
 - `LocationSearch` - pole wyszukiwania adresu
 - `LocationResultsList` - lista wyników geokodowania (jeśli wiele)
 - `LocationMap` - mapa Leaflet z pinezką
@@ -158,6 +175,7 @@ Drugi krok kreatora - ustawienie lokalizacji działki za pomocą mapy i wyszukiw
 - Alert aria-live dla błędów geokodowania
 
 **Obsługiwane interakcje:**
+
 - Wpisywanie adresu w pole wyszukiwania
 - Wysłanie zapytania geokodowania (Enter / klik przycisku)
 - Wybór wyniku z listy kandydatów (jeśli wiele)
@@ -165,15 +183,18 @@ Drugi krok kreatora - ustawienie lokalizacji działki za pomocą mapy i wyszukiw
 - Centrowanie mapy na wybranej lokalizacji
 
 **Obsługiwana walidacja:**
+
 - Lokalizacja jest opcjonalna (ale zalecana - ostrzeżenie)
 - Sprawdzenie czy współrzędne są w poprawnym zakresie (lat: -90..90, lon: -180..180)
 - Wyświetlanie błędów geokodowania (brak wyników, błąd API)
 
 **Typy:**
+
 - `PlanLocationFormData` (ViewModel: `{ latitude?: number, longitude?: number, address?: string }`)
 - `GeocodeResult` (ViewModel: `{ lat: number, lon: number, display_name: string }`)
 
 **Propsy:**
+
 ```typescript
 interface PlanCreatorStepLocationProps {
   data: PlanLocationFormData;
@@ -188,23 +209,28 @@ interface PlanCreatorStepLocationProps {
 Komponent renderujący mapę Leaflet z możliwością ustawienia pinezki. Używa `react-leaflet` do integracji.
 
 **Główne elementy:**
+
 - `<MapContainer>` (react-leaflet)
 - `<TileLayer>` (OpenStreetMap)
 - `<Marker>` - pinezka użytkownika (draggable)
 - Kontrolki mapy (zoom, full screen)
 
 **Obsługiwane interakcje:**
+
 - Przeciąganie pinezki
 - Kliknięcie na mapę (ustawia pinezką w tym miejscu)
 - Zoom i przewijanie mapy
 
 **Obsługiwana walidacja:**
+
 - Brak - komponent przyjmuje współrzędne i emituje zmiany
 
 **Typy:**
+
 - `LatLng` (z leaflet: `{ lat: number, lng: number }`)
 
 **Propsy:**
+
 ```typescript
 interface LocationMapProps {
   center: { lat: number; lng: number };
@@ -220,23 +246,28 @@ interface LocationMapProps {
 Pole wyszukiwania adresu z przyciskiem. Wysyła zapytanie do API geokodowania (OpenStreetMap Nominatim).
 
 **Główne elementy:**
+
 - `<Input>` dla adresu
 - `<Button>` do wysłania zapytania
 - Ikona wyszukiwania (lucide-react)
 - Spinner podczas ładowania
 
 **Obsługiwane interakcje:**
+
 - Wpisywanie adresu
 - Wysłanie zapytania (Enter / klik)
 - Wyświetlanie stanu ładowania
 
 **Obsługiwana walidacja:**
+
 - Minimalna długość zapytania (np. 3 znaki) przed wysłaniem
 
 **Typy:**
+
 - `GeocodeResult[]` (wynik z API)
 
 **Propsy:**
+
 ```typescript
 interface LocationSearchProps {
   onSearchResults: (results: GeocodeResult[]) => void;
@@ -251,21 +282,26 @@ interface LocationSearchProps {
 Lista wyników geokodowania (gdy jest więcej niż jeden wynik). Pozwala użytkownikowi wybrać właściwy adres.
 
 **Główne elementy:**
+
 - Lista `<ul>` z wynikami
 - Każdy wynik: adres (display_name), koordynaty
 - Przycisk "Wybierz" dla każdego wyniku
 
 **Obsługiwane interakcje:**
+
 - Kliknięcie na wynik wybiera ten adres
 - Hover podświetla wynik
 
 **Obsługiwana walidacja:**
+
 - Brak - komponent tylko wyświetla
 
 **Typy:**
+
 - `GeocodeResult[]`
 
 **Propsy:**
+
 ```typescript
 interface LocationResultsListProps {
   results: GeocodeResult[];
@@ -279,6 +315,7 @@ interface LocationResultsListProps {
 Trzeci krok kreatora - definicja wymiarów działki, jednostki kratki, orientacji i półkuli. Wyświetla podgląd siatki i waliduje limit 200 × 200.
 
 **Główne elementy:**
+
 - `<Input>` dla szerokości (width_cm)
 - `<Input>` dla wysokości (height_cm)
 - `<Select>` dla jednostki kratki (cell_size_cm: 10/25/50/100)
@@ -289,6 +326,7 @@ Trzeci krok kreatora - definicja wymiarów działki, jednostki kratki, orientacj
 - Alert dla błędów walidacji
 
 **Obsługiwane interakcje:**
+
 - Wpisywanie wymiarów (width_cm, height_cm)
 - Wybór jednostki kratki z listy
 - Ustawienie orientacji (input numeryczny lub przeciąganie wskaźnika kompasu)
@@ -297,6 +335,7 @@ Trzeci krok kreatora - definicja wymiarów działki, jednostki kratki, orientacj
 - Wyświetlanie ostrzeżenia gdy siatka przekracza 200 × 200
 
 **Obsługiwana walidacja:**
+
 - Wymiary muszą być liczbami całkowitymi > 0
 - Wymiary muszą być podzielne przez cell_size_cm
 - Obliczone grid_width i grid_height muszą być w zakresie 1..200
@@ -304,10 +343,12 @@ Trzeci krok kreatora - definicja wymiarów działki, jednostki kratki, orientacj
 - Komunikaty błędów z field_errors z API
 
 **Typy:**
+
 - `PlanDimensionsFormData` (ViewModel)
 - `GridDimensions` (obliczone: `{ gridWidth: number, gridHeight: number }`)
 
 **Propsy:**
+
 ```typescript
 interface PlanCreatorStepDimensionsProps {
   data: PlanDimensionsFormData;
@@ -323,24 +364,29 @@ interface PlanCreatorStepDimensionsProps {
 Mini-kompas wizualizujący orientację działki. Pokazuje wskaźnik północy i aktualną orientację. Pozwala ustawić orientację poprzez input lub interakcję.
 
 **Główne elementy:**
+
 - SVG kompasu (okrąg, kierunki świata: N, S, E, W)
 - Wskaźnik kierunku (linia/strzałka) rotowana według `orientation`
 - Input numeryczny (0-359)
 - Przyciski +/- do inkrementacji orientacji
 
 **Obsługiwane interakcje:**
+
 - Wpisywanie orientacji w input
 - Kliknięcie +/- do zmiany orientacji o 15° (lub 1°)
 - Opcjonalnie: przeciąganie wskaźnika na kompasie (drag)
 
 **Obsługiwana walidacja:**
+
 - Orientacja 0..359, zaokrąglenie do liczby całkowitej
 - Automatyczne przejście z 359 → 0 i 0 → 359
 
 **Typy:**
+
 - Nie wymaga dodatkowych typów (operuje na `number`)
 
 **Propsy:**
+
 ```typescript
 interface OrientationCompassProps {
   value: number;
@@ -355,20 +401,25 @@ interface OrientationCompassProps {
 Miniaturowy podgląd siatki pokazujący proporcje działki i liczbę pól. Używany do wizualizacji wymiarów przed finalnym zapisem.
 
 **Główne elementy:**
+
 - Canvas lub SVG z siatką
 - Etykiety wymiarów (szerokość × wysokość)
 - Informacja o liczbie pól (grid_width × grid_height)
 
 **Obsługiwane interakcje:**
+
 - Brak - komponent tylko wyświetla
 
 **Obsługiwana walidacja:**
+
 - Brak - komponent przyjmuje dane i renderuje
 
 **Typy:**
+
 - `GridDimensions`
 
 **Propsy:**
+
 ```typescript
 interface GridPreviewProps {
   gridWidth: number;
@@ -385,6 +436,7 @@ interface GridPreviewProps {
 Czwarty (ostatni) krok - podsumowanie wszystkich wprowadzonych danych przed finałem. Pozwala użytkownikowi przejrzeć wszystkie informacje i wrócić do edycji.
 
 **Główne elementy:**
+
 - Sekcje z danymi:
   - Podstawy (nazwa)
   - Lokalizacja (współrzędne, adres jeśli dostępny)
@@ -395,17 +447,21 @@ Czwarty (ostatni) krok - podsumowanie wszystkich wprowadzonych danych przed fina
 - Ostrzeżenie: "Operacja jest nieodwracalna po zapisie"
 
 **Obsługiwane interakcje:**
+
 - Kliknięcie "Edytuj" przy sekcji → powrót do odpowiedniego kroku
 - Przejrzenie danych
 - Przejście do finału (przycisk w PlanCreatorActions)
 
 **Obsługiwana walidacja:**
+
 - Brak - wszystkie dane są już zwalidowane w poprzednich krokach
 
 **Typy:**
+
 - `PlanCreateFormData` (kompletne dane)
 
 **Propsy:**
+
 ```typescript
 interface PlanCreatorStepSummaryProps {
   data: PlanCreateFormData;
@@ -419,12 +475,14 @@ interface PlanCreatorStepSummaryProps {
 Pasek akcji na dole kreatora. Zawiera przyciski nawigacji (cofnij, dalej), zapisywania szkicu i finału. Wyświetla confirm dialog przed wysłaniem.
 
 **Główne elementy:**
+
 - `<Button>` Cofnij (disabled na pierwszym kroku)
 - `<Button>` Zapisz szkic (zapisuje do localStorage/IndexedDB)
 - `<Button>` Kontynuuj / Utwórz plan (na ostatnim kroku: wysyłka)
 - `<Dialog>` Confirm - potwierdzenie utworzenia planu
 
 **Obsługiwane interakcje:**
+
 - Cofnij → poprzedni krok
 - Kontynuuj → następny krok (jeśli walidacja OK)
 - Zapisz szkic → zapis do local storage, wyświetlenie toastu
@@ -433,13 +491,16 @@ Pasek akcji na dole kreatora. Zawiera przyciski nawigacji (cofnij, dalej), zapis
 - Anulowanie w dialogu → zamknięcie dialogu
 
 **Obsługiwana walidacja:**
+
 - Blokada "Kontynuuj" jeśli bieżący krok ma błędy walidacji
 - Blokada "Utwórz plan" jeśli globalna walidacja się nie powiodła
 
 **Typy:**
+
 - Nie wymaga dodatkowych typów (operuje na propsach z rodzica)
 
 **Propsy:**
+
 ```typescript
 interface PlanCreatorActionsProps {
   currentStep: PlanCreatorStep;
@@ -541,10 +602,7 @@ interface PlanDimensionsFormData {
 }
 
 // Pełne dane formularza (suma wszystkich kroków)
-interface PlanCreateFormData
-  extends PlanBasicsFormData,
-    PlanLocationFormData,
-    PlanDimensionsFormData {}
+interface PlanCreateFormData extends PlanBasicsFormData, PlanLocationFormData, PlanDimensionsFormData {}
 
 // Obliczone wymiary siatki (do walidacji i podglądu)
 interface GridDimensions {
@@ -648,7 +706,7 @@ interface UsePlanCreatorReturn {
    - Format: `{ formData, savedAt, version }`
 
 5. **Wysyłka do API:**
-   - `submitPlan`: 
+   - `submitPlan`:
      - Waliduje wszystkie pola
      - Mapuje `PlanCreateFormData` → `PlanCreateCommand`
      - Wysyła POST do `/api/plans`
@@ -676,6 +734,7 @@ interface UseGeocodingReturn {
 ```
 
 **Logika:**
+
 - `search`: wysyła zapytanie do Nominatim API, obsługuje limity rate-limiting
 - Timeout: 5s
 - W razie wielu wyników zwraca listę (sortowaną po `importance`)
@@ -791,7 +850,7 @@ try {
 
   if (!response.ok) {
     const errorData: ApiErrorResponse = await response.json();
-    
+
     // Jeśli są field_errors, mapuj je na state.errors
     if (errorData.error.details?.field_errors) {
       setErrors(errorData.error.details.field_errors);
@@ -892,25 +951,25 @@ try {
 
 ### Warunki walidacji API (z `PlanCreateSchema`, `src/lib/validation/plans.ts`)
 
-| Pole | Warunki | Komponent | Wpływ na UI |
-|------|---------|-----------|-------------|
-| `name` | - Wymagane (non-empty po trim)<br>- Min. 1 znak | PlanCreatorStepBasics | - Blokada "Kontynuuj" jeśli puste<br>- Czerwona ramka + komunikat pod inputem |
-| `width_cm` | - Liczba całkowita > 0<br>- Podzielna przez `cell_size_cm`<br>- `width_cm / cell_size_cm` w zakresie 1..200 | PlanCreatorStepDimensions | - Walidacja w czasie rzeczywistym<br>- Komunikat błędu pod inputem<br>- Blokada "Kontynuuj" jeśli niepoprawne |
-| `height_cm` | - Liczba całkowita > 0<br>- Podzielna przez `cell_size_cm`<br>- `height_cm / cell_size_cm` w zakresie 1..200 | PlanCreatorStepDimensions | - Walidacja w czasie rzeczywistym<br>- Komunikat błędu pod inputem<br>- Blokada "Kontynuuj" jeśli niepoprawne |
-| `cell_size_cm` | - Wartość: 10, 25, 50 lub 100 | PlanCreatorStepDimensions | - Select z predefiniowanymi opcjami<br>- Zmiana przelicza siatko |
-| `orientation` | - Liczba całkowita 0..359 | PlanCreatorStepDimensions | - Input numeryczny + OrientationCompass<br>- Automatyczne zaokrąglanie<br>- Automatyczne przejście 359↔0 |
-| `latitude` | - Opcjonalne<br>- Jeśli podane: -90..90 | PlanCreatorStepLocation | - Ostrzeżenie jeśli nie podane<br>- Walidacja zakresu przy ustawianiu |
-| `longitude` | - Opcjonalne<br>- Jeśli podane: -180..180 | PlanCreatorStepLocation | - Ostrzeżenie jeśli nie podane<br>- Walidacja zakresu przy ustawianiu |
-| `hemisphere` | - Opcjonalne<br>- Wartość: "northern" lub "southern" | PlanCreatorStepDimensions | - Select z dwiema opcjami<br>- Domyślna wartość: "northern" |
+| Pole           | Warunki                                                                                                      | Komponent                 | Wpływ na UI                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `name`         | - Wymagane (non-empty po trim)<br>- Min. 1 znak                                                              | PlanCreatorStepBasics     | - Blokada "Kontynuuj" jeśli puste<br>- Czerwona ramka + komunikat pod inputem                                 |
+| `width_cm`     | - Liczba całkowita > 0<br>- Podzielna przez `cell_size_cm`<br>- `width_cm / cell_size_cm` w zakresie 1..200  | PlanCreatorStepDimensions | - Walidacja w czasie rzeczywistym<br>- Komunikat błędu pod inputem<br>- Blokada "Kontynuuj" jeśli niepoprawne |
+| `height_cm`    | - Liczba całkowita > 0<br>- Podzielna przez `cell_size_cm`<br>- `height_cm / cell_size_cm` w zakresie 1..200 | PlanCreatorStepDimensions | - Walidacja w czasie rzeczywistym<br>- Komunikat błędu pod inputem<br>- Blokada "Kontynuuj" jeśli niepoprawne |
+| `cell_size_cm` | - Wartość: 10, 25, 50 lub 100                                                                                | PlanCreatorStepDimensions | - Select z predefiniowanymi opcjami<br>- Zmiana przelicza siatko                                              |
+| `orientation`  | - Liczba całkowita 0..359                                                                                    | PlanCreatorStepDimensions | - Input numeryczny + OrientationCompass<br>- Automatyczne zaokrąglanie<br>- Automatyczne przejście 359↔0     |
+| `latitude`     | - Opcjonalne<br>- Jeśli podane: -90..90                                                                      | PlanCreatorStepLocation   | - Ostrzeżenie jeśli nie podane<br>- Walidacja zakresu przy ustawianiu                                         |
+| `longitude`    | - Opcjonalne<br>- Jeśli podane: -180..180                                                                    | PlanCreatorStepLocation   | - Ostrzeżenie jeśli nie podane<br>- Walidacja zakresu przy ustawianiu                                         |
+| `hemisphere`   | - Opcjonalne<br>- Wartość: "northern" lub "southern"                                                         | PlanCreatorStepDimensions | - Select z dwiema opcjami<br>- Domyślna wartość: "northern"                                                   |
 
 ### Warunki blokujące przejście między krokami
 
-| Krok | Warunki przejścia | Komunikat błędu |
-|------|-------------------|-----------------|
-| Podstawy → Lokalizacja | `name` nie może być puste | "Nazwa planu jest wymagana" |
-| Lokalizacja → Wymiary | Brak warunków (lokalizacja opcjonalna) | - |
+| Krok                   | Warunki przejścia                                                                                          | Komunikat błędu                                                                                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Podstawy → Lokalizacja | `name` nie może być puste                                                                                  | "Nazwa planu jest wymagana"                                                                                                                       |
+| Lokalizacja → Wymiary  | Brak warunków (lokalizacja opcjonalna)                                                                     | -                                                                                                                                                 |
 | Wymiary → Podsumowanie | - `width_cm`, `height_cm`, `cell_size_cm` poprawne<br>- Siatka w zakresie 1..200<br>- `orientation` 0..359 | - "Wymiary muszą być podzielne przez rozmiar kratki"<br>- "Siatka nie może przekroczyć 200 × 200 pól"<br>- "Orientacja musi być w zakresie 0-359" |
-| Podsumowanie → Finał | Wszystkie powyższe warunki + confirm dialog | - |
+| Podsumowanie → Finał   | Wszystkie powyższe warunki + confirm dialog                                                                | -                                                                                                                                                 |
 
 ### Warunki globalnej walidacji (przed POST)
 
@@ -928,6 +987,7 @@ try {
 **Scenariusz:** Użytkownik wprowadza niepoprawne dane w formularzu.
 
 **Obsługa:**
+
 - Walidacja w czasie rzeczywistym (onChange/onBlur) z Zod
 - Wyświetlenie komunikatu błędu pod polem (czerwony tekst, ikona)
 - Czerwona ramka wokół inputu
@@ -941,6 +1001,7 @@ try {
 **Przykład:** Siatka przekracza 200 × 200 (wykryte przez DB CHECK constraint).
 
 **Obsługa:**
+
 - Parsowanie `field_errors` z odpowiedzi
 - Mapowanie błędów na odpowiednie pola w state
 - Automatyczny powrót do kroku z błędnymi polami
@@ -952,6 +1013,7 @@ try {
 **Przykład:** Plan o tej nazwie już istnieje (unikatowość `user_id + name`).
 
 **Obsługa:**
+
 - Wyświetlenie komunikatu: "Plan o tej nazwie już istnieje. Wybierz inną nazwę."
 - Automatyczny powrót do kroku "Podstawy"
 - Focus na polu nazwy
@@ -962,6 +1024,7 @@ try {
 **Przykład:** Sesja wygasła podczas wypełniania formularza.
 
 **Obsługa:**
+
 - Automatyczny zapis szkicu przed przekierowaniem
 - Wyświetlenie komunikatu: "Sesja wygasła. Zaloguj się ponownie."
 - Przekierowanie do `/login` z parametrem `?redirectTo=/plans/new`
@@ -972,6 +1035,7 @@ try {
 **Przykład:** Nieoczekiwany błąd bazy danych.
 
 **Obsługa:**
+
 - Wyświetlenie komunikatu: "Wystąpił błąd serwera. Spróbuj ponownie za chwilę."
 - Opcja "Spróbuj ponownie" (retry submit)
 - Automatyczny zapis szkicu (dane nie są tracone)
@@ -982,6 +1046,7 @@ try {
 #### Brak wyników
 
 **Obsługa:**
+
 - Komunikat: "Nie znaleziono lokalizacji dla podanego adresu. Spróbuj innego zapytania lub ustaw lokalizację ręcznie na mapie."
 - Aria-live announcement dla screen readers
 - Pozostawienie pola wyszukiwania aktywnego (możliwość ponowienia)
@@ -990,6 +1055,7 @@ try {
 #### Wiele wyników
 
 **Obsługa:**
+
 - Wyświetlenie listy wyników (sortowana po `importance`)
 - Każdy wynik: adres + typ (miasto, ulica, etc.)
 - Użytkownik wybiera klikając na wynik
@@ -998,6 +1064,7 @@ try {
 #### Timeout / błąd API
 
 **Obsługa:**
+
 - Komunikat: "Nie udało się połączyć z usługą geokodowania. Spróbuj ponownie."
 - Przycisk "Spróbuj ponownie"
 - Opcja pominięcia lokalizacji (z ostrzeżeniem)
@@ -1005,6 +1072,7 @@ try {
 ### Błędy ładowania mapy (Leaflet)
 
 **Obsługa:**
+
 - Fallback na tekstowy input dla współrzędnych (lat, lon)
 - Komunikat: "Nie udało się załadować mapy. Możesz wprowadzić współrzędne ręcznie."
 - Link do pomocy (jak znaleźć współrzędne)
@@ -1014,6 +1082,7 @@ try {
 **Scenariusz:** Pełne localStorage lub zablokowane przez przeglądarkę.
 
 **Obsługa:**
+
 - Wyświetlenie komunikatu: "Nie udało się zapisać szkicu lokalnie. Uzupełnij formularz i utwórz plan."
 - Ukrycie przycisku "Zapisz szkic"
 - Dane pozostają w stanie React (nie są tracone podczas sesji)
@@ -1182,4 +1251,3 @@ try {
 ---
 
 **Koniec planu implementacji**
-

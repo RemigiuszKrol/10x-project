@@ -378,19 +378,19 @@ export interface ApiErrorResponse {
 export interface PlanViewModel {
   /** UUID planu */
   id: string;
-  
+
   /** Nazwa planu */
   name: string;
-  
+
   /** Informacje o lokalizacji */
   location: PlanLocationViewModel;
-  
+
   /** Rozmiar siatki (grid_width × grid_height) */
   gridSize: string;
-  
+
   /** Data ostatniej modyfikacji (ISO string) */
   updatedAt: string;
-  
+
   /** Sformatowana data modyfikacji do wyświetlenia (relatywna) */
   updatedAtDisplay: string;
 }
@@ -401,13 +401,13 @@ export interface PlanViewModel {
 export interface PlanLocationViewModel {
   /** Czy plan ma przypisaną lokalizację */
   hasLocation: boolean;
-  
+
   /** Tekst do wyświetlenia, np. "52.1°N, 21.0°E" lub "Brak lokalizacji" */
   displayText: string;
-  
+
   /** Szerokość geograficzna */
   latitude: number | null;
-  
+
   /** Długość geograficzna */
   longitude: number | null;
 }
@@ -429,10 +429,7 @@ export function planDtoToViewModel(dto: PlanDto): PlanViewModel {
 /**
  * Pomocnicza funkcja formatująca lokalizację
  */
-function formatPlanLocation(
-  latitude: number | null,
-  longitude: number | null
-): PlanLocationViewModel {
+function formatPlanLocation(latitude: number | null, longitude: number | null): PlanLocationViewModel {
   if (latitude === null || longitude === null) {
     return {
       hasLocation: false,
@@ -470,11 +467,11 @@ function formatRelativeDate(isoDate: string): string {
 /**
  * Stan ładowania listy planów
  */
-type PlansListState = 
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'success'; plans: PlanViewModel[]; nextCursor: string | null };
+type PlansListState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "success"; plans: PlanViewModel[]; nextCursor: string | null };
 
 /**
  * Stan dialogu usuwania
@@ -497,8 +494,8 @@ Widok używa prostego zarządzania stanem lokalnym w komponencie `PlansList` prz
 
 ```typescript
 // Stan listy planów
-const [plansState, setPlansState] = useState<PlansListState>({ 
-  status: 'loading' 
+const [plansState, setPlansState] = useState<PlansListState>({
+  status: "loading",
 });
 
 // Cursor dla paginacji
@@ -522,8 +519,8 @@ Można wyodrębnić logikę API do custom hooka:
  * Hook zarządzający komunikacją z API planów
  */
 function usePlansApi() {
-  const [plansState, setPlansState] = useState<PlansListState>({ 
-    status: 'loading' 
+  const [plansState, setPlansState] = useState<PlansListState>({
+    status: "loading",
   });
   const [nextCursor, setNextCursor] = useState<string | null>(null);
 
@@ -531,32 +528,32 @@ function usePlansApi() {
    * Pobiera pierwszą stronę planów
    */
   const fetchPlans = async () => {
-    setPlansState({ status: 'loading' });
+    setPlansState({ status: "loading" });
     try {
-      const response = await fetch('/api/plans?limit=20&order=desc');
-      
+      const response = await fetch("/api/plans?limit=20&order=desc");
+
       if (response.status === 401) {
-        window.location.href = '/login';
+        window.location.href = "/login";
         return;
       }
 
       if (!response.ok) {
-        throw new Error('Nie udało się pobrać planów');
+        throw new Error("Nie udało się pobrać planów");
       }
 
       const data: ApiListResponse<PlanDto> = await response.json();
       const viewModels = data.data.map(planDtoToViewModel);
-      
-      setPlansState({ 
-        status: 'success', 
+
+      setPlansState({
+        status: "success",
         plans: viewModels,
-        nextCursor: data.pagination.next_cursor 
+        nextCursor: data.pagination.next_cursor,
       });
       setNextCursor(data.pagination.next_cursor);
     } catch (error) {
-      setPlansState({ 
-        status: 'error', 
-        message: error instanceof Error ? error.message : 'Wystąpił nieoczekiwany błąd' 
+      setPlansState({
+        status: "error",
+        message: error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd",
       });
     }
   };
@@ -565,29 +562,27 @@ function usePlansApi() {
    * Ładuje kolejną stronę planów
    */
   const loadMorePlans = async () => {
-    if (!nextCursor || plansState.status !== 'success') return;
+    if (!nextCursor || plansState.status !== "success") return;
 
     try {
-      const response = await fetch(
-        `/api/plans?limit=20&order=desc&cursor=${encodeURIComponent(nextCursor)}`
-      );
+      const response = await fetch(`/api/plans?limit=20&order=desc&cursor=${encodeURIComponent(nextCursor)}`);
 
       if (!response.ok) {
-        throw new Error('Nie udało się załadować więcej planów');
+        throw new Error("Nie udało się załadować więcej planów");
       }
 
       const data: ApiListResponse<PlanDto> = await response.json();
       const newViewModels = data.data.map(planDtoToViewModel);
-      
-      setPlansState({ 
-        status: 'success', 
+
+      setPlansState({
+        status: "success",
         plans: [...plansState.plans, ...newViewModels],
-        nextCursor: data.pagination.next_cursor 
+        nextCursor: data.pagination.next_cursor,
       });
       setNextCursor(data.pagination.next_cursor);
     } catch (error) {
       // Błąd podczas ładowania więcej - można pokazać toast
-      console.error('Error loading more plans:', error);
+      console.error("Error loading more plans:", error);
     }
   };
 
@@ -597,23 +592,23 @@ function usePlansApi() {
   const deletePlan = async (planId: string): Promise<boolean> => {
     try {
       const response = await fetch(`/api/plans/${planId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (response.status === 401) {
-        window.location.href = '/login';
+        window.location.href = "/login";
         return false;
       }
 
       if (!response.ok) {
-        throw new Error('Nie udało się usunąć planu');
+        throw new Error("Nie udało się usunąć planu");
       }
 
       // Refetch planów po usunięciu
       await fetchPlans();
       return true;
     } catch (error) {
-      console.error('Error deleting plan:', error);
+      console.error("Error deleting plan:", error);
       return false;
     }
   };
@@ -642,17 +637,20 @@ function usePlansApi() {
 **Metoda**: GET
 
 **Query parametry**:
+
 - `limit` (optional, number, 1-100, default: 20) - liczba planów na stronę
 - `cursor` (optional, string) - zakodowany cursor dla paginacji
 - `sort` (optional, enum: 'updated_at') - pole sortowania
 - `order` (optional, enum: 'asc' | 'desc', default: 'desc') - kierunek sortowania
 
 **Request headers**:
+
 - Cookie z sesją Supabase (automatycznie dołączany przez przeglądarkę)
 
 **Typ żądania**: Brak body (GET)
 
 **Typ odpowiedzi sukces (200)**:
+
 ```typescript
 ApiListResponse<PlanDto> = {
   data: PlanDto[];
@@ -663,19 +661,21 @@ ApiListResponse<PlanDto> = {
 ```
 
 **Typy odpowiedzi błąd**:
+
 - **401 Unauthorized**: `ApiErrorResponse` - brak sesji, redirect do `/login`
 - **403 Forbidden**: `ApiErrorResponse` - problem z uprawnieniami RLS
 - **500 Internal Error**: `ApiErrorResponse` - błąd serwera
 
 **Przykład użycia w komponencie**:
+
 ```typescript
 const fetchPlans = async () => {
-  const response = await fetch('/api/plans?limit=20&order=desc', {
-    credentials: 'include', // Ważne dla cookies
+  const response = await fetch("/api/plans?limit=20&order=desc", {
+    credentials: "include", // Ważne dla cookies
   });
 
   if (response.status === 401) {
-    window.location.href = '/login';
+    window.location.href = "/login";
     return;
   }
 
@@ -696,32 +696,37 @@ const fetchPlans = async () => {
 **Metoda**: DELETE
 
 **Path parametry**:
+
 - `plan_id` (required, UUID) - ID planu do usunięcia
 
 **Request headers**:
+
 - Cookie z sesją Supabase
 
 **Typ żądania**: Brak body
 
 **Typ odpowiedzi sukces (204)**:
+
 - No Content (brak body)
 
 **Typy odpowiedzi błąd**:
+
 - **401 Unauthorized**: `ApiErrorResponse` - brak sesji
 - **403 Forbidden**: `ApiErrorResponse` - plan nie należy do użytkownika
 - **404 Not Found**: `ApiErrorResponse` - plan nie istnieje
 - **500 Internal Error**: `ApiErrorResponse` - błąd serwera
 
 **Przykład użycia w komponencie**:
+
 ```typescript
 const deletePlan = async (planId: string) => {
   const response = await fetch(`/api/plans/${planId}`, {
-    method: 'DELETE',
-    credentials: 'include',
+    method: "DELETE",
+    credentials: "include",
   });
 
   if (response.status === 401) {
-    window.location.href = '/login';
+    window.location.href = "/login";
     return false;
   }
 
@@ -739,6 +744,7 @@ const deletePlan = async (planId: string) => {
 ### 1. Wejście na stronę `/plans`
 
 **Przepływ**:
+
 1. Astro SSR sprawdza sesję użytkownika
 2. Jeśli brak sesji → redirect 302 do `/login`
 3. Jeśli sesja OK → renderowanie strony z komponentem `PlansList`
@@ -751,9 +757,10 @@ const deletePlan = async (planId: string) => {
 **Element**: Przycisk w `PlansListHeader`
 
 **Akcja**:
+
 ```typescript
 const handleCreateNew = () => {
-  window.location.href = '/plans/new'; // Lub Astro.navigate() jeśli dostępne
+  window.location.href = "/plans/new"; // Lub Astro.navigate() jeśli dostępne
 };
 ```
 
@@ -764,6 +771,7 @@ const handleCreateNew = () => {
 **Element**: Przycisk w `PlanRow`
 
 **Akcja**:
+
 ```typescript
 const handleEdit = (planId: string) => {
   window.location.href = `/plans/${planId}/edit`;
@@ -777,6 +785,7 @@ const handleEdit = (planId: string) => {
 **Element**: Przycisk w `PlanRow`
 
 **Akcja**:
+
 ```typescript
 const handleDeleteClick = (planId: string, planName: string) => {
   setDeleteDialog({
@@ -795,11 +804,12 @@ const handleDeleteClick = (planId: string, planName: string) => {
 **Element**: Przycisk "Usuń" w `DeletePlanDialog`
 
 **Akcja**:
+
 ```typescript
 const handleConfirmDelete = async () => {
   if (!deleteDialog.planId) return;
 
-  setDeleteDialog(prev => ({ ...prev, isDeleting: true }));
+  setDeleteDialog((prev) => ({ ...prev, isDeleting: true }));
 
   const success = await deletePlan(deleteDialog.planId);
 
@@ -813,12 +823,13 @@ const handleConfirmDelete = async () => {
     // fetchPlans() wywoływane automatycznie w deletePlan
   } else {
     // Pokazanie błędu (toast lub inline message)
-    setDeleteDialog(prev => ({ ...prev, isDeleting: false }));
+    setDeleteDialog((prev) => ({ ...prev, isDeleting: false }));
   }
 };
 ```
 
-**Rezultat**: 
+**Rezultat**:
+
 - Usunięcie planu z bazy
 - Odświeżenie listy planów
 - Zamknięcie dialogu
@@ -828,6 +839,7 @@ const handleConfirmDelete = async () => {
 **Element**: Przycisk "Anuluj" lub kliknięcie poza dialog
 
 **Akcja**:
+
 ```typescript
 const handleCancelDelete = () => {
   setDeleteDialog({
@@ -846,13 +858,15 @@ const handleCancelDelete = () => {
 **Element**: `LoadMoreButton`
 
 **Akcja**:
+
 ```typescript
 const handleLoadMore = () => {
   loadMorePlans();
 };
 ```
 
-**Rezultat**: 
+**Rezultat**:
+
 - Fetch kolejnej strony planów z `cursor`
 - Append nowych planów do istniejącej listy
 - Update `nextCursor`
@@ -862,6 +876,7 @@ const handleLoadMore = () => {
 **Element**: Przycisk w `ErrorState`
 
 **Akcja**:
+
 ```typescript
 const handleRetry = () => {
   fetchPlans();
@@ -939,14 +954,16 @@ const handleRetry = () => {
 **Scenariusz**: Użytkownik zalogował się, ale sesja wygasła podczas przeglądania
 
 **Obsługa**:
+
 - Detekcja: `response.status === 401`
 - Akcja: Automatyczne przekierowanie do `/login`
 - Komunikat: Brak (redirect natychmiastowy)
 
 **Implementacja**:
+
 ```typescript
 if (response.status === 401) {
-  window.location.href = '/login';
+  window.location.href = "/login";
   return;
 }
 ```
@@ -956,6 +973,7 @@ if (response.status === 401) {
 **Scenariusz**: Problem z uprawnieniami Row Level Security w Supabase
 
 **Obsługa**:
+
 - Detekcja: `response.status === 403`
 - Akcja: Wyświetlenie `ErrorState` z komunikatem
 - Komunikat: "Brak uprawnień do wyświetlenia planów. Skontaktuj się z administratorem."
@@ -966,6 +984,7 @@ if (response.status === 401) {
 **Scenariusz**: Błąd po stronie serwera lub bazy danych
 
 **Obsługa**:
+
 - Detekcja: `response.status === 500`
 - Akcja: Wyświetlenie `ErrorState` z komunikatem
 - Komunikat: "Wystąpił błąd serwera. Spróbuj ponownie za chwilę."
@@ -976,26 +995,28 @@ if (response.status === 401) {
 **Scenariusz**: Brak połączenia z internetem, timeout
 
 **Obsługa**:
+
 - Detekcja: `catch` block w `fetchPlans()`, sprawdzenie typu błędu
 - Akcja: Wyświetlenie `ErrorState` z komunikatem
 - Komunikat: "Brak połączenia z serwerem. Sprawdź połączenie internetowe."
 - Przycisk: "Spróbuj ponownie"
 
 **Implementacja**:
+
 ```typescript
 try {
-  const response = await fetch('/api/plans');
+  const response = await fetch("/api/plans");
   // ...
 } catch (error) {
-  if (error instanceof TypeError && error.message.includes('fetch')) {
-    setPlansState({ 
-      status: 'error', 
-      message: 'Brak połączenia z serwerem. Sprawdź połączenie internetowe.' 
+  if (error instanceof TypeError && error.message.includes("fetch")) {
+    setPlansState({
+      status: "error",
+      message: "Brak połączenia z serwerem. Sprawdź połączenie internetowe.",
     });
   } else {
-    setPlansState({ 
-      status: 'error', 
-      message: 'Wystąpił nieoczekiwany błąd.' 
+    setPlansState({
+      status: "error",
+      message: "Wystąpił nieoczekiwany błąd.",
     });
   }
 }
@@ -1006,29 +1027,31 @@ try {
 **Scenariusz**: Niepowodzenie DELETE request
 
 **Obsługa**:
+
 - Detekcja: `!response.ok` w `deletePlan()`
 - Akcja: Pokazanie komunikatu błędu (toast notification lub inline)
 - Komunikat: "Nie udało się usunąć planu. Spróbuj ponownie."
 - Dialog: Pozostaje otwarty, użytkownik może spróbować ponownie lub anulować
 
 **Implementacja**:
+
 ```typescript
 const handleConfirmDelete = async () => {
-  setDeleteDialog(prev => ({ ...prev, isDeleting: true }));
+  setDeleteDialog((prev) => ({ ...prev, isDeleting: true }));
 
   try {
     const success = await deletePlan(deleteDialog.planId!);
-    
+
     if (success) {
       setDeleteDialog({ open: false, planId: null, planName: null, isDeleting: false });
     } else {
       // Pokazanie błędu, np. przez toast lub state
       setDeleteError("Nie udało się usunąć planu");
-      setDeleteDialog(prev => ({ ...prev, isDeleting: false }));
+      setDeleteDialog((prev) => ({ ...prev, isDeleting: false }));
     }
   } catch (error) {
     setDeleteError("Wystąpił nieoczekiwany błąd");
-    setDeleteDialog(prev => ({ ...prev, isDeleting: false }));
+    setDeleteDialog((prev) => ({ ...prev, isDeleting: false }));
   }
 };
 ```
@@ -1038,6 +1061,7 @@ const handleConfirmDelete = async () => {
 **Scenariusz**: API zwróciło dane w nieoczekiwanym formacie
 
 **Obsługa**:
+
 - Detekcja: TypeScript type guards + runtime check
 - Akcja: Wyświetlenie `ErrorState` z ogólnym komunikatem
 - Komunikat: "Otrzymano nieprawidłowe dane z serwera."
@@ -1048,6 +1072,7 @@ const handleConfirmDelete = async () => {
 **Scenariusz**: Niepowodzenie przy "Załaduj więcej"
 
 **Obsługa**:
+
 - Detekcja: `catch` w `loadMorePlans()`
 - Akcja: Pokazanie toast notification (nie zmieniamy głównego stanu na error)
 - Komunikat: "Nie udało się załadować więcej planów"
@@ -1058,6 +1083,7 @@ const handleConfirmDelete = async () => {
 **Scenariusz**: Brak niektórych danych w odpowiedzi (np. latitude/longitude)
 
 **Obsługa**:
+
 - Sprawdzenie `null` values w `formatPlanLocation()`
 - Wyświetlenie fallback text: "Brak lokalizacji"
 - Aplikacja działa normalnie bez tych danych
@@ -1067,16 +1093,19 @@ const handleConfirmDelete = async () => {
 ### Krok 1: Utworzenie typów ViewModel i funkcji pomocniczych
 
 **Pliki do utworzenia**:
+
 - `src/lib/viewmodels/plan.viewmodel.ts`
 - `src/lib/utils/date-format.ts` (dla formatowania dat)
 
 **Działania**:
+
 1. Zdefiniować interfejsy `PlanViewModel`, `PlanLocationViewModel`
 2. Implementować funkcję `planDtoToViewModel()`
 3. Implementować funkcję `formatPlanLocation()`
 4. Implementować funkcję `formatRelativeDate()` (można użyć biblioteki `date-fns`)
 
 **Zależności do zainstalacji** (jeśli używamy date-fns):
+
 ```bash
 npm install date-fns
 ```
@@ -1097,6 +1126,7 @@ npm install date-fns
 **Kolejność implementacji**: Od najprostszych (LoadingState) do najbardziej złożonych (DeletePlanDialog)
 
 **Użycie komponentów shadcn/ui**:
+
 - `Button` - dla wszystkich przycisków
 - `Table`, `TableHeader`, `TableRow`, `TableHead`, `TableBody`, `TableCell` - dla tabeli
 - `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription`, `DialogFooter` - dla modala
@@ -1105,9 +1135,11 @@ npm install date-fns
 ### Krok 3: Utworzenie custom hooka do komunikacji z API
 
 **Plik do utworzenia**:
+
 - `src/lib/hooks/usePlansApi.ts`
 
 **Działania**:
+
 1. Zaimportować typy z `src/types.ts` i `src/lib/viewmodels/plan.viewmodel.ts`
 2. Zdefiniować typ `PlansListState`
 3. Zaimplementować hook `usePlansApi()` z funkcjami:
@@ -1120,9 +1152,11 @@ npm install date-fns
 ### Krok 4: Utworzenie głównego komponentu PlansList
 
 **Plik do utworzenia**:
+
 - `src/components/plans/PlansList.tsx`
 
 **Działania**:
+
 1. Zaimportować wszystkie podkomponenty z kroku 2
 2. Użyć hooka `usePlansApi()` z kroku 3
 3. Zdefiniować stan dialogu usuwania: `useState<DeleteDialogState>`
@@ -1143,9 +1177,11 @@ npm install date-fns
 ### Krok 5: Utworzenie strony Astro
 
 **Plik do utworzenia**:
+
 - `src/pages/plans.astro`
 
 **Działania**:
+
 1. Zaimportować Layout aplikacji
 2. W sekcji frontmatter:
    - Pobrać klienta Supabase: `const supabase = Astro.locals.supabase`
@@ -1158,20 +1194,23 @@ npm install date-fns
 4. Dodać metadata strony (title, description)
 
 **Przykład struktury**:
+
 ```astro
 ---
-import Layout from '@/layouts/Layout.astro';
-import PlansList from '@/components/plans/PlansList';
+import Layout from "@/layouts/Layout.astro";
+import PlansList from "@/components/plans/PlansList";
 
 // Weryfikacja sesji
 const supabase = Astro.locals.supabase;
 if (!supabase) {
-  return Astro.redirect('/login');
+  return Astro.redirect("/login");
 }
 
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 if (!user) {
-  return Astro.redirect('/login');
+  return Astro.redirect("/login");
 }
 ---
 
@@ -1248,6 +1287,7 @@ if (!user) {
 ### Krok 9: Refactoring i czyszczenie kodu
 
 **Działania**:
+
 1. Sprawdzić linter (ESLint) → naprawić wszystkie błędy
 2. Sprawdzić TypeScript errors → naprawić wszystkie błędy typów
 3. Usunąć console.log() z kodu produkcyjnego (zachować tylko console.error dla błędów)
@@ -1258,23 +1298,25 @@ if (!user) {
 ### Krok 10: Dokumentacja i commit
 
 **Działania**:
+
 1. Zaktualizować dokumentację w `.ai/docs/` jeśli potrzebne
 2. Dodać przykłady użycia w komentarzach komponentów
 3. Utworzyć commit z opisowym komunikatem:
+
    ```
    feat: implement plans list view
-   
+
    - Add PlansList React component with pagination
    - Add DELETE endpoint for plans
    - Add plan ViewModel with location and date formatting
    - Add empty state, error handling, and delete confirmation dialog
    - Implement SSR auth check with redirect to login
-   
+
    Resolves US-021, US-032
    ```
+
 4. Ewentualnie: Utworzyć Pull Request z opisem zmian i screenshotami
 
 ---
 
 **Koniec planu implementacji**
-

@@ -1,15 +1,18 @@
 # Plan implementacji widoku Profil użytkownika
 
 ## 1. Przegląd
+
 - Widok `/profile` umożliwia zalogowanemu użytkownikowi podgląd i aktualizację preferencji językowych i motywu.
 - Formularz ma zapewnić natychmiastową zmianę motywu (podgląd + ThemeProvider) oraz propagację języka do warstwy i18n.
 - Widok korzysta z istniejących komponentów globalnych (`TopbarNavigation`, `NotificationCenter`) i integruje się z API `/api/profile`.
 
 ## 2. Routing widoku
+
 - Astro page: `src/pages/profile.astro` (SSR disabled – korzystamy z klienta Supabase z kontekstu middleware).
 - Widok dostępny wyłącznie dla zalogowanego użytkownika; w przypadku braku sesji middleware przekierowuje do logowania.
 
 ## 3. Struktura komponentów
+
 - `ProfilePage` (React, entry point hydratowany w `profile.astro`)
   - `TopbarNavigation`
   - `NotificationCenter`
@@ -25,6 +28,7 @@
 ## 4. Szczegóły komponentów
 
 ### ProfilePage
+
 - Opis: Komponent kontenerowy, pobiera dane profilu, zarządza stanem i kontekstami (język, motyw).
 - Główne elementy: wrapper layout (`<main>`), `TopbarNavigation`, `NotificationCenter`, `ProfileContent`.
 - Obsługiwane interakcje: inicjalne `useEffect` (GET `/api/profile`), `handleRetry`, przekazywanie `onSubmit`.
@@ -33,6 +37,7 @@
 - Propsy: brak (entry point). Korzysta z globalnych providerów (`ThemeProvider`, `I18nProvider`).
 
 ### ProfileContent
+
 - Opis: Renderuje sekcję główną w zależności od stanu (loading, error, data).
 - Główne elementy: wrapper grid/flex, `ProfileSkeleton` lub `ProfileForm` + `PreferenceSummary`.
 - Obsługiwane interakcje: `onRetry` (przekazane do `ProfileErrorFallback`).
@@ -41,6 +46,7 @@
 - Propsy: `{ state: ProfileState; onSubmit: (payload: ProfileUpdatePayload) => Promise<void>; onRetry: () => void; }`.
 
 ### ProfileForm
+
 - Opis: Formularz edycji preferencji z kontrolkami języka i motywu, obsługuje wysyłkę PUT.
 - Główne elementy: `<form>`, `LanguageSelector`, `ThemeSelector`, `ThemePreview`, `FormActions`.
 - Obsługiwane interakcje: `onLanguageChange`, `onThemeChange`, `onSubmit`.
@@ -52,6 +58,7 @@
 - Propsy: `{ initialValues: ProfileFormValues; isSubmitting: boolean; onSubmit: (values) => void; palettes: ThemePalette[]; languages: LanguageOption[]; }`.
 
 ### LanguageSelector
+
 - Opis: Kontrolka wyboru języka (radio group lub select) z opisami i etykietami dostępności.
 - Główne elementy: `RadioGroup` lub `Select` z shadcn/ui, etykieta `<label>`, opis `<p>`.
 - Obsługiwane interakcje: `onChange(languageCode)`.
@@ -60,6 +67,7 @@
 - Propsy: `{ options: LanguageOption[]; value: string; disabled: boolean; onChange: (code: string) => void; error?: string; }`.
 
 ### ThemeSelector
+
 - Opis: Przełącznik motywu (toggle lub radio) z ikonami słoneczko/księżyc.
 - Główne elementy: `SegmentedControl` lub `SwitchGroup` z shadcn/ui, ikonografia `lucide-react`.
 - Obsługiwane interakcje: `onChange(theme)`.
@@ -68,6 +76,7 @@
 - Propsy: `{ options: ThemeOption[]; value: UiTheme; disabled: boolean; onChange: (theme: UiTheme) => void; }`.
 
 ### ThemePreview
+
 - Opis: Podgląd motywu przedstawiający fragment UI z bieżącą selekcją (np. karta, przyciski).
 - Główne elementy: `<section>` z klasami Tailwind generowanymi w oparciu o `UiTheme`.
 - Obsługiwane interakcje: brak bezpośrednich; reaguje na propsy.
@@ -76,6 +85,7 @@
 - Propsy: `{ theme: UiTheme; languageLabel: string; }`.
 
 ### FormActions
+
 - Opis: Przyciski `Zapisz`, `Anuluj` (opcjonalnie reset do wartości oryginalnych).
 - Główne elementy: `<div>` z buttonami shadcn/ui.
 - Obsługiwane interakcje: `onSubmit` (domyślne wysłanie form), `onReset`.
@@ -84,6 +94,7 @@
 - Propsy: `{ isDirty: boolean; isSubmitting: boolean; onReset?: () => void; }`.
 
 ### PreferenceSummary
+
 - Opis: Sekcja informacyjna wyświetlająca ID profilu, datę utworzenia/aktualizacji, opis funkcji.
 - Główne elementy: `<aside>` lub `<dl>`.
 - Obsługiwane interakcje: brak.
@@ -92,6 +103,7 @@
 - Propsy: `{ createdAt: string; updatedAt: string; profileId: string; }`.
 
 ### ProfileSkeleton
+
 - Opis: Placeholder w trakcie ładowania danych.
 - Główne elementy: `Skeleton` komponenty z shadcn/ui.
 - Obsługiwane interakcje: brak.
@@ -100,6 +112,7 @@
 - Propsy: `{}` lub brak.
 
 ### ProfileErrorFallback
+
 - Opis: Sekcja błędu z przyciskiem ponów i komunikatem w zależności od kodu.
 - Główne elementy: `Alert` (shadcn/ui), `Retry` button.
 - Obsługiwane interakcje: `onRetry`.
@@ -108,6 +121,7 @@
 - Propsy: `{ error: ProfileError; onRetry: () => void; }`.
 
 ## 5. Typy
+
 - `ProfileViewModel`:
   - `id: string`
   - `languageCode: string` (ISO, np. `"pl"`)
@@ -142,6 +156,7 @@
   - `fieldErrors?: ProfileFormErrors`
 
 ## 6. Zarządzanie stanem
+
 - Globalne konteksty:
   - `ThemeProvider`: aktualizacja motywu przy zmianie `theme`.
   - `I18nProvider` / `LanguageContext`: aktualizacja języka i wymuszenie re-render UI (przekazanie `languageCode`).
@@ -158,6 +173,7 @@
   - `useEffect` w `ProfilePage` do aktualizacji kontekstów przy zmianie `formValues` (optimistic), a w `catch` przy błędzie – rollback do poprzednich wartości.
 
 ## 7. Integracja API
+
 - GET `/api/profile`:
   - Żądanie wykonywane w `useProfilePreferences` podczas montowania; oczekuje `ApiItemResponse<ProfileDto>`.
   - Mapowanie `data` na `ProfileViewModel`.
@@ -172,6 +188,7 @@
 - Dodatkowe: po sukcesie emisja toast (`NotificationCenter.showSuccess("Preferencje zapisane")`).
 
 ## 8. Interakcje użytkownika
+
 - Wejście na stronę: widok ładuje dane, pokazuje skeleton → wypełniony formularz.
 - Zmiana języka: natychmiast aktualizuje `LanguageContext` i UI (np. topbar). Pozostaje w stanie `dirty`.
 - Zmiana motywu: natychmiast zmienia `ThemeProvider` oraz podgląd.
@@ -181,6 +198,7 @@
 - Błąd sieci/API: `NotificationCenter` (toast) + `ProfileErrorFallback` (dla GET) lub reset kontekstu do poprzednich wartości (dla PUT).
 
 ## 9. Warunki i walidacja
+
 - Formularz zapewnia:
   - Wartości języka z listy (`ISO_LANGUAGE_CODE_REGEX`), UI nie pozwala na dowolny input.
   - Wartości motywu tylko `light` lub `dark`.
@@ -189,6 +207,7 @@
 - W przypadku błędów walidacji z API (`field_errors`), mapujemy je do kontrolek (`language_code` → `LanguageSelector`, `theme` → `ThemeSelector`).
 
 ## 10. Obsługa błędów
+
 - 400 `ValidationError`: wyświetlenie inline + toast z message; nie resetujemy zmian, pozwalamy poprawić.
 - 401/403: toast + przekierowanie/wezwanie do ponownego logowania (do ustalenia z auth flow); `ProfileErrorFallback` z CTA „Przejdź do logowania”.
 - 404: informacja, że profil nie istnieje; CTA „Utwórz profil” lub `Zapisz`, który stworzy rekord (PUT zwróci 404? – zespół backend potwierdza, czy autokreacja). Tymczasowo – blokujemy formularz i oferujemy ponowienie.
@@ -197,6 +216,7 @@
 - Optimistic update: jeśli PUT się nie powiedzie, cofamy zmiany w Theme/Language contextach i pokazujemy toast.
 
 ## 11. Kroki implementacji
+
 1. Utwórz stronę `src/pages/profile.astro` z hydratowanym komponentem `ProfilePage`, zapewniając SSR guard (tylko zalogowani).
 2. Dodaj context dostępu do Supabase/Auth (jeśli brak) i zapewnij przekazywanie do `ProfilePage`.
 3. Zaimplementuj hook `useProfilePreferences` w `src/lib/hooks/useProfilePreferences.ts` (fetch + mapowanie + obsługa błędów).
@@ -207,4 +227,3 @@
 8. Dodaj mapping błędów walidacji (`field_errors`) na kontrolki i toasty.
 9. Zaimplementuj testy manualne / e2e check-listę z pliku `.ai/testing/profiles-manual-tests.md` (sekcja preferencje), aktualizując w razie potrzeby.
 10. Zweryfikuj linter/format, uruchom `npm run lint` i manualnie przetestuj scenariusze: sukces, brak zmian, walidacja błędna, 500, 401.
-

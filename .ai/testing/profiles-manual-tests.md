@@ -46,9 +46,9 @@ Po zalogowaniu, sprawdź w konsoli przeglądarki:
 ```javascript
 // Sprawdź cookies Supabase
 document.cookie
-  .split(';')
-  .filter(c => c.includes('sb-'))
-  .forEach(c => console.log(c.trim()));
+  .split(";")
+  .filter((c) => c.includes("sb-"))
+  .forEach((c) => console.log(c.trim()));
 
 // Powinny być widoczne cookie sb-*-auth-token
 ```
@@ -56,6 +56,7 @@ document.cookie
 ### 1.4 Weryfikacja profilu w bazie
 
 W Supabase Studio → Table Editor → profiles:
+
 - Sprawdź czy istnieje rekord z Twoim user ID
 - Domyślne wartości: `language_code: "pl"`, `theme: "light"`
 
@@ -74,21 +75,21 @@ W Supabase Studio → Table Editor → profiles:
 
 ```javascript
 // Test: Pobierz profil zalogowanego użytkownika
-fetch('/api/profile', {
-  method: 'GET',
+fetch("/api/profile", {
+  method: "GET",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include' // Ważne! Wysyła cookies sesji
+  credentials: "include", // Ważne! Wysyła cookies sesji
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ GET /api/profile - Sukces:', data);
-    console.log('User ID:', data.data.id);
-    console.log('Language:', data.data.language_code);
-    console.log('Theme:', data.data.theme);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ GET /api/profile - Sukces:", data);
+    console.log("User ID:", data.data.id);
+    console.log("Language:", data.data.language_code);
+    console.log("Theme:", data.data.theme);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // {
@@ -106,23 +107,23 @@ fetch('/api/profile', {
 
 ```javascript
 // Test: Zmień motyw na dark
-fetch('/api/profile', {
-  method: 'PUT',
+fetch("/api/profile", {
+  method: "PUT",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    theme: 'dark'
-  })
+    theme: "dark",
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ PUT /api/profile (theme) - Sukces:', data);
-    console.log('Nowy theme:', data.data.theme);
-    console.log('Updated at:', data.data.updated_at);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ PUT /api/profile (theme) - Sukces:", data);
+    console.log("Nowy theme:", data.data.theme);
+    console.log("Updated at:", data.data.updated_at);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // {
@@ -140,22 +141,22 @@ fetch('/api/profile', {
 
 ```javascript
 // Test: Zmień język na angielski
-fetch('/api/profile', {
-  method: 'PUT',
+fetch("/api/profile", {
+  method: "PUT",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    language_code: 'en'
-  })
+    language_code: "en",
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ PUT /api/profile (language) - Sukces:', data);
-    console.log('Nowy język:', data.data.language_code);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ PUT /api/profile (language) - Sukces:", data);
+    console.log("Nowy język:", data.data.language_code);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // language_code: "en"
@@ -165,24 +166,24 @@ fetch('/api/profile', {
 
 ```javascript
 // Test: Zmień język i motyw jednocześnie
-fetch('/api/profile', {
-  method: 'PUT',
+fetch("/api/profile", {
+  method: "PUT",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    language_code: 'en-US',
-    theme: 'light'
-  })
+    language_code: "en-US",
+    theme: "light",
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ PUT /api/profile (oba pola) - Sukces:', data);
-    console.log('Language:', data.data.language_code);
-    console.log('Theme:', data.data.theme);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ PUT /api/profile (oba pola) - Sukces:", data);
+    console.log("Language:", data.data.language_code);
+    console.log("Theme:", data.data.theme);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // language_code: "en-US", theme: "light"
@@ -192,21 +193,21 @@ fetch('/api/profile', {
 
 ```javascript
 // Test: Nieprawidłowy format kodu języka (wielkie litery)
-fetch('/api/profile', {
-  method: 'PUT',
+fetch("/api/profile", {
+  method: "PUT",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    language_code: 'PL' // Nieprawidłowe - powinno być "pl"
-  })
+    language_code: "PL", // Nieprawidłowe - powinno być "pl"
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PUT /api/profile - ValidationError:', data);
-    console.log('Błąd:', data.error.message);
-    console.log('Pole:', data.error.details?.field_errors);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PUT /api/profile - ValidationError:", data);
+    console.log("Błąd:", data.error.message);
+    console.log("Pole:", data.error.details?.field_errors);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -227,20 +228,20 @@ fetch('/api/profile', {
 
 ```javascript
 // Test: Nieprawidłowa wartość motywu
-fetch('/api/profile', {
-  method: 'PUT',
+fetch("/api/profile", {
+  method: "PUT",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    theme: 'blue' // Nieprawidłowe - dozwolone: "light" lub "dark"
-  })
+    theme: "blue", // Nieprawidłowe - dozwolone: "light" lub "dark"
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PUT /api/profile - ValidationError:', data);
-    console.log('Pole:', data.error.details?.field_errors);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PUT /api/profile - ValidationError:", data);
+    console.log("Pole:", data.error.details?.field_errors);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -261,18 +262,18 @@ fetch('/api/profile', {
 
 ```javascript
 // Test: Puste body (brak pól)
-fetch('/api/profile', {
-  method: 'PUT',
+fetch("/api/profile", {
+  method: "PUT",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
-  body: JSON.stringify({})
+  credentials: "include",
+  body: JSON.stringify({}),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PUT /api/profile - ValidationError (puste body):', data);
-    console.log('Komunikat:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PUT /api/profile - ValidationError (puste body):", data);
+    console.log("Komunikat:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -288,20 +289,20 @@ fetch('/api/profile', {
 
 ```javascript
 // Test: Dodatkowe pole (strict mode)
-fetch('/api/profile', {
-  method: 'PUT',
+fetch("/api/profile", {
+  method: "PUT",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    theme: 'dark',
-    extra_field: 'should be rejected' // Dodatkowe pole
-  })
+    theme: "dark",
+    extra_field: "should be rejected", // Dodatkowe pole
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PUT /api/profile - ValidationError (dodatkowe pole):', data);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PUT /api/profile - ValidationError (dodatkowe pole):", data);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -314,16 +315,16 @@ fetch('/api/profile', {
 // UWAGA: Przed tym testem wyloguj się z aplikacji!
 // http://localhost:4321/auth/login → Wyloguj → Otwórz DevTools
 
-fetch('/api/profile', {
-  method: 'GET',
+fetch("/api/profile", {
+  method: "GET",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include'
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ GET /api/profile - Unauthorized:', data);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ GET /api/profile - Unauthorized:", data);
   });
 
 // Oczekiwany wynik (401 Unauthorized):
@@ -339,17 +340,17 @@ fetch('/api/profile', {
 
 ```javascript
 // Test: Nieprawidłowy JSON w body
-fetch('/api/profile', {
-  method: 'PUT',
+fetch("/api/profile", {
+  method: "PUT",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
-  body: 'invalid json here'
+  credentials: "include",
+  body: "invalid json here",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PUT /api/profile - Invalid JSON:', data);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PUT /api/profile - Invalid JSON:", data);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -629,64 +630,63 @@ try {
 // Konsola przeglądarki - pełny flow
 
 // 1. Pobierz początkowy stan
-const initialState = await fetch('/api/profile', {
-  credentials: 'include'
-}).then(r => r.json());
-console.log('Stan początkowy:', initialState.data);
+const initialState = await fetch("/api/profile", {
+  credentials: "include",
+}).then((r) => r.json());
+console.log("Stan początkowy:", initialState.data);
 
 // 2. Zmień na dark mode
-const darkMode = await fetch('/api/profile', {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include',
-  body: JSON.stringify({ theme: 'dark' })
-}).then(r => r.json());
-console.log('Po zmianie na dark:', darkMode.data.theme);
+const darkMode = await fetch("/api/profile", {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  credentials: "include",
+  body: JSON.stringify({ theme: "dark" }),
+}).then((r) => r.json());
+console.log("Po zmianie na dark:", darkMode.data.theme);
 
 // 3. Zmień język
-const enLang = await fetch('/api/profile', {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include',
-  body: JSON.stringify({ language_code: 'en' })
-}).then(r => r.json());
-console.log('Po zmianie języka:', enLang.data.language_code);
+const enLang = await fetch("/api/profile", {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  credentials: "include",
+  body: JSON.stringify({ language_code: "en" }),
+}).then((r) => r.json());
+console.log("Po zmianie języka:", enLang.data.language_code);
 
 // 4. Przywróć ustawienia domyślne
-const reset = await fetch('/api/profile', {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include',
-  body: JSON.stringify({ language_code: 'pl', theme: 'light' })
-}).then(r => r.json());
-console.log('Po resecie:', reset.data);
+const reset = await fetch("/api/profile", {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  credentials: "include",
+  body: JSON.stringify({ language_code: "pl", theme: "light" }),
+}).then((r) => r.json());
+console.log("Po resecie:", reset.data);
 
 // 5. Weryfikuj że updated_at się zmienia
-console.log('Timestamps:');
-console.log('- Początkowy:', initialState.data.updated_at);
-console.log('- Po dark mode:', darkMode.data.updated_at);
-console.log('- Po zmianie języka:', enLang.data.updated_at);
-console.log('- Po resecie:', reset.data.updated_at);
+console.log("Timestamps:");
+console.log("- Początkowy:", initialState.data.updated_at);
+console.log("- Po dark mode:", darkMode.data.updated_at);
+console.log("- Po zmianie języka:", enLang.data.updated_at);
+console.log("- Po resecie:", reset.data.updated_at);
 ```
 
 ### 4.2 Test wszystkich poprawnych kodów języków
 
 ```javascript
 // Test różnych formatów ISO language codes
-const validCodes = ['pl', 'en', 'de', 'fr', 'en-US', 'en-GB', 'de-DE'];
+const validCodes = ["pl", "en", "de", "fr", "en-US", "en-GB", "de-DE"];
 
 for (const code of validCodes) {
-  const result = await fetch('/api/profile', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ language_code: code })
-  }).then(r => r.json());
-  
-  console.log(`${code}: ${result.data ? '✅' : '❌'}`, 
-              result.data?.language_code || result.error?.message);
-  
-  await new Promise(resolve => setTimeout(resolve, 100)); // Delay
+  const result = await fetch("/api/profile", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ language_code: code }),
+  }).then((r) => r.json());
+
+  console.log(`${code}: ${result.data ? "✅" : "❌"}`, result.data?.language_code || result.error?.message);
+
+  await new Promise((resolve) => setTimeout(resolve, 100)); // Delay
 }
 
 // Wszystkie powinny się powieść
@@ -697,24 +697,24 @@ for (const code of validCodes) {
 ```javascript
 // Test niepoprawnych formatów
 const invalidCodes = [
-  'PL',        // wielkie litery
-  'eng',       // 3 litery
-  '123',       // cyfry
-  'en_US',     // underscore zamiast dash
-  'en-us',     // mała litera kraju
-  'en-USA',    // 3 litery kraju
-  '',          // pusty string
+  "PL", // wielkie litery
+  "eng", // 3 litery
+  "123", // cyfry
+  "en_US", // underscore zamiast dash
+  "en-us", // mała litera kraju
+  "en-USA", // 3 litery kraju
+  "", // pusty string
 ];
 
 for (const code of invalidCodes) {
-  const result = await fetch('/api/profile', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ language_code: code })
-  }).then(r => r.json());
-  
-  console.log(`"${code}": ${result.error ? '❌ Odrzucone' : '✅ Zaakceptowane (BUG!)'}`);
+  const result = await fetch("/api/profile", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ language_code: code }),
+  }).then((r) => r.json());
+
+  console.log(`"${code}": ${result.error ? "❌ Odrzucone" : "✅ Zaakceptowane (BUG!)"}`);
 }
 
 // Wszystkie powinny być odrzucone z ValidationError
@@ -729,8 +729,8 @@ for (const code of invalidCodes) {
 
 ```sql
 -- Sprawdź czy RLS jest włączone
-SELECT tablename, rowsecurity 
-FROM pg_tables 
+SELECT tablename, rowsecurity
+FROM pg_tables
 WHERE schemaname = 'public' AND tablename = 'profiles';
 
 -- rowsecurity powinno być true
@@ -751,8 +751,8 @@ SELECT * FROM pg_policies WHERE tablename = 'profiles';
 
 ```sql
 -- SQL Editor
-SELECT id, language_code, theme, created_at, updated_at 
-FROM public.profiles 
+SELECT id, language_code, theme, created_at, updated_at
+FROM public.profiles
 WHERE id = auth.uid();
 
 -- Sprawdź:
@@ -765,8 +765,8 @@ WHERE id = auth.uid();
 
 ```sql
 -- Wykonaj ręczną aktualizację
-UPDATE public.profiles 
-SET theme = 'dark' 
+UPDATE public.profiles
+SET theme = 'dark'
 WHERE id = auth.uid();
 
 -- Pobierz z powrotem
@@ -823,8 +823,10 @@ SELECT updated_at FROM public.profiles WHERE id = auth.uid();
 
 ```javascript
 // Sprawdź sesję w konsoli
-const { data: { session } } = await window.supabase.auth.getSession();
-console.log('Sesja:', session);
+const {
+  data: { session },
+} = await window.supabase.auth.getSession();
+console.log("Sesja:", session);
 
 // Jeśli brak sesji, zaloguj się ponownie
 ```
@@ -835,9 +837,9 @@ console.log('Sesja:', session);
 
 ```javascript
 // Upewnij się że używasz credentials: 'include'
-fetch('/api/profile', {
-  credentials: 'include' // ← To jest konieczne!
-})
+fetch("/api/profile", {
+  credentials: "include", // ← To jest konieczne!
+});
 ```
 
 ### Problem: PowerShell nie zachowuje sesji
@@ -919,4 +921,3 @@ Jeśli znajdziesz błąd, zanotuj:
 **Ostatnia aktualizacja:** 2025-11-13  
 **Autor:** AI Assistant  
 **Status:** ✅ Gotowy do użycia
-

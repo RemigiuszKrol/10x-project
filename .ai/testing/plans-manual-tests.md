@@ -46,9 +46,9 @@ Po zalogowaniu, sprawdź w konsoli przeglądarki:
 ```javascript
 // Sprawdź cookies Supabase
 document.cookie
-  .split(';')
-  .filter(c => c.includes('sb-'))
-  .forEach(c => console.log(c.trim()));
+  .split(";")
+  .filter((c) => c.includes("sb-"))
+  .forEach((c) => console.log(c.trim()));
 
 // Powinny być widoczne cookie sb-*-auth-token
 ```
@@ -56,6 +56,7 @@ document.cookie
 ### 1.4 Weryfikacja tabel w bazie
 
 W Supabase Studio → Table Editor:
+
 - Sprawdź czy istnieje tabela `plans`
 - Sprawdź czy RLS jest włączone
 
@@ -74,29 +75,29 @@ W Supabase Studio → Table Editor:
 
 ```javascript
 // Test: Utwórz minimalny plan działki
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Moja działka',
+    name: "Moja działka",
     width_cm: 500,
     height_cm: 400,
     cell_size_cm: 25,
-    orientation: 0
-  })
+    orientation: 0,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ POST /api/plans - Sukces:', data);
-    console.log('Plan ID:', data.data.id);
-    console.log('Grid:', data.data.grid_width, 'x', data.data.grid_height);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ POST /api/plans - Sukces:", data);
+    console.log("Plan ID:", data.data.id);
+    console.log("Grid:", data.data.grid_width, "x", data.data.grid_height);
     // Zapisz ID dla kolejnych testów
     window.testPlanId = data.data.id;
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (201 Created):
 // {
@@ -123,30 +124,30 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Utwórz plan z danymi GPS
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Ogród z GPS',
+    name: "Ogród z GPS",
     width_cm: 1000,
     height_cm: 1000,
     cell_size_cm: 50,
     orientation: 180,
     latitude: 52.2297,
     longitude: 21.0122,
-    hemisphere: 'northern'
-  })
+    hemisphere: "northern",
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ POST /api/plans (z GPS) - Sukces:', data);
-    console.log('Lokalizacja:', data.data.latitude, data.data.longitude);
-    console.log('Półkula:', data.data.hemisphere);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ POST /api/plans (z GPS) - Sukces:", data);
+    console.log("Lokalizacja:", data.data.latitude, data.data.longitude);
+    console.log("Półkula:", data.data.hemisphere);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (201 Created):
 // latitude: 52.2297, longitude: 21.0122, hemisphere: "northern"
@@ -156,24 +157,24 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Pusta nazwa
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: '',
+    name: "",
     width_cm: 500,
     height_cm: 400,
     cell_size_cm: 25,
-    orientation: 0
-  })
+    orientation: 0,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ POST - ValidationError (pusta nazwa):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ POST - ValidationError (pusta nazwa):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -194,24 +195,24 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Nieprawidłowy rozmiar komórki (dozwolone: 10, 25, 50, 100)
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Test',
+    name: "Test",
     width_cm: 500,
     height_cm: 400,
-    cell_size_cm: 30,  // Nieprawidłowe!
-    orientation: 0
-  })
+    cell_size_cm: 30, // Nieprawidłowe!
+    orientation: 0,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ POST - ValidationError (cell_size):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ POST - ValidationError (cell_size):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -222,24 +223,24 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: SzerokośÄ‡ niepodzielna przez rozmiar komórki
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Test',
-    width_cm: 503,  // 503 % 25 != 0
+    name: "Test",
+    width_cm: 503, // 503 % 25 != 0
     height_cm: 400,
     cell_size_cm: 25,
-    orientation: 0
-  })
+    orientation: 0,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ POST - ValidationError (niepodzielne):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ POST - ValidationError (niepodzielne):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -250,24 +251,24 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Za duża siatka (max 200x200)
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Za duża działka',
-    width_cm: 20100,  // 201 komórek
+    name: "Za duża działka",
+    width_cm: 20100, // 201 komórek
     height_cm: 20100,
     cell_size_cm: 100,
-    orientation: 0
-  })
+    orientation: 0,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ POST - ValidationError (za duża siatka):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ POST - ValidationError (za duża siatka):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -278,24 +279,24 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Orientacja poza zakresem (0-359)
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Test',
+    name: "Test",
     width_cm: 500,
     height_cm: 400,
     cell_size_cm: 25,
-    orientation: 360  // Max to 359!
-  })
+    orientation: 360, // Max to 359!
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ POST - ValidationError (orientacja):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ POST - ValidationError (orientacja):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -306,25 +307,25 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Latitude poza zakresem (-90 do 90)
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Test',
+    name: "Test",
     width_cm: 500,
     height_cm: 400,
     cell_size_cm: 25,
     orientation: 0,
-    latitude: 91  // Max to 90!
-  })
+    latitude: 91, // Max to 90!
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ POST - ValidationError (latitude):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ POST - ValidationError (latitude):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -335,25 +336,25 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Longitude poza zakresem (-180 do 180)
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Test',
+    name: "Test",
     width_cm: 500,
     height_cm: 400,
     cell_size_cm: 25,
     orientation: 0,
-    longitude: -181  // Min to -180!
-  })
+    longitude: -181, // Min to -180!
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ POST - ValidationError (longitude):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ POST - ValidationError (longitude):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -364,25 +365,25 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Nieprawidłowa wartośÄ‡ hemisphere
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Test',
+    name: "Test",
     width_cm: 500,
     height_cm: 400,
     cell_size_cm: 25,
     orientation: 0,
-    hemisphere: 'eastern'  // Dozwolone: 'northern' lub 'southern'
-  })
+    hemisphere: "eastern", // Dozwolone: 'northern' lub 'southern'
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ POST - ValidationError (hemisphere):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ POST - ValidationError (hemisphere):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -393,24 +394,24 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Dodatkowe pole (strict mode)
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Test',
+    name: "Test",
     width_cm: 500,
     height_cm: 400,
     cell_size_cm: 25,
     orientation: 0,
-    extra_field: 'value'  // Nieznane pole
-  })
+    extra_field: "value", // Nieznane pole
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ POST - ValidationError (dodatkowe pole):', data);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ POST - ValidationError (dodatkowe pole):", data);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -423,24 +424,24 @@ fetch('/api/plans', {
 // Test: Duplikat nazwy
 // UWAGA: Najpierw utwórz plan o nazwie "Istniejący plan", potem uruchom ten test
 
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Istniejący plan',  // Ta nazwa już istnieje
+    name: "Istniejący plan", // Ta nazwa już istnieje
     width_cm: 500,
     height_cm: 400,
     cell_size_cm: 25,
-    orientation: 0
-  })
+    orientation: 0,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ POST - Conflict:', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ POST - Conflict:", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (409 Conflict):
@@ -456,17 +457,17 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Nieprawidłowy JSON
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
-  body: '{invalid json}'
+  credentials: "include",
+  body: "{invalid json}",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ POST - Invalid JSON:', data);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ POST - Invalid JSON:", data);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -482,27 +483,27 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Maksymalna siatka 200x200
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Maksymalna siatka',
+    name: "Maksymalna siatka",
     width_cm: 20000,
     height_cm: 20000,
     cell_size_cm: 100,
     orientation: 359,
     latitude: 90,
     longitude: 180,
-    hemisphere: 'northern'
-  })
+    hemisphere: "northern",
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ POST - Max wymiary:', data);
-    console.log('Grid:', data.data.grid_width, 'x', data.data.grid_height);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ POST - Max wymiary:", data);
+    console.log("Grid:", data.data.grid_width, "x", data.data.grid_height);
   });
 
 // Oczekiwany wynik (201 Created):
@@ -513,27 +514,27 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Minimalna siatka 1x1
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Minimalna siatka',
+    name: "Minimalna siatka",
     width_cm: 10,
     height_cm: 10,
     cell_size_cm: 10,
     orientation: 0,
     latitude: -90,
     longitude: -180,
-    hemisphere: 'southern'
-  })
+    hemisphere: "southern",
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ POST - Min wymiary:', data);
-    console.log('Grid:', data.data.grid_width, 'x', data.data.grid_height);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ POST - Min wymiary:", data);
+    console.log("Grid:", data.data.grid_width, "x", data.data.grid_height);
   });
 
 // Oczekiwany wynik (201 Created):
@@ -544,24 +545,24 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Trim białych znaków w nazwie
-fetch('/api/plans', {
-  method: 'POST',
+fetch("/api/plans", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: '  Plan z spacjami  ',
+    name: "  Plan z spacjami  ",
     width_cm: 500,
     height_cm: 400,
     cell_size_cm: 25,
-    orientation: 0
-  })
+    orientation: 0,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ POST - Trim:', data);
-    console.log('Nazwa po trim:', data.data.name);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ POST - Trim:", data);
+    console.log("Nazwa po trim:", data.data.name);
   });
 
 // Oczekiwany wynik (201 Created):
@@ -584,28 +585,28 @@ fetch('/api/plans', {
 ```javascript
 // Test: Zmień nazwę planu
 // UWAGA: Użyj window.testPlanId z testu 2.1 lub podaj swoje ID bezpośrednio
-const planId = window.testPlanId || '9f8c6943-44a4-457e-a463-8ac08994a384'; // Zastąp swoim ID jeśli potrzebne
+const planId = window.testPlanId || "9f8c6943-44a4-457e-a463-8ac08994a384"; // Zastąp swoim ID jeśli potrzebne
 
 if (!planId) {
-  console.error('❌ Błąd: Brak ID planu. Uruchom najpierw test 2.1 lub ustaw window.testPlanId.');
+  console.error("❌ Błąd: Brak ID planu. Uruchom najpierw test 2.1 lub ustaw window.testPlanId.");
 } else {
   fetch(`/api/plans/${planId}`, {
-    method: 'PATCH',
+    method: "PATCH",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
     },
-    credentials: 'include',
+    credentials: "include",
     body: JSON.stringify({
-      name: 'Nowa nazwa'
-    })
+      name: "Nowa nazwa",
+    }),
   })
-    .then(res => res.json())
-    .then(data => {
-      console.log('✅ PATCH - Zmiana nazwy:', data);
-      console.log('Nowa nazwa:', data.data.name);
-      console.log('Updated at:', data.data.updated_at);
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("✅ PATCH - Zmiana nazwy:", data);
+      console.log("Nowa nazwa:", data.data.name);
+      console.log("Updated at:", data.data.updated_at);
     })
-    .catch(err => console.error('❌ Błąd:', err));
+    .catch((err) => console.error("❌ Błąd:", err));
 }
 
 // Oczekiwany wynik (200 OK):
@@ -617,25 +618,25 @@ if (!planId) {
 ```javascript
 // Test: Zaktualizuj dane GPS i orientację
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
     latitude: 52.2297,
     longitude: 21.0122,
     orientation: 90,
-    hemisphere: 'northern'
-  })
+    hemisphere: "northern",
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ PATCH - Lokalizacja:', data);
-    console.log('GPS:', data.data.latitude, data.data.longitude);
-    console.log('Orientacja:', data.data.orientation);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ PATCH - Lokalizacja:", data);
+    console.log("GPS:", data.data.latitude, data.data.longitude);
+    console.log("Orientacja:", data.data.orientation);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // latitude: 52.2297, longitude: 21.0122, orientation: 90, hemisphere: "northern"
@@ -648,23 +649,23 @@ fetch(`/api/plans/${window.testPlanId}`, {
 // Warunki: Plan ma 500x400 cm, cell_size 25, grid 20x16
 // Zmiana na: 1000x800 cm, cell_size 50, grid nadal 20x16
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
     width_cm: 1000,
     height_cm: 800,
-    cell_size_cm: 50
-  })
+    cell_size_cm: 50,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ PATCH - Wymiary bez zmiany siatki:', data);
-    console.log('Grid:', data.data.grid_width, 'x', data.data.grid_height);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ PATCH - Wymiary bez zmiany siatki:", data);
+    console.log("Grid:", data.data.grid_width, "x", data.data.grid_height);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // grid_width: 20, grid_height: 16 (bez zmiany)
@@ -676,19 +677,19 @@ fetch(`/api/plans/${window.testPlanId}`, {
 // Test: Próba zmiany wymiarów siatki bez potwierdzenia
 // 600cm / 25cm = 24 komórki (zmiana z 20)
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    width_cm: 600
-  })
+    width_cm: 600,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - Conflict (brak potwierdzenia):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - Conflict (brak potwierdzenia):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (409 Conflict):
@@ -705,21 +706,21 @@ fetch(`/api/plans/${window.testPlanId}`, {
 ```javascript
 // Test: Zmiana wymiarów siatki z potwierdzeniem
 fetch(`/api/plans/${window.testPlanId}?confirm_regenerate=true`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    width_cm: 600
-  })
+    width_cm: 600,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ PATCH - Zmiana siatki z potwierdzeniem:', data);
-    console.log('Nowy grid_width:', data.data.grid_width);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ PATCH - Zmiana siatki z potwierdzeniem:", data);
+    console.log("Nowy grid_width:", data.data.grid_width);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // grid_width: 24 (zmienione z 20)
@@ -731,22 +732,22 @@ fetch(`/api/plans/${window.testPlanId}?confirm_regenerate=true`, {
 // Test: ZmieĹ„ rozmiar komórki z potwierdzeniem
 // 500cm / 50cm = 10 komórek (zmiana z 20)
 fetch(`/api/plans/${window.testPlanId}?confirm_regenerate=true`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    cell_size_cm: 50
-  })
+    cell_size_cm: 50,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ PATCH - Zmiana cell_size:', data);
-    console.log('Nowy cell_size:', data.data.cell_size_cm);
-    console.log('Nowy grid_width:', data.data.grid_width);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ PATCH - Zmiana cell_size:", data);
+    console.log("Nowy cell_size:", data.data.cell_size_cm);
+    console.log("Nowy grid_width:", data.data.grid_width);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // cell_size_cm: 50, grid_width: 10 (500/50)
@@ -757,17 +758,17 @@ fetch(`/api/plans/${window.testPlanId}?confirm_regenerate=true`, {
 ```javascript
 // Test: Puste body (brak pól do aktualizacji)
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
-  body: JSON.stringify({})
+  credentials: "include",
+  body: JSON.stringify({}),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - ValidationError (puste body):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - ValidationError (puste body):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -784,19 +785,19 @@ fetch(`/api/plans/${window.testPlanId}`, {
 ```javascript
 // Test: Pusta nazwa
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: ''
-  })
+    name: "",
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - ValidationError (pusta nazwa):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - ValidationError (pusta nazwa):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -808,19 +809,19 @@ fetch(`/api/plans/${window.testPlanId}`, {
 ```javascript
 // Test: Nieprawidłowy cell_size (dozwolone: 10, 25, 50, 100)
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    cell_size_cm: 30
-  })
+    cell_size_cm: 30,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - ValidationError (cell_size):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - ValidationError (cell_size):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -832,20 +833,20 @@ fetch(`/api/plans/${window.testPlanId}`, {
 ```javascript
 // Test: SzerokośÄ‡ niepodzielna przez rozmiar komórki
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
     width_cm: 503,
-    cell_size_cm: 50
-  })
+    cell_size_cm: 50,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - ValidationError (niepodzielne):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - ValidationError (niepodzielne):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -857,20 +858,20 @@ fetch(`/api/plans/${window.testPlanId}`, {
 ```javascript
 // Test: Za duża siatka po zmianie
 fetch(`/api/plans/${window.testPlanId}?confirm_regenerate=true`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
     width_cm: 20100,
-    cell_size_cm: 100
-  })
+    cell_size_cm: 100,
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - ValidationError (za duża siatka):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - ValidationError (za duża siatka):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -882,18 +883,18 @@ fetch(`/api/plans/${window.testPlanId}?confirm_regenerate=true`, {
 ```javascript
 // Test: Orientacja poza zakresem
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    orientation: 360  // Max to 359
-  })
+    orientation: 360, // Max to 359
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - ValidationError (orientacja):', data);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - ValidationError (orientacja):", data);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -905,18 +906,18 @@ fetch(`/api/plans/${window.testPlanId}`, {
 ```javascript
 // Test: Latitude poza zakresem
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    latitude: 91  // Max to 90
-  })
+    latitude: 91, // Max to 90
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - ValidationError (latitude):', data);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - ValidationError (latitude):", data);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -928,18 +929,18 @@ fetch(`/api/plans/${window.testPlanId}`, {
 ```javascript
 // Test: Longitude poza zakresem
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    longitude: -181  // Min to -180
-  })
+    longitude: -181, // Min to -180
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - ValidationError (longitude):', data);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - ValidationError (longitude):", data);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -951,18 +952,18 @@ fetch(`/api/plans/${window.testPlanId}`, {
 ```javascript
 // Test: Nieprawidłowa wartośÄ‡ hemisphere
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    hemisphere: 'eastern'  // Dozwolone: 'northern' lub 'southern'
-  })
+    hemisphere: "eastern", // Dozwolone: 'northern' lub 'southern'
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - ValidationError (hemisphere):', data);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - ValidationError (hemisphere):", data);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -974,19 +975,19 @@ fetch(`/api/plans/${window.testPlanId}`, {
 ```javascript
 // Test: Dodatkowe pole (strict mode)
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Test',
-    extra_field: 'value'  // Nieznane pole
-  })
+    name: "Test",
+    extra_field: "value", // Nieznane pole
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - ValidationError (dodatkowe pole):', data);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - ValidationError (dodatkowe pole):", data);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -997,20 +998,20 @@ fetch(`/api/plans/${window.testPlanId}`, {
 
 ```javascript
 // Test: Nieprawidłowy format UUID
-fetch('/api/plans/not-a-uuid', {
-  method: 'PATCH',
+fetch("/api/plans/not-a-uuid", {
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Test'
-  })
+    name: "Test",
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - ValidationError (plan_id):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - ValidationError (plan_id):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -1026,20 +1027,20 @@ fetch('/api/plans/not-a-uuid', {
 
 ```javascript
 // Test: Plan nie istnieje
-fetch('/api/plans/00000000-0000-0000-0000-000000000000', {
-  method: 'PATCH',
+fetch("/api/plans/00000000-0000-0000-0000-000000000000", {
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Test'
-  })
+    name: "Test",
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - NotFound:', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - NotFound:", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (404 Not Found):
@@ -1059,19 +1060,19 @@ fetch('/api/plans/00000000-0000-0000-0000-000000000000', {
 // Potem spróbuj zmieniÄ‡ nazwę pierwszego planu na "Inny plan"
 
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   body: JSON.stringify({
-    name: 'Inny plan'  // Ta nazwa już istnieje
-  })
+    name: "Inny plan", // Ta nazwa już istnieje
+  }),
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - Conflict:', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - Conflict:", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (409 Conflict):
@@ -1088,16 +1089,16 @@ fetch(`/api/plans/${window.testPlanId}`, {
 ```javascript
 // Test: Nieprawidłowy JSON
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'PATCH',
+  method: "PATCH",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
-  body: '{invalid json}'
+  credentials: "include",
+  body: "{invalid json}",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ PATCH - Invalid JSON:', data);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ PATCH - Invalid JSON:", data);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -1126,20 +1127,20 @@ fetch(`/api/plans/${window.testPlanId}`, {
 // Test: UsuĹ„ plan
 // UWAGA: Ten test usuwa plan! Najpierw utwórz plan do usunięcia
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'DELETE',
-  credentials: 'include'
+  method: "DELETE",
+  credentials: "include",
 })
-  .then(res => {
+  .then((res) => {
     if (res.status === 204) {
-      console.log('✅ DELETE - Sukces: Plan usunięty (204)');
-      console.log('Brak treści w odpowiedzi (zgodnie ze specyfikacją)');
+      console.log("✅ DELETE - Sukces: Plan usunięty (204)");
+      console.log("Brak treści w odpowiedzi (zgodnie ze specyfikacją)");
     } else {
-      return res.json().then(data => {
-        console.log('❌ DELETE - Nieoczekiwany status:', res.status, data);
+      return res.json().then((data) => {
+        console.log("❌ DELETE - Nieoczekiwany status:", res.status, data);
       });
     }
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik:
 // Status 204 No Content
@@ -1150,14 +1151,14 @@ fetch(`/api/plans/${window.testPlanId}`, {
 
 ```javascript
 // Test: Nieprawidłowy format UUID
-fetch('/api/plans/not-a-uuid', {
-  method: 'DELETE',
-  credentials: 'include'
+fetch("/api/plans/not-a-uuid", {
+  method: "DELETE",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ DELETE - ValidationError (plan_id):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ DELETE - ValidationError (plan_id):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -1173,14 +1174,14 @@ fetch('/api/plans/not-a-uuid', {
 
 ```javascript
 // Test: Próba usunięcia nieistniejącego planu
-fetch('/api/plans/00000000-0000-0000-0000-000000000000', {
-  method: 'DELETE',
-  credentials: 'include'
+fetch("/api/plans/00000000-0000-0000-0000-000000000000", {
+  method: "DELETE",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ DELETE - NotFound:', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ DELETE - NotFound:", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (404 Not Found):
@@ -1198,13 +1199,13 @@ fetch('/api/plans/00000000-0000-0000-0000-000000000000', {
 // Test: UsuĹ„ plan drugi raz (po teście 4.1)
 // UWAGA: Ten test zadziała tylko jeśli wcześniej usunąłeś plan w teście 4.1
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'DELETE',
-  credentials: 'include'
+  method: "DELETE",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ DELETE - NotFound (już usunięty):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ DELETE - NotFound (już usunięty):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (404 Not Found):
@@ -1231,22 +1232,22 @@ fetch(`/api/plans/${window.testPlanId}`, {
 
 ```javascript
 // Test: Pobierz listę planów (domyślny limit: 20)
-fetch('/api/plans', {
-  method: 'GET',
-  credentials: 'include'
+fetch("/api/plans", {
+  method: "GET",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ GET /api/plans - Sukces:', data);
-    console.log('Liczba planów:', data.data.length);
-    console.log('Next cursor:', data.pagination.next_cursor);
-    
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ GET /api/plans - Sukces:", data);
+    console.log("Liczba planów:", data.data.length);
+    console.log("Next cursor:", data.pagination.next_cursor);
+
     // Zapisz cursor dla kolejnych testów
     if (data.pagination.next_cursor) {
       window.nextCursor = data.pagination.next_cursor;
     }
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // {
@@ -1279,17 +1280,17 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Pobierz listę z limitem 5
-fetch('/api/plans?limit=5', {
-  method: 'GET',
-  credentials: 'include'
+fetch("/api/plans?limit=5", {
+  method: "GET",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ GET /api/plans (limit=5) - Sukces:', data);
-    console.log('Liczba planów:', data.data.length);
-    console.log('Next cursor:', data.pagination.next_cursor);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ GET /api/plans (limit=5) - Sukces:", data);
+    console.log("Liczba planów:", data.data.length);
+    console.log("Next cursor:", data.pagination.next_cursor);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // data zawiera max 5 elementów
@@ -1299,23 +1300,23 @@ fetch('/api/plans?limit=5', {
 
 ```javascript
 // Test: Pobierz następną stronę używając cursora
-// UWAGA: Najpierw uruchom test 5.2 i uzupełnij window.nextCursor uzyskaną wartością 
+// UWAGA: Najpierw uruchom test 5.2 i uzupełnij window.nextCursor uzyskaną wartością
 if (!window.nextCursor) {
-  console.error('❌ Błąd: window.nextCursor nie jest ustawiony. Uruchom najpierw test 5.1.');
+  console.error("❌ Błąd: window.nextCursor nie jest ustawiony. Uruchom najpierw test 5.1.");
 } else {
   // Enkoduj cursor w URL (Base64 może zawierać znaki specjalne)
   const encodedCursor = encodeURIComponent(window.nextCursor);
   fetch(`/api/plans?limit=5&cursor=${encodedCursor}`, {
-    method: 'GET',
-    credentials: 'include'
+    method: "GET",
+    credentials: "include",
   })
-    .then(res => res.json())
-    .then(data => {
-      console.log('✅ GET /api/plans (z cursorem) - Sukces:', data);
-      console.log('Liczba planów:', data.data.length);
-      console.log('Next cursor:', data.pagination.next_cursor);
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("✅ GET /api/plans (z cursorem) - Sukces:", data);
+      console.log("Liczba planów:", data.data.length);
+      console.log("Next cursor:", data.pagination.next_cursor);
     })
-    .catch(err => console.error('❌ Błąd:', err));
+    .catch((err) => console.error("❌ Błąd:", err));
 }
 
 // Oczekiwany wynik (200 OK):
@@ -1327,17 +1328,17 @@ if (!window.nextCursor) {
 
 ```javascript
 // Test: Pobierz wszystkie plany (limit 100)
-fetch('/api/plans?limit=100', {
-  method: 'GET',
-  credentials: 'include'
+fetch("/api/plans?limit=100", {
+  method: "GET",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ GET /api/plans (limit=100) - Sukces:', data);
-    console.log('Liczba planów:', data.data.length);
-    console.log('Next cursor (powinno byÄ‡ null):', data.pagination.next_cursor);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ GET /api/plans (limit=100) - Sukces:", data);
+    console.log("Liczba planów:", data.data.length);
+    console.log("Next cursor (powinno byÄ‡ null):", data.pagination.next_cursor);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // Wszystkie plany użytkownika
@@ -1349,17 +1350,17 @@ fetch('/api/plans?limit=100', {
 ```javascript
 // Test: Pobierz listę gdy użytkownik nie ma planów
 // UWAGA: UsuĹ„ wszystkie plany przed tym testem
-fetch('/api/plans', {
-  method: 'GET',
-  credentials: 'include'
+fetch("/api/plans", {
+  method: "GET",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ GET /api/plans (pusta lista) - Sukces:', data);
-    console.log('Liczba planów:', data.data.length);
-    console.log('Next cursor:', data.pagination.next_cursor);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ GET /api/plans (pusta lista) - Sukces:", data);
+    console.log("Liczba planów:", data.data.length);
+    console.log("Next cursor:", data.pagination.next_cursor);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // {
@@ -1374,17 +1375,17 @@ fetch('/api/plans', {
 
 ```javascript
 // Test: Sortowanie rosnąco po updated_at
-fetch('/api/plans?order=asc&limit=5', {
-  method: 'GET',
-  credentials: 'include'
+fetch("/api/plans?order=asc&limit=5", {
+  method: "GET",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ GET /api/plans (order=asc) - Sukces:', data);
-    console.log('Pierwsze updated_at:', data.data[0]?.updated_at);
-    console.log('Ostatnie updated_at:', data.data[data.data.length - 1]?.updated_at);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ GET /api/plans (order=asc) - Sukces:", data);
+    console.log("Pierwsze updated_at:", data.data[0]?.updated_at);
+    console.log("Ostatnie updated_at:", data.data[data.data.length - 1]?.updated_at);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // Plany posortowane rosnąco (najstarsze pierwsze)
@@ -1394,14 +1395,14 @@ fetch('/api/plans?order=asc&limit=5', {
 
 ```javascript
 // Test: Limit poniżej minimum (min: 1)
-fetch('/api/plans?limit=0', {
-  method: 'GET',
-  credentials: 'include'
+fetch("/api/plans?limit=0", {
+  method: "GET",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ GET - ValidationError (limit min):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ GET - ValidationError (limit min):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -1417,14 +1418,14 @@ fetch('/api/plans?limit=0', {
 
 ```javascript
 // Test: Limit powyżej maksimum (max: 100)
-fetch('/api/plans?limit=101', {
-  method: 'GET',
-  credentials: 'include'
+fetch("/api/plans?limit=101", {
+  method: "GET",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ GET - ValidationError (limit max):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ GET - ValidationError (limit max):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -1440,14 +1441,14 @@ fetch('/api/plans?limit=101', {
 
 ```javascript
 // Test: Nieprawidłowy format cursora
-fetch('/api/plans?cursor=invalid-base64!!!', {
-  method: 'GET',
-  credentials: 'include'
+fetch("/api/plans?cursor=invalid-base64!!!", {
+  method: "GET",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ GET - ValidationError (cursor):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ GET - ValidationError (cursor):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -1471,20 +1472,20 @@ fetch('/api/plans?cursor=invalid-base64!!!', {
 4. Skopiuj i wykonaj poniższe testy
 
 ### 6.1 GET - Sukces: pobranie istniejącego planu (200 OK)
- 
+
 ```javascript
 // Test: Pobierz szczegóły planu
 fetch(`/api/plans/${window.testPlanId}`, {
-  method: 'GET',
-  credentials: 'include'
+  method: "GET",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('✅ GET /api/plans/:id - Sukces:', data);
-    console.log('Plan:', data.data.name);
-    console.log('Grid:', data.data.grid_width, 'x', data.data.grid_height);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("✅ GET /api/plans/:id - Sukces:", data);
+    console.log("Plan:", data.data.name);
+    console.log("Grid:", data.data.grid_width, "x", data.data.grid_height);
   })
-  .catch(err => console.error('❌ Błąd:', err));
+  .catch((err) => console.error("❌ Błąd:", err));
 
 // Oczekiwany wynik (200 OK):
 // {
@@ -1511,14 +1512,14 @@ fetch(`/api/plans/${window.testPlanId}`, {
 
 ```javascript
 // Test: Próba pobrania nieistniejącego planu
-fetch('/api/plans/00000000-0000-0000-0000-000000000000', {
-  method: 'GET',
-  credentials: 'include'
+fetch("/api/plans/00000000-0000-0000-0000-000000000000", {
+  method: "GET",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ GET /:id - NotFound:', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ GET /:id - NotFound:", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (404 Not Found):
@@ -1534,14 +1535,14 @@ fetch('/api/plans/00000000-0000-0000-0000-000000000000', {
 
 ```javascript
 // Test: Nieprawidłowy format UUID
-fetch('/api/plans/invalid-uuid-format', {
-  method: 'GET',
-  credentials: 'include'
+fetch("/api/plans/invalid-uuid-format", {
+  method: "GET",
+  credentials: "include",
 })
-  .then(res => res.json())
-  .then(data => {
-    console.log('❌ GET /:id - ValidationError (UUID):', data);
-    console.log('Błąd:', data.error.message);
+  .then((res) => res.json())
+  .then((data) => {
+    console.log("❌ GET /:id - ValidationError (UUID):", data);
+    console.log("Błąd:", data.error.message);
   });
 
 // Oczekiwany wynik (400 Bad Request):
@@ -1564,57 +1565,57 @@ fetch('/api/plans/invalid-uuid-format', {
 
 // 1. Utwórz plan
 const createPlan = async () => {
-  const res = await fetch('/api/plans', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+  const res = await fetch("/api/plans", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({
-      name: 'Test Lifecycle',
+      name: "Test Lifecycle",
       width_cm: 500,
       height_cm: 400,
       cell_size_cm: 25,
-      orientation: 0
-    })
+      orientation: 0,
+    }),
   });
   const data = await res.json();
-  console.log('1. Plan utworzony:', data.data.id);
+  console.log("1. Plan utworzony:", data.data.id);
   return data.data.id;
 };
 
 // 2. Pobierz plan
 const getPlan = async (id) => {
   const res = await fetch(`/api/plans/${id}`, {
-    credentials: 'include'
+    credentials: "include",
   });
   const data = await res.json();
-  console.log('2. Plan pobrany:', data.data.name);
+  console.log("2. Plan pobrany:", data.data.name);
   return data.data;
 };
 
 // 3. Zaktualizuj plan
 const updatePlan = async (id) => {
   const res = await fetch(`/api/plans/${id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({
-      name: 'Test Lifecycle Updated',
+      name: "Test Lifecycle Updated",
       latitude: 52.2297,
-      longitude: 21.0122
-    })
+      longitude: 21.0122,
+    }),
   });
   const data = await res.json();
-  console.log('3. Plan zaktualizowany:', data.data.name);
+  console.log("3. Plan zaktualizowany:", data.data.name);
   return data.data;
 };
 
 // 4. UsuĹ„ plan
 const deletePlan = async (id) => {
   const res = await fetch(`/api/plans/${id}`, {
-    method: 'DELETE',
-    credentials: 'include'
+    method: "DELETE",
+    credentials: "include",
   });
-  console.log('4. Plan usunięty, status:', res.status);
+  console.log("4. Plan usunięty, status:", res.status);
 };
 
 // Uruchom pełny scenariusz
@@ -1625,9 +1626,9 @@ const deletePlan = async (id) => {
     await updatePlan(planId);
     await getPlan(planId);
     await deletePlan(planId);
-    console.log('✅ Pełny cykl życia planu zakoĹ„czony');
+    console.log("✅ Pełny cykl życia planu zakoĹ„czony");
   } catch (err) {
-    console.error('❌ Błąd w cyklu życia:', err);
+    console.error("❌ Błąd w cyklu życia:", err);
   }
 })();
 ```
@@ -1637,6 +1638,7 @@ const deletePlan = async (id) => {
 ## 8. Checklist testów
 
 ### Testy POST /api/plans
+
 - [ ] Utworzenie minimalnego planu
 - [ ] Utworzenie planu z danymi GPS
 - [ ] Błędy walidacji: pusta nazwa, nieprawidłowy cell_size, niepodzielne wymiary
@@ -1646,6 +1648,7 @@ const deletePlan = async (id) => {
 - [ ] Edge cases: maksymalne i minimalne wymiary
 
 ### Testy PATCH /api/plans/:plan_id
+
 - [ ] Aktualizacja nazwy
 - [ ] Aktualizacja lokalizacji GPS
 - [ ] Zmiana wymiarów bez zmiany siatki
@@ -1656,12 +1659,14 @@ const deletePlan = async (id) => {
 - [ ] Błąd: konflikt nazwy (409)
 
 ### Testy DELETE /api/plans/:plan_id
+
 - [ ] Usunięcie planu (204)
 - [ ] Błąd: plan nie istnieje (404)
 - [ ] Błąd: próba usunięcia dwukrotnie (404)
 - [ ] Błąd walidacji: nieprawidłowy UUID
 
 ### Testy GET /api/plans
+
 - [ ] Pierwsza strona z domyślnym limitem
 - [ ] Pierwsza strona z customowym limitem
 - [ ] Następna strona z cursorem
@@ -1671,11 +1676,13 @@ const deletePlan = async (id) => {
 - [ ] Błędy walidacji: limit poza zakresem, nieprawidłowy cursor
 
 ### Testy GET /api/plans/:plan_id
+
 - [ ] Pobranie istniejącego planu
 - [ ] Błąd: plan nie istnieje (404)
 - [ ] Błąd walidacji: nieprawidłowy UUID
 
 ### Testy zaawansowane
+
 - [ ] Pełny cykl życia planu (create → read → update → read → delete)
 - [ ] Izolacja użytkowników (RLS)
 - [ ] Weryfikacja w bazie danych

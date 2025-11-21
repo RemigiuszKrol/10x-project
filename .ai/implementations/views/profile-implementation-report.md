@@ -9,6 +9,7 @@
 ## 1. Przegląd
 
 Zrealizowano pełną implementację widoku profilu użytkownika (`/profile`) zgodnie z planem implementacji. Widok umożliwia zalogowanemu użytkownikowi:
+
 - Przeglądanie preferencji językowych i motywu
 - Edycję preferencji z natychmiastowym podglądem zmian (optimistic update)
 - Zapisywanie preferencji do bazy danych przez API
@@ -20,17 +21,20 @@ Zrealizowano pełną implementację widoku profilu użytkownika (`/profile`) zgo
 ## 2. Zrealizowane kroki implementacji
 
 ### Krok 1: Utworzenie strony profile.astro ✓
+
 - **Plik:** `src/pages/profile.astro`
 - **SSR guard:** sprawdzenie `Astro.locals.user` i przekierowanie niezalogowanych do `/auth/login`
 - **Hydratacja:** komponent React z dyrektywą `client:only="react"`
 - **Przekazanie userId:** props do komponentu React
 
 ### Krok 2: Weryfikacja kontekstu Supabase/Auth ✓
+
 - Middleware już skonfigurowany w `src/middleware/index.ts`
 - Client-side Supabase z `@/db/supabase.client.ts`
 - Sesja zarządzana przez Supabase Auth
 
 ### Krok 3: Hook useProfilePreferences ✓
+
 - **Plik:** `src/lib/hooks/useProfilePreferences.ts`
 - Fetch GET `/api/profile` z tokenem sesji
 - Mapowanie `ProfileDto` → `ProfileViewModel`
@@ -38,6 +42,7 @@ Zrealizowano pełną implementację widoku profilu użytkownika (`/profile`) zgo
 - Stan union type: `loading | error | ready`
 
 ### Krok 4: Hook useUpdateProfile ✓
+
 - **Plik:** `src/lib/hooks/useUpdateProfile.ts`
 - PUT `/api/profile` z payload
 - Optimistic update callbacks
@@ -45,34 +50,40 @@ Zrealizowano pełną implementację widoku profilu użytkownika (`/profile`) zgo
 - Mapowanie field_errors z API
 
 ### Krok 5: Główne komponenty profilu ✓
+
 - **ProfilePage:** główny kontener z zarządzaniem stanem i hookami
 - **ProfileContent:** renderer warunkowy (loading/error/ready)
 - **ProfileForm:** formularz z walidacją i tracking dirty state
 
 ### Krok 6: Komponenty UI ✓
+
 - **LanguageSelector:** RadioGroup dla wyboru języka (pl/en)
 - **ThemeSelector:** toggle light/dark z ikonami
 - **ThemePreview:** podgląd motywu z przykładowym UI
 - **PreferenceSummary:** metadane profilu (ID, daty)
 
 ### Krok 7: Komponenty pomocnicze ✓
+
 - **ProfileSkeleton:** placeholder podczas ładowania
 - **ProfileErrorFallback:** wyświetlanie błędów z retry
 - **FormActions:** przyciski Zapisz/Anuluj
 
 ### Krok 8: ThemeProvider ✓
+
 - **Plik:** `src/lib/contexts/ThemeContext.tsx`
 - Zarządzanie motywem z localStorage
 - Aplikacja klasy `dark`/`light` do `<html>`
 - Hook `useTheme()`
 
 ### Krok 9: LanguageContext ✓
+
 - **Plik:** `src/lib/contexts/LanguageContext.tsx`
 - Zarządzanie językiem z localStorage
 - Ustawienie atrybutu `lang` na `<html>`
 - Hook `useLanguage()`
 
 ### Krok 10: Integracja i weryfikacja ✓
+
 - **ProfilePageWrapper:** opakowanie w providery
 - Integracja optimistic update z kontekstami
 - Rollback przy błędzie API
@@ -85,6 +96,7 @@ Zrealizowano pełną implementację widoku profilu użytkownika (`/profile`) zgo
 ### 3.1. Hooki (`src/lib/hooks/`)
 
 #### `useProfilePreferences.ts`
+
 ```typescript
 interface ProfileViewModel {
   id: string;
@@ -102,16 +114,18 @@ type ProfileState =
 function useProfilePreferences(): {
   state: ProfileState;
   refetch: () => void;
-}
+};
 ```
 
 **Odpowiedzialność:**
+
 - Pobieranie profilu z GET `/api/profile`
 - Mapowanie DTO na ViewModel
 - Zarządzanie stanem (loading/error/ready)
 - Obsługa błędów HTTP i sieci
 
 #### `useUpdateProfile.ts`
+
 ```typescript
 function useUpdateProfile(options?: {
   onOptimisticUpdate?: (payload) => void;
@@ -122,10 +136,11 @@ function useUpdateProfile(options?: {
   mutate: (payload: ProfileUpdatePayload) => Promise<UpdateProfileResult>;
   isLoading: boolean;
   error: ProfileError | null;
-}
+};
 ```
 
 **Odpowiedzialność:**
+
 - Wysyłanie PUT `/api/profile` z payload
 - Optimistic update przez callbacki
 - Rollback przy błędzie
@@ -134,6 +149,7 @@ function useUpdateProfile(options?: {
 ### 3.2. Konteksty (`src/lib/contexts/`)
 
 #### `ThemeContext.tsx`
+
 ```typescript
 interface ThemeContextValue {
   theme: UiTheme;
@@ -141,28 +157,31 @@ interface ThemeContextValue {
   isDark: boolean;
 }
 
-function ThemeProvider({ children, defaultTheme, storageKey }): ReactElement
-function useTheme(): ThemeContextValue
+function ThemeProvider({ children, defaultTheme, storageKey }): ReactElement;
+function useTheme(): ThemeContextValue;
 ```
 
 **Odpowiedzialność:**
+
 - Zarządzanie globalnym motywem aplikacji
 - Persystencja w localStorage (`plantsplaner-theme`)
 - Aplikacja klasy CSS do `<html>`
 - Udostępnienie stanu przez hook
 
 #### `LanguageContext.tsx`
+
 ```typescript
 interface LanguageContextValue {
   languageCode: string;
   setLanguageCode: (code: string) => void;
 }
 
-function LanguageProvider({ children, defaultLanguage, storageKey }): ReactElement
-function useLanguage(): LanguageContextValue
+function LanguageProvider({ children, defaultLanguage, storageKey }): ReactElement;
+function useLanguage(): LanguageContextValue;
 ```
 
 **Odpowiedzialność:**
+
 - Zarządzanie globalnym językiem aplikacji
 - Persystencja w localStorage (`plantsplaner-language`)
 - Ustawienie atrybutu `lang` na `<html>`
@@ -171,10 +190,13 @@ function useLanguage(): LanguageContextValue
 ### 3.3. Komponenty profilu (`src/components/profile/`)
 
 #### `ProfilePageWrapper.tsx`
+
 Komponent wrapper opakowujący ProfilePage w providery kontekstów.
 
 #### `ProfilePage.tsx`
+
 Główny kontener z logiką:
+
 - Integracja z hookami: `useProfilePreferences`, `useUpdateProfile`, `useTheme`, `useLanguage`
 - Optimistic update: natychmiastowa aktualizacja kontekstów
 - Rollback: przywracanie poprzednich wartości przy błędzie
@@ -182,13 +204,17 @@ Główny kontener z logiką:
 - Mapowanie błędów: `field_errors` → `ProfileFormErrors`
 
 #### `ProfileContent.tsx`
+
 Renderer warunkowy w zależności od `ProfileState`:
+
 - `loading` → `ProfileSkeleton`
 - `error` → `ProfileErrorFallback`
 - `ready` → `ProfileForm` + `PreferenceSummary`
 
 #### `ProfileForm.tsx`
+
 Formularz edycji preferencji:
+
 - Kontrolki: `LanguageSelector`, `ThemeSelector`
 - Podgląd: `ThemePreview`
 - Akcje: `FormActions`
@@ -197,47 +223,61 @@ Formularz edycji preferencji:
 - Reset: przywracanie do `initialValues`
 
 #### `LanguageSelector.tsx`
+
 RadioGroup z opcjami języków:
+
 - Opcje: lista `LanguageOption[]` (code, label, nativeLabel)
 - Disabled state podczas submitting
 - Inline error message
 - Accessibility: label, aria attributes
 
 #### `ThemeSelector.tsx`
+
 Toggle dla motywu:
+
 - Opcje: light/dark z ikonami (Sun/Moon)
 - Wariant przycisku: `default` dla aktywnego, `outline` dla nieaktywnego
 - Disabled state podczas submitting
 
 #### `ThemePreview.tsx`
+
 Podgląd motywu:
+
 - Przykładowy UI z wybranym motywem
 - Dynamiczne klasy Tailwind
 - Preview headera, contentu, przycisków
 
 #### `PreferenceSummary.tsx`
+
 Metadane profilu:
+
 - ID profilu (monospace)
 - Data utworzenia (formatted)
 - Data ostatniej aktualizacji (formatted)
 - Opis funkcjonalności
 
 #### `ProfileSkeleton.tsx`
+
 Placeholder podczas ładowania:
+
 - Skeleton dla nagłówka
 - Skeleton dla formularza (pola, przyciski)
 - Skeleton dla podsumowania
 - Komponent `Skeleton` z shadcn/ui
 
 #### `ProfileErrorFallback.tsx`
+
 Wyświetlanie błędów:
+
 - Komunikat dostosowany do kodu błędu (401, 403, 404, 500)
 - Przycisk "Spróbuj ponownie" dla błędów retry-able
 - Przekierowanie do logowania dla 401/403
 - Komponent `Alert` z shadcn/ui
 
 #### `FormActions.tsx`
+
 Przyciski akcji formularza:
+
 - Przycisk "Zapisz": disabled gdy !isDirty lub isSubmitting
 - Przycisk "Anuluj": reset do początkowych wartości
 - Spinner podczas zapisywania (Loader2 icon)
@@ -245,7 +285,9 @@ Przyciski akcji formularza:
 ### 3.4. Strona (`src/pages/`)
 
 #### `profile.astro`
+
 Strona Astro:
+
 - SSR guard: sprawdzenie `Astro.locals.user`
 - Przekierowanie niezalogowanych do `/auth/login`
 - Hydratacja: `<ProfilePageWrapper client:only="react" userId={userId} />`
@@ -315,7 +357,9 @@ LanguageProvider
 ## 5. Integracja z API
 
 ### GET `/api/profile`
+
 **Request:**
+
 ```
 GET /api/profile
 Authorization: Bearer {session.access_token}
@@ -323,6 +367,7 @@ Content-Type: application/json
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -336,13 +381,16 @@ Content-Type: application/json
 ```
 
 **Obsługa błędów:**
+
 - 401/403: komunikat o braku uprawnień
 - 404: profil nie istnieje
 - 500: błąd serwera
 - Network error: błąd połączenia
 
 ### PUT `/api/profile`
+
 **Request:**
+
 ```
 PUT /api/profile
 Authorization: Bearer {session.access_token}
@@ -355,6 +403,7 @@ Content-Type: application/json
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -368,6 +417,7 @@ Content-Type: application/json
 ```
 
 **Response 400 (ValidationError):**
+
 ```json
 {
   "error": {
@@ -384,6 +434,7 @@ Content-Type: application/json
 ```
 
 **Obsługa błędów:**
+
 - 400: mapowanie `field_errors` na kontrolki formularza
 - 401/403: komunikat o braku uprawnień + rollback
 - 404: profil nie istnieje + rollback
@@ -395,18 +446,21 @@ Content-Type: application/json
 ## 6. Zarządzanie stanem
 
 ### 6.1. Stan lokalny (ProfileForm)
+
 ```typescript
 const [values, setValues] = useState<ProfileFormValues>(initialValues);
 const isDirty = values !== initialValues;
 ```
 
 ### 6.2. Stan hooka (useProfilePreferences)
+
 ```typescript
 const [state, setState] = useState<ProfileState>({ status: "loading" });
 // union type: loading | error | ready
 ```
 
 ### 6.3. Stan kontekstu (ThemeProvider)
+
 ```typescript
 const [theme, setThemeState] = useState<UiTheme>(() => {
   // Odczyt z localStorage
@@ -415,6 +469,7 @@ const [theme, setThemeState] = useState<UiTheme>(() => {
 ```
 
 ### 6.4. Stan kontekstu (LanguageProvider)
+
 ```typescript
 const [languageCode, setLanguageCodeState] = useState<string>(() => {
   // Odczyt z localStorage
@@ -427,25 +482,28 @@ const [languageCode, setLanguageCodeState] = useState<string>(() => {
 ## 7. Obsługa błędów
 
 ### 7.1. Błędy GET (pobieranie profilu)
-| Kod | Typ | Akcja | UI |
-|-----|-----|-------|-----|
-| 401 | Unauthorized | setState(error) | ProfileErrorFallback z CTA "Przejdź do logowania" |
-| 403 | Forbidden | setState(error) | ProfileErrorFallback z komunikatem |
-| 404 | NotFound | setState(error) | ProfileErrorFallback z przyciskiem "Spróbuj ponownie" |
-| 500 | InternalError | setState(error) | ProfileErrorFallback z przyciskiem "Spróbuj ponownie" |
-| Network | NetworkError | setState(error) | ProfileErrorFallback "Nie udało się połączyć z serwerem" |
+
+| Kod     | Typ           | Akcja           | UI                                                       |
+| ------- | ------------- | --------------- | -------------------------------------------------------- |
+| 401     | Unauthorized  | setState(error) | ProfileErrorFallback z CTA "Przejdź do logowania"        |
+| 403     | Forbidden     | setState(error) | ProfileErrorFallback z komunikatem                       |
+| 404     | NotFound      | setState(error) | ProfileErrorFallback z przyciskiem "Spróbuj ponownie"    |
+| 500     | InternalError | setState(error) | ProfileErrorFallback z przyciskiem "Spróbuj ponownie"    |
+| Network | NetworkError  | setState(error) | ProfileErrorFallback "Nie udało się połączyć z serwerem" |
 
 ### 7.2. Błędy PUT (aktualizacja profilu)
-| Kod | Typ | Akcja | UI |
-|-----|-----|-------|-----|
-| 400 | ValidationError | rollback + fieldErrors | Inline errors w kontrolkach + global message |
-| 401 | Unauthorized | rollback | Komunikat o wygaśnięciu sesji |
-| 403 | Forbidden | rollback | Komunikat o braku uprawnień |
-| 404 | NotFound | rollback | Komunikat "Profil nie znaleziony" |
-| 500 | InternalError | rollback | Komunikat "Wystąpił błąd" |
-| Network | NetworkError | rollback | Komunikat "Nie udało się połączyć" |
+
+| Kod     | Typ             | Akcja                  | UI                                           |
+| ------- | --------------- | ---------------------- | -------------------------------------------- |
+| 400     | ValidationError | rollback + fieldErrors | Inline errors w kontrolkach + global message |
+| 401     | Unauthorized    | rollback               | Komunikat o wygaśnięciu sesji                |
+| 403     | Forbidden       | rollback               | Komunikat o braku uprawnień                  |
+| 404     | NotFound        | rollback               | Komunikat "Profil nie znaleziony"            |
+| 500     | InternalError   | rollback               | Komunikat "Wystąpił błąd"                    |
+| Network | NetworkError    | rollback               | Komunikat "Nie udało się połączyć"           |
 
 ### 7.3. Rollback mechanism
+
 ```typescript
 // Przed mutacją - zapisz poprzednie wartości
 previousValuesRef.current = { theme, languageCode };
@@ -454,7 +512,7 @@ previousValuesRef.current = { theme, languageCode };
 onRollback: () => {
   setTheme(previousValuesRef.current.theme);
   setLanguageCode(previousValuesRef.current.languageCode);
-}
+};
 ```
 
 ---
@@ -462,12 +520,15 @@ onRollback: () => {
 ## 8. Stylowanie
 
 ### 8.1. Tailwind CSS
+
 - Utility classes dla layoutu, spacingu, kolorów
 - Responsive design (container, mx-auto, px-4)
 - Dark mode: klasy warunkowe w `ThemePreview`
 
 ### 8.2. Shadcn/ui komponenty
+
 Zainstalowane i wykorzystane:
+
 - `Button` - akcje, toggle motywu
 - `Label` - etykiety formularza
 - `RadioGroup` + `RadioGroupItem` - wybór języka
@@ -475,6 +536,7 @@ Zainstalowane i wykorzystane:
 - `Alert` + `AlertTitle` + `AlertDescription` - komunikaty błędów
 
 ### 8.3. Ikony (lucide-react)
+
 - `Sun` - motyw jasny
 - `Moon` - motyw ciemny
 - `AlertCircle` - błąd
@@ -486,16 +548,19 @@ Zainstalowane i wykorzystane:
 ## 9. Accessibility
 
 ### 9.1. ARIA attributes
+
 - `role="alert"` w Alert
 - `aria-label` w kontrolkach
 - Label powiązane z input przez `htmlFor`/`id`
 
 ### 9.2. Keyboard navigation
+
 - Wszystkie kontrolki dostępne z klawiatury
 - Focus styles (focus-visible)
 - Tab order
 
 ### 9.3. Screen readers
+
 - Semantyczne HTML (main, aside, form)
 - Descriptive labels
 - Error announcements
@@ -505,12 +570,14 @@ Zainstalowane i wykorzystane:
 ## 10. Testy i weryfikacja
 
 ### 10.1. TypeScript
+
 ```bash
 npx tsc --noEmit
 # ✅ Brak błędów kompilacji
 ```
 
 ### 10.2. ESLint
+
 ```bash
 npm run lint -- --fix
 # ✅ Automatyczna naprawa formatowania
@@ -518,7 +585,9 @@ npm run lint -- --fix
 ```
 
 ### 10.3. Weryfikacja manualna
+
 Zgodnie z `.ai/testing/profiles-manual-tests.md`:
+
 - [ ] Ładowanie profilu (GET) - skeleton → formularz
 - [ ] Zmiana języka - natychmiastowa aktualizacja
 - [ ] Zmiana motywu - natychmiastowa aktualizacja
@@ -533,6 +602,7 @@ Zgodnie z `.ai/testing/profiles-manual-tests.md`:
 ## 11. Użycie
 
 ### 11.1. Development
+
 ```bash
 npm run dev
 ```
@@ -540,11 +610,13 @@ npm run dev
 Strona dostępna pod: `http://localhost:4321/profile`
 
 ### 11.2. Wymagania
+
 - Użytkownik musi być zalogowany (SSR guard)
 - API endpoint `/api/profile` musi być dostępny
 - Baza danych z tabelą `profiles`
 
 ### 11.3. Przykładowy flow użytkownika
+
 1. Użytkownik loguje się → middleware ustawia `Astro.locals.user`
 2. Użytkownik przechodzi do `/profile`
 3. ProfilePage ładuje dane z GET `/api/profile` → skeleton
@@ -559,36 +631,42 @@ Strona dostępna pod: `http://localhost:4321/profile`
 ## 12. Potencjalne rozszerzenia
 
 ### 12.1. Internationalization (i18n)
+
 - [ ] Dodanie systemu tłumaczeń (np. `react-i18next`)
 - [ ] Tłumaczenie wszystkich tekstów UI
 - [ ] Tłumaczenie komunikatów błędów
 - [ ] Więcej języków (de, fr, es)
 
 ### 12.2. Zaawansowane motywy
+
 - [ ] Więcej wariantów kolorystycznych
 - [ ] Custom palety kolorów
 - [ ] System theme support (auto detect)
 - [ ] Animacje przejść między motywami
 
 ### 12.3. Powiadomienia (toasts)
+
 - [ ] System toastów (np. `sonner`)
 - [ ] Toast po sukcesie zapisu
 - [ ] Toast po błędzie
 - [ ] Toast po zmianie motywu/języka
 
 ### 12.4. Dodatkowe preferencje
+
 - [ ] Preferencje powiadomień email
 - [ ] Ustawienia widoczności profilu
 - [ ] Preferencje jednostek miary (cm/inch)
 - [ ] Strefa czasowa
 
 ### 12.5. UX improvements
+
 - [ ] Unsaved changes warning (przy opuszczaniu strony)
 - [ ] Keyboard shortcuts (Ctrl+S dla zapisu)
 - [ ] Animacje przy zmianie motywu
 - [ ] Haptic feedback (mobile)
 
 ### 12.6. Accessibility
+
 - [ ] High contrast mode
 - [ ] Font size preferences
 - [ ] Reduce motion support
@@ -609,20 +687,23 @@ Strona dostępna pod: `http://localhost:4321/profile`
 ## 14. Wnioski
 
 ### 14.1. Co poszło dobrze
+
 ✅ Architektura zgodna z planem implementacji  
 ✅ Separation of concerns (hooki, konteksty, komponenty)  
 ✅ Optimistic update działa płynnie  
 ✅ Rollback przy błędach działa poprawnie  
 ✅ TypeScript type safety na każdym poziomie  
 ✅ Komponenty shadcn/ui dobrze się integrują  
-✅ Clean code, czytelna struktura  
+✅ Clean code, czytelna struktura
 
 ### 14.2. Challenges
+
 - Integracja optimistic update z kontekstami wymagała useRef dla poprzednich wartości
 - ESLint prettier formatting dla komponentów shadcn/ui
 - Zarządzanie wieloma stanami (loading, dirty, submitting)
 
 ### 14.3. Best practices zastosowane
+
 - Custom hooki dla reużywalnej logiki
 - Context API dla globalnego stanu
 - Compound components (Alert, RadioGroup)
@@ -652,4 +733,3 @@ Strona dostępna pod: `http://localhost:4321/profile`
 **Implementację wykonał:** AI Assistant  
 **Data zakończenia:** 13 listopada 2024  
 **Status:** ✅ Gotowe do użycia
-

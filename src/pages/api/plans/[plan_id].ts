@@ -27,7 +27,7 @@ export async function GET(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const idParse = idSchema.safeParse(user.id);
   if (!idParse.success) {
-    return jsonResponse(errorResponse("Unprocessable", "Invalid user id."), 400);
+    return jsonResponse(errorResponse("UnprocessableEntity", "Invalid user id."), 400);
   }
 
   // 3. Waliduj parametr ścieżki plan_id
@@ -99,7 +99,7 @@ export async function PATCH(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const idParse = idSchema.safeParse(user.id);
   if (!idParse.success) {
-    return jsonResponse(errorResponse("Unprocessable", "Invalid user id."), 400);
+    return jsonResponse(errorResponse("UnprocessableEntity", "Invalid user id."), 400);
   }
 
   // 3. Waliduj parametr ścieżki plan_id
@@ -247,7 +247,7 @@ export async function DELETE(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const idParse = idSchema.safeParse(user.id);
   if (!idParse.success) {
-    return jsonResponse(errorResponse("Unprocessable", "Invalid user id."), 400);
+    return jsonResponse(errorResponse("UnprocessableEntity", "Invalid user id."), 400);
   }
 
   // 3. Waliduj parametr ścieżki plan_id

@@ -24,6 +24,19 @@ export class ValidationError extends Error {
 }
 
 /**
+ * Błąd rzucany gdy zmiana typu komórki wymaga potwierdzenia usunięcia roślin
+ */
+export class PlantRemovalRequiresConfirmationError extends Error {
+  constructor(
+    message = "Plant removal requires confirmation",
+    public plantCount = 0
+  ) {
+    super(message);
+    this.name = "PlantRemovalRequiresConfirmationError";
+  }
+}
+
+/**
  * Tworzy standardową strukturę odpowiedzi błędu API
  * @param code - Kod błędu (ValidationError, Unauthorized, itp.)
  * @param message - Komunikat dla użytkownika

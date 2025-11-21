@@ -27,16 +27,19 @@ Zaimplementowano pełnofunkcjonalny endpoint REST API do zarządzania profilem u
 **Cel:** Warstwa serwisowa do operacji na profilu użytkownika
 
 **Funkcje publiczne:**
+
 - `getProfileByUserId(supabase, userId)` - pobiera profil po UUID
 - `updateProfileByUserId(supabase, userId, command)` - aktualizuje profil (partial update)
 
 **Kluczowe cechy:**
+
 - Wykorzystuje `.maybeSingle()` zamiast `.single()` dla graceful handling braku rekordu
 - Explicit ustawianie `updated_at` (dodatkowo wspierane przez trigger DB)
 - Pattern RETURNING - `.select()` po `.update()` zwraca zaktualizowane dane
 - Type-safe dzięki SupabaseClient i typom z `src/types.ts`
 
 **Statystyki:**
+
 - Linie kodu: 67
 - Funkcje: 2
 - Błędy lintera: 0
@@ -47,16 +50,19 @@ Zaimplementowano pełnofunkcjonalny endpoint REST API do zarządzania profilem u
 **Cel:** Reużywalne funkcje pomocnicze dla odpowiedzi HTTP
 
 **Funkcje publiczne:**
+
 - `errorResponse(code, message, details?)` - tworzy standardową strukturę ApiErrorResponse
 - `jsonResponse(data, status)` - opakowuje dane w Response z Content-Type: application/json
 
 **Kluczowe cechy:**
+
 - Spójne struktury odpowiedzi błędów
 - Automatyczne ustawianie nagłówków
 - Type-safe dzięki generycznym typom TypeScript
 - Reużywalność w całym projekcie
 
 **Statystyki:**
+
 - Linie kodu: 30
 - Funkcje: 2
 - Błędy lintera: 0
@@ -67,18 +73,21 @@ Zaimplementowano pełnofunkcjonalny endpoint REST API do zarządzania profilem u
 **Cel:** Zod schema do walidacji danych wejściowych dla aktualizacji profilu
 
 **Schemat:** `ProfileUpdateSchema`
+
 - `language_code` (optional) - regex `/^[a-z]{2}(-[A-Z]{2})?$/` (ISO 639-1 + ISO 3166-1)
 - `theme` (optional) - enum `["light", "dark"]`
 - `.strict()` - odrzuca dodatkowe pola
 - `.refine()` - wymaga co najmniej jednego pola
 
 **Walidacje:**
+
 - ✅ ISO language code: "pl", "en", "en-US" (poprawne)
 - ❌ "PL", "eng", "123", "en_US" (niepoprawne)
 - ✅ theme: "light" lub "dark" (case-sensitive)
 - ❌ Puste body `{}` (błąd: "At least one field must be provided")
 
 **Statystyki:**
+
 - Linie kodu: 35
 - Schematów Zod: 1
 - Błędy lintera: 0
@@ -89,6 +98,7 @@ Zaimplementowano pełnofunkcjonalny endpoint REST API do zarządzania profilem u
 **Cel:** REST API endpoint dla operacji na profilu użytkownika
 
 **Handlery:**
+
 1. **GET /api/profile** - pobieranie profilu
 2. **PUT /api/profile** - aktualizacja profilu
 
@@ -106,11 +116,13 @@ Zaimplementowano pełnofunkcjonalny endpoint REST API do zarządzania profilem u
 ```
 
 **Mapowanie błędów:**
+
 - Błędy Zod → `field_errors` w ApiErrorResponse
 - Heurystyka RLS: sprawdzanie message/code dla 403
 - Logowanie błędów 500 bez wycieków wrażliwych danych
 
 **Kluczowe cechy:**
+
 - ✅ Guard clauses i early returns
 - ✅ Walidacja przez Zod z custom error messages
 - ✅ Mapowanie błędów Zod na field_errors
@@ -121,6 +133,7 @@ Zaimplementowano pełnofunkcjonalny endpoint REST API do zarządzania profilem u
 - ✅ Uppercase handler names (GET, PUT)
 
 **Statystyki:**
+
 - Linie kodu: 125
 - Handlery: 2 (GET, PUT)
 - Scenariusze błędów: 7 (JSON parse, validation, auth, RLS, not found, internal)
@@ -134,42 +147,52 @@ Zaimplementowano pełnofunkcjonalny endpoint REST API do zarządzania profilem u
 ### 3.1 Kontrola jakości kodu
 
 **TypeScript strict mode:**
+
 ```bash
 npx tsc --noEmit
 ```
+
 ✅ **Wynik:** 0 błędów
 
 **ESLint:**
+
 ```bash
 npm run lint
 ```
+
 ✅ **Wynik:** 0 błędów w zaimplementowanych plikach
 
 **Prettier:**
+
 - Kod sformatowany zgodnie z `.prettierrc.json`
 - Wszystkie importy używają aliasu `@/*`
 
 ### 3.3 Weryfikacja bezpieczeństwa
 
 **RLS Policies (Supabase):**
+
 ```sql
 -- Weryfikacja w migracji: supabase/migrations/20251104120000_init_plantsplanner_schema.sql
 create policy profiles_update_authenticated on public.profiles
-    for update to authenticated 
-    using (id = auth.uid()) 
+    for update to authenticated
+    using (id = auth.uid())
     with check (id = auth.uid());
 ```
+
 ✅ **Status:** Policy aktywna - tylko właściciel może aktualizować swój profil
 
 **Trigger updated_at:**
+
 ```sql
 create trigger trg_profiles_updated
     before update on public.profiles
     for each row execute function public.set_updated_at();
 ```
+
 ✅ **Status:** Trigger aktywny - automatyczna aktualizacja timestamp
 
 **Zabezpieczenia:**
+
 - ✅ Zero ryzyka IDOR (brak user_id w URL, identyfikacja przez sesję)
 - ✅ Walidacja wszystkich wejść (Zod schema)
 - ✅ Whitelist approach (strict mode, tylko zdefiniowane pola)
@@ -204,6 +227,7 @@ src/
 ### 4.2 Coding Practices
 
 **Guidelines for clean code:**
+
 - ✅ Handle errors and edge cases at the beginning of functions
 - ✅ Use early returns for error conditions
 - ✅ Place the happy path last in the function
@@ -213,12 +237,14 @@ src/
 - ✅ User-friendly error messages
 
 **Backend and Database:**
+
 - ✅ Use Supabase from context.locals
 - ✅ Use SupabaseClient type from `src/db/supabase.client.ts`
 - ✅ Use Zod schemas to validate data
 - ✅ Follow Supabase guidelines for security
 
 **Astro:**
+
 - ✅ Use POST, GET - uppercase format for handlers
 - ✅ Use `export const prerender = false`
 - ✅ Use zod for input validation
@@ -228,14 +254,17 @@ src/
 ### 4.3 Integracja z istniejącym kodem
 
 **Middleware (`src/middleware/index.ts`):**
+
 - ✅ Już skonfigurowany - `locals.supabase` ustawiane dla wszystkich requestów
 - ✅ Endpoint `/api/profile` wymaga autentykacji (nie jest w PUBLIC_PATHS)
 
 **Typy (`src/types.ts`):**
+
 - ✅ Używane typy: `ProfileDto`, `ProfileUpdateCommand`, `ApiItemResponse`, `ApiErrorResponse`
 - ✅ Type-safety w całej implementacji
 
 **Database:**
+
 - ✅ RLS policies aktywne (weryfikacja w migracji)
 - ✅ Trigger `updated_at` aktywny
 - ✅ Brak konieczności dodatkowych migracji
@@ -246,65 +275,65 @@ src/
 
 ### 5.1 Funkcjonalne
 
-| Kryterium | Status |
-|-----------|--------|
-| Zalogowany użytkownik może zaktualizować `language_code` i/lub `theme` | ✅ |
-| Aktualizacja jednego pola nie wpływa na drugie | ✅ |
-| Endpoint zwraca zaktualizowany profil (200 OK) | ✅ |
-| Niezalogowany użytkownik otrzymuje 401 | ✅ |
-| Nieprawidłowe dane zwracają 400 z field_errors | ✅ |
-| Puste body zwraca 400 | ✅ |
-| RLS zapobiega aktualizacji cudzego profilu (403) | ✅ |
-| `updated_at` jest aktualizowane przy każdej zmianie | ✅ |
+| Kryterium                                                              | Status |
+| ---------------------------------------------------------------------- | ------ |
+| Zalogowany użytkownik może zaktualizować `language_code` i/lub `theme` | ✅     |
+| Aktualizacja jednego pola nie wpływa na drugie                         | ✅     |
+| Endpoint zwraca zaktualizowany profil (200 OK)                         | ✅     |
+| Niezalogowany użytkownik otrzymuje 401                                 | ✅     |
+| Nieprawidłowe dane zwracają 400 z field_errors                         | ✅     |
+| Puste body zwraca 400                                                  | ✅     |
+| RLS zapobiega aktualizacji cudzego profilu (403)                       | ✅     |
+| `updated_at` jest aktualizowane przy każdej zmianie                    | ✅     |
 
 **Wynik:** 8/8 (100%)
 
 ### 5.2 Techniczne
 
-| Kryterium | Status |
-|-----------|--------|
-| Zgodność z TypeScript (strict mode) | ✅ |
-| Walidacja przez Zod | ✅ |
-| Service wyodrębniony do `src/lib/services/profile.service.ts` | ✅ |
-| Spójność z typami z `src/types.ts` | ✅ |
-| Używa `locals.supabase` (nie bezpośredni import) | ✅ |
-| `export const prerender = false` | ✅ |
-| Uppercase handler names (GET, PUT) | ✅ |
-| Guard clauses i early returns | ✅ |
-| Centralized error responses | ✅ |
+| Kryterium                                                     | Status |
+| ------------------------------------------------------------- | ------ |
+| Zgodność z TypeScript (strict mode)                           | ✅     |
+| Walidacja przez Zod                                           | ✅     |
+| Service wyodrębniony do `src/lib/services/profile.service.ts` | ✅     |
+| Spójność z typami z `src/types.ts`                            | ✅     |
+| Używa `locals.supabase` (nie bezpośredni import)              | ✅     |
+| `export const prerender = false`                              | ✅     |
+| Uppercase handler names (GET, PUT)                            | ✅     |
+| Guard clauses i early returns                                 | ✅     |
+| Centralized error responses                                   | ✅     |
 
 **Wynik:** 9/9 (100%)
 
 ### 5.3 Bezpieczeństwo
 
-| Kryterium | Status |
-|-----------|--------|
-| RLS policies działają poprawnie | ✅ |
-| Brak możliwości zmiany cudzego profilu | ✅ |
-| Walidacja wszystkich wejść | ✅ |
-| Brak wycieków wrażliwych danych w błędach | ✅ |
-| Logowanie błędów bez PII | ✅ |
+| Kryterium                                 | Status |
+| ----------------------------------------- | ------ |
+| RLS policies działają poprawnie           | ✅     |
+| Brak możliwości zmiany cudzego profilu    | ✅     |
+| Walidacja wszystkich wejść                | ✅     |
+| Brak wycieków wrażliwych danych w błędach | ✅     |
+| Logowanie błędów bez PII                  | ✅     |
 
 **Wynik:** 5/5 (100%)
 
 ### 5.4 Wydajność
 
-| Kryterium | Status | Uwagi |
-|-----------|--------|-------|
-| Czas odpowiedzi < 200ms (p95) | ⏱️ | Do weryfikacji w prod |
-| Pojedyncze zapytanie UPDATE (bez N+1) | ✅ | RETURNING pattern |
-| Minimalne payload (tylko potrzebne pola) | ✅ | Partial update |
+| Kryterium                                | Status | Uwagi                 |
+| ---------------------------------------- | ------ | --------------------- |
+| Czas odpowiedzi < 200ms (p95)            | ⏱️     | Do weryfikacji w prod |
+| Pojedyncze zapytanie UPDATE (bez N+1)    | ✅     | RETURNING pattern     |
+| Minimalne payload (tylko potrzebne pola) | ✅     | Partial update        |
 
 **Wynik:** 2/3 (1 wymaga testów prod)
 
 ### 5.5 Jakość kodu
 
-| Kryterium | Status |
-|-----------|--------|
-| Brak błędów linter/prettier | ✅ |
-| Brak błędów TypeScript | ✅ |
-| Zgodność z coding practices projektu | ✅ |
-| Code review passed | ⏳ |
+| Kryterium                            | Status |
+| ------------------------------------ | ------ |
+| Brak błędów linter/prettier          | ✅     |
+| Brak błędów TypeScript               | ✅     |
+| Zgodność z coding practices projektu | ✅     |
+| Code review passed                   | ⏳     |
 
 **Wynik:** 3/4 (1 pending review)
 
@@ -314,17 +343,17 @@ src/
 
 ### 6.1 Metryki kodu
 
-| Metryka | Wartość |
-|---------|---------|
-| Pliki utworzone | 4 |
-| Pliki zmodyfikowane | 0 |
-| Łączna liczba linii | 257 |
-| Funkcje/handlery | 6 |
-| Schematów Zod | 1 |
-| Typów TypeScript | Reużyte z `src/types.ts` |
-| Błędów lintera | 0 |
-| Błędów TypeScript | 0 |
-| Scenariuszy testowych | 10 |
+| Metryka               | Wartość                  |
+| --------------------- | ------------------------ |
+| Pliki utworzone       | 4                        |
+| Pliki zmodyfikowane   | 0                        |
+| Łączna liczba linii   | 257                      |
+| Funkcje/handlery      | 6                        |
+| Schematów Zod         | 1                        |
+| Typów TypeScript      | Reużyte z `src/types.ts` |
+| Błędów lintera        | 0                        |
+| Błędów TypeScript     | 0                        |
+| Scenariuszy testowych | 10                       |
 
 ### 6.2 Pokrycie funkcjonalne
 
@@ -369,6 +398,7 @@ src/
 ## 10. Potwierdzenie zgodności
 
 **Implementacja zgodna z:**
+
 - ✅ Plan wdrożenia (`.ai/endpoints/profiles/put-profile-plan.md`)
 - ✅ Tech stack (Astro 5, TypeScript 5, Supabase, Zod)
 - ✅ Coding practices (guard clauses, early returns, error handling)
@@ -423,4 +453,3 @@ npm run build
 
 **Raport wygenerowany automatycznie**  
 **Ostatnia aktualizacja:** 2025-11-12
-

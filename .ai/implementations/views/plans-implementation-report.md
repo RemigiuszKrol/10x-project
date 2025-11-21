@@ -10,6 +10,7 @@
 ## 1. Podsumowanie Wykonawcze
 
 Zaimplementowano w pełni funkcjonalny widok listy planów działki (`/plans`) zgodnie z planem implementacji. Widok umożliwia:
+
 - Przeglądanie wszystkich planów użytkownika w formie tabeli
 - Tworzenie nowego planu (nawigacja do `/plans/new`)
 - Edycję istniejącego planu (nawigacja do `/plans/:id/edit`)
@@ -24,6 +25,7 @@ Implementacja jest w pełni zgodna z wytycznymi projektu, wykorzystuje spójną 
 ## 2. Zrealizowane Kroki Implementacji
 
 ### Krok 1: Typy ViewModel i funkcje pomocnicze ✅
+
 - Utworzono `src/lib/utils/date-format.ts`
   - Funkcja `formatRelativeDate()` z date-fns i polską lokalizacją
 - Utworzono `src/lib/viewmodels/plan.viewmodel.ts`
@@ -33,6 +35,7 @@ Implementacja jest w pełni zgodna z wytycznymi projektu, wykorzystuje spójną 
   - `formatPlanLocation()` - formatowanie koordynat geograficznych
 
 ### Krok 2: Komponenty UI (8 komponentów React) ✅
+
 Utworzono wszystkie komponenty w `src/components/plans/`:
 
 1. **LoadingState.tsx** (24 linie)
@@ -80,7 +83,9 @@ Utworzono wszystkie komponenty w `src/components/plans/`:
    - ARIA: `aria-describedby`
 
 ### Krok 3: Custom Hook API ✅
+
 Utworzono `src/lib/hooks/usePlansApi.ts` (143 linie):
+
 - **fetchPlans()** - pobieranie pierwszej strony (limit: 20)
 - **loadMorePlans()** - cursor-based pagination
 - **deletePlan()** - usuwanie z auto-refetch
@@ -88,7 +93,9 @@ Utworzono `src/lib/hooks/usePlansApi.ts` (143 linie):
 - Automatyczny fetch przy montowaniu komponentu
 
 ### Krok 4: Główny komponent PlansList ✅
+
 Utworzono `src/components/plans/PlansList.tsx` (153 linie):
+
 - Orchestrator wszystkich podkomponentów
 - Zarządzanie stanem dialogu usuwania
 - Handlery dla wszystkich interakcji:
@@ -102,7 +109,9 @@ Utworzono `src/components/plans/PlansList.tsx` (153 linie):
 - Warunkowe renderowanie (loading, error, empty, success)
 
 ### Krok 5: Strona Astro ✅
+
 Zmodyfikowano `src/pages/plans/index.astro`:
+
 - Weryfikacja sesji SSR przez Supabase
 - Redirect do `/auth/login` przy braku sesji
 - Gradient w tle: `from-green-50 via-emerald-50 to-lime-50`
@@ -110,7 +119,9 @@ Zmodyfikowano `src/pages/plans/index.astro`:
 - Responsywny kontener (max-w-7xl)
 
 ### Krok 7: Dostępność (a11y) ✅
+
 Implementacja ARIA attributes:
+
 - **LoadingState**: `role="status"`, `aria-live="polite"`, `aria-label`
 - **ErrorState**: `role="alert"`, `aria-live="assertive"`, `aria-atomic`, `aria-describedby`
 - **PlansTable**: `role="region"`, `aria-label`, `scope="col"` na nagłówkach
@@ -119,6 +130,7 @@ Implementacja ARIA attributes:
 - Wszystkie ikony dekoracyjne: `aria-hidden="true"`
 
 ### Krok 8: Refactoring i czyszczenie ✅
+
 - Wszystkie pliki przeszły linter (0 błędów)
 - Poprawne formatowanie kodu (Prettier)
 - Komentarze JSDoc dla wszystkich komponentów
@@ -126,7 +138,9 @@ Implementacja ARIA attributes:
 - Usunięcie console.log (zachowane tylko console.error)
 
 ### Krok 9: Stylowanie ✅
+
 Dodano spójne stylowanie z resztą aplikacji:
+
 - Paleta green/emerald/lime zgodna z Navbar
 - Białe karty z cieniami: `shadow-xl`
 - Zaokrąglone rogi: `rounded-2xl`
@@ -137,6 +151,7 @@ Dodano spójne stylowanie z resztą aplikacji:
 - Ikony z lucide-react z semantycznym znaczeniem
 
 ### Krok 10: Build produkcyjny ✅
+
 - `npm run build` - sukces
 - Bundle size: **69.31 kB** (21.49 kB gzip)
 - Wszystkie assety wygenerowane poprawnie
@@ -181,6 +196,7 @@ src/
 ```
 
 ### Zmodyfikowane pliki (3):
+
 - `package.json` - dodano date-fns
 - `package-lock.json` - aktualizacja zależności
 - `src/pages/plans/index.astro` - pełna reimplementacja widoku
@@ -190,13 +206,16 @@ src/
 ## 4. Zależności
 
 ### Dodane biblioteki:
+
 - **date-fns** `^4.1.0` - formatowanie dat relatywnych z polską lokalizacją
 
 ### Komponenty shadcn/ui:
+
 - **Table** - komponenty: Table, TableBody, TableHead, TableHeader, TableRow, TableCell
 - **Dialog** - komponenty: Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
 
 ### Zależności transitywne (shadcn):
+
 - `@radix-ui/react-dialog` - implementacja dialogu
 
 ---
@@ -204,6 +223,7 @@ src/
 ## 5. Funkcjonalności
 
 ### Zaimplementowane:
+
 1. ✅ **Lista planów** - wyświetlanie wszystkich planów użytkownika w tabeli
 2. ✅ **Cursor-based pagination** - "Załaduj więcej" z limitem 20 na stronę
 3. ✅ **Tworzenie planu** - nawigacja do `/plans/new`
@@ -218,6 +238,7 @@ src/
 12. ✅ **Pełna dostępność** - ARIA attributes
 
 ### Kolumny tabeli:
+
 1. **Nazwa** - nazwa planu (pogrubiona)
 2. **Lokalizacja** - koordynaty lub "Brak lokalizacji" z ikoną MapPin
 3. **Rozmiar siatki** - format: "20 × 16" (font mono)
@@ -229,13 +250,16 @@ src/
 ## 6. Integracja API
 
 ### Endpoint GET /api/plans
+
 **URL**: `/api/plans?limit=20&order=desc&cursor={cursor}`
 
 **Request**:
+
 - Query params: `limit` (20), `order` ("desc"), `cursor` (opcjonalnie)
 - Credentials: include (cookies)
 
 **Response 200**:
+
 ```typescript
 ApiListResponse<PlanDto> = {
   data: PlanDto[];
@@ -246,9 +270,11 @@ ApiListResponse<PlanDto> = {
 **Response Error**: 401, 403, 500 → `ApiErrorResponse`
 
 ### Endpoint DELETE /api/plans/:plan_id
+
 **URL**: `/api/plans/{planId}`
 
 **Request**:
+
 - Method: DELETE
 - Path param: `plan_id` (UUID)
 - Credentials: include
@@ -301,6 +327,7 @@ ApiListResponse<PlanDto> = {
 ## 8. Stylowanie
 
 ### Paleta kolorów:
+
 - **Primary Green**: green-50, green-100, green-200, green-500, green-600, green-700
 - **Emerald**: emerald-50, emerald-100, emerald-500, emerald-600
 - **Lime**: lime-50 (gradient tła)
@@ -311,35 +338,42 @@ ApiListResponse<PlanDto> = {
 ### Elementy stylowania:
 
 **Tło strony**:
+
 ```css
 bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50
 ```
 
 **Karty (tabela, empty state, loading, error)**:
+
 ```css
 bg-white rounded-2xl border border-green-100 shadow-xl
 ```
 
 **Nagłówek tabeli**:
+
 ```css
 bg-gradient-to-r from-green-100 to-emerald-100 border-b-2 border-green-200
 ```
 
 **Wiersze tabeli**:
+
 ```css
-hover:bg-green-50/50 transition-colors
+hover: bg-green-50/50 transition-colors;
 ```
 
 **Przyciski akcji**:
+
 - Edytuj: `hover:bg-green-100 hover:text-green-700`
 - Usuń: `hover:bg-red-100 hover:text-red-700`
 
 **Przycisk "Załaduj więcej"**:
+
 ```css
 border-green-200 hover:bg-green-50 hover:text-green-700
 ```
 
 ### Responsywność:
+
 - **Mobile-first approach**
 - **Breakpointy**: `sm:` (640px), `md:` (768px)
 - **Header**: Kolumna na mobile, wiersz na desktop
@@ -351,10 +385,12 @@ border-green-200 hover:bg-green-50 hover:text-green-700
 ## 9. Wydajność
 
 ### Bundle size:
+
 - **PlansList.js**: 69.31 kB (21.49 kB gzip)
 - **Inne komponenty**: Button (29.85 kB), Table/Dialog (w bundle)
 
 ### Optymalizacje:
+
 - ✅ Lazy loading przez `client:load` (hydratacja on demand)
 - ✅ Cursor-based pagination (limit 20)
 - ✅ Warunkowe renderowanie komponentów
@@ -363,6 +399,7 @@ border-green-200 hover:bg-green-50 hover:text-green-700
 - ✅ Minimalizacja stanu globalnego
 
 ### Potencjalne dalsze optymalizacje:
+
 - React.memo() dla PlanRow (przy >100 planach)
 - Virtualizacja tabeli (przy >1000 planach)
 - Infinite scroll zamiast "Załaduj więcej"
@@ -374,38 +411,45 @@ border-green-200 hover:bg-green-50 hover:text-green-700
 ### Implementowane standardy WCAG 2.1:
 
 **Semantyczne HTML**:
+
 - ✅ `<main role="main">` dla głównej zawartości
 - ✅ `<table>` z `<thead>` i `<tbody>`
 - ✅ `<button>` dla wszystkich akcji (nie `<div>` z onClick)
 - ✅ `<h1>`, `<h2>` - prawidłowa hierarchia
 
 **ARIA Roles**:
+
 - ✅ `role="status"` - LoadingState
 - ✅ `role="alert"` - ErrorState
 - ✅ `role="region"` - PlansTable
 
 **ARIA Live Regions**:
+
 - ✅ `aria-live="polite"` - loading (niekrytyczne)
 - ✅ `aria-live="assertive"` - błędy (krytyczne)
 - ✅ `aria-atomic="true"` - odczyt całego komunikatu błędu
 
 **ARIA Labels**:
+
 - ✅ `aria-label` - przyciski z samą ikoną
 - ✅ `aria-describedby` - powiązanie opisu z akcją
 - ✅ `aria-busy` - stan loading w dialogu
 - ✅ `aria-hidden="true"` - ikony dekoracyjne
 
 **Tabela**:
+
 - ✅ `scope="col"` - nagłówki kolumn
 - ✅ Semantyczne znaczenie każdej kolumny
 
 **Nawigacja klawiaturą**:
+
 - ✅ Wszystkie przyciski dostępne przez Tab
 - ✅ Fokus widoczny (outline/ring)
 - ✅ Escape zamyka dialog
 - ✅ Logiczna kolejność fokusa
 
 **Kontrast**:
+
 - ✅ Nagłówki tabeli: green-100 na green-50 (wystarczający kontrast)
 - ✅ Tekst: gray-900 na white (bardzo dobry kontrast)
 - ✅ Przyciski: widoczne stany hover/focus
@@ -415,21 +459,27 @@ border-green-200 hover:bg-green-50 hover:text-green-700
 ## 11. Testowanie
 
 ### Build produkcyjny:
+
 ```bash
 npm run build
 ```
+
 **Wynik**: ✅ Sukces (0 błędów)
 
 ### Linter:
+
 ```bash
 npm run lint
 ```
+
 **Wynik**: ✅ 0 błędów, 0 ostrzeżeń
 
 ### TypeScript:
+
 **Wynik**: ✅ Brak błędów typowania
 
 ### Scenariusze do testowania manualnego:
+
 (Zobacz: Krok 6 w planie implementacji)
 
 1. ✅ Test autoryzacji (redirect przy braku sesji)
@@ -447,6 +497,7 @@ npm run lint
 ## 12. Statystyki
 
 ### Kod:
+
 - **Pliki utworzone**: 15
 - **Pliki zmodyfikowane**: 3
 - **Linie kodu dodane**: ~700 (bez testów)
@@ -456,6 +507,7 @@ npm run lint
 - **Utility functions**: 2
 
 ### Czas implementacji:
+
 - **Planowanie**: Plan już istniał
 - **Implementacja**: ~2-3 godziny (kroki 1-10)
 - **Stylowanie**: ~30 minut
@@ -486,6 +538,7 @@ npm run lint
 ## 14. Kolejne Kroki
 
 ### Zależności (blokujące):
+
 1. **Implementacja API endpoint** `/api/plans/:plan_id` (DELETE) - **KRYTYCZNE**
    - Obecnie hook używa endpointu, który może nie istnieć
    - Sprawdzić zgodność z `src/pages/api/plans/[plan_id].ts`
@@ -498,6 +551,7 @@ npm run lint
    - Link "Edytuj" prowadzi do nieistniejącej strony
 
 ### Ulepszenia (opcjonalne):
+
 4. **Toast notifications** - zamiast alert()
 5. **Infinite scroll** - zamiast "Załaduj więcej"
 6. **Filtrowanie i sortowanie** - w tabeli
@@ -513,6 +567,7 @@ npm run lint
 **Status**: ⏳ Niezacommitowany (wycofano poprzedni commit)
 
 **Proposed commit message**:
+
 ```
 feat: implement plans list view with styling
 
@@ -545,6 +600,7 @@ Technical:
 ## 16. Wnioski
 
 ### Co poszło dobrze:
+
 - ✅ Plan implementacji był bardzo szczegółowy i przydatny
 - ✅ Bottom-up approach (proste komponenty → złożone) działał świetnie
 - ✅ Shadcn/ui komponenty łatwo się integrowały
@@ -553,11 +609,13 @@ Technical:
 - ✅ Dostępność (a11y) zaplanowana od początku
 
 ### Wyzwania:
+
 - ⚠️ Nagłówki tabeli początkowo zlewały się z tłem (naprawione: green-100)
 - ⚠️ Trzeba było dodać `eslint-disable` dla useEffect dependency
 - ⚠️ Bundle size nieco większy niż spodziewany (+4 kB)
 
 ### Lekcje na przyszłość:
+
 - 💡 Testować kontrast kolorów na etapie projektowania
 - 💡 Rozważyć React.memo() dla komponentów w tablicy od razu
 - 💡 Planować toast system na początku projektu
@@ -570,11 +628,10 @@ Technical:
 **Implementacja**: AI Assistant  
 **Plan**: Zobacz `.ai/views/plans-view-implementation-plan.md`  
 **Recenzja kodu**: Oczekuje  
-**Testy manualne**: Oczekuje  
+**Testy manualne**: Oczekuje
 
 ---
 
 **Koniec raportu**
 
-*Wygenerowano automatycznie: 16 listopada 2024*
-
+_Wygenerowano automatycznie: 16 listopada 2024_

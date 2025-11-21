@@ -13,12 +13,14 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 **Ścieżka:** `src/pages/api/plans/index.ts`
 
 **Funkcjonalność:**
+
 - Tworzenie nowego planu działki dla zalogowanego użytkownika
 - Automatyczne obliczanie wymiarów siatki (grid_width, grid_height) na podstawie wymiarów fizycznych i rozmiaru komórki
 - Walidacja wszystkich parametrów wejściowych
 - Obsługa konfliktów nazw (unique constraint na parze user_id, name)
 
 **Powiązane pliki:**
+
 - Handler: `src/pages/api/plans/index.ts`
 - Walidacja: `src/lib/validation/plans.ts` (PlanCreateSchema)
 - Serwis: `src/lib/services/plans.service.ts` (createPlan)
@@ -35,6 +37,7 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 **Ścieżka:** `src/pages/api/plans/[plan_id].ts`
 
 **Funkcjonalność:**
+
 - Częściowa aktualizacja istniejącego planu działki
 - Aktualizacja metadanych (nazwa, lokalizacja, orientacja, półkula)
 - Aktualizacja wymiarów fizycznych z automatycznym przeliczeniem siatki
@@ -42,15 +45,18 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - Wykrywanie i blokowanie nieświadomych zmian wymiarów siatki (które kasują komórki/rośliny)
 
 **Query parametry:**
+
 - `confirm_regenerate` (boolean, domyślnie false) - wymagane do potwierdzenia zmian wymiarów siatki
 
 **Mechanizm bezpieczeństwa:**
+
 - Zmiana width_cm, height_cm lub cell_size_cm może zmienić wymiary siatki (grid_width, grid_height)
 - Gdy wymiary siatki ulegają zmianie, użytkownik musi przekazać `confirm_regenerate=true`
 - Bez potwierdzenia endpoint zwraca błąd 409 Conflict z wyjaśnieniem
 - Chroni przed przypadkową utratą danych (komórek siatki i nasadzeń roślin)
 
 **Powiązane pliki:**
+
 - Handler: `src/pages/api/plans/[plan_id].ts`
 - Walidacja: `src/lib/validation/plans.ts` (PlanUpdateSchema, PlanUpdateQuerySchema)
 - Serwis: `src/lib/services/plans.service.ts` (updatePlan)
@@ -68,6 +74,7 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 **Ścieżka:** `src/pages/api/plans/[plan_id].ts`
 
 **Funkcjonalność:**
+
 - Usuwanie istniejącego planu działki wraz z powiązanymi danymi
 - Automatyczne kaskadowe usunięcie komórek siatki (grid_cells) i nasadzeń (plant_placements)
 - Weryfikacja własności planu przed usunięciem
@@ -75,12 +82,14 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - Operacja nieodwracalna i destrukcyjna
 
 **Mechanizm bezpieczeństwa:**
+
 - Weryfikacja uwierzytelnienia użytkownika (sesja Supabase)
 - Filtrowanie po `user_id` - użytkownik może usunąć tylko własne plany
 - Zwracanie 404 dla planów innych użytkowników (bez ujawniania istnienia)
 - Walidacja UUID dla plan_id
 
 **Powiązane pliki:**
+
 - Handler: `src/pages/api/plans/[plan_id].ts` (handler DELETE)
 - Walidacja: `src/lib/validation/plans.ts` (PlanIdParamSchema)
 - Serwis: `src/lib/services/plans.service.ts` (deletePlan)
@@ -97,6 +106,7 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 **Ścieżka:** `src/pages/api/plans/index.ts`
 
 **Funkcjonalność:**
+
 - Pobieranie paginowanej listy planów działki należących do zalogowanego użytkownika
 - Cursor-based pagination (keyset pagination) dla wydajności i stabilności
 - Sortowanie po `updated_at` i `id` (stabilne sortowanie)
@@ -104,12 +114,14 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - Konfigurowalny limit wyników (1-100, domyślnie 20)
 
 **Query parametry:**
+
 - `limit` (number, opcjonalny): liczba wyników na stronę (1-100, domyślnie 20)
 - `cursor` (string, opcjonalny): Base64-encoded cursor dla następnej strony
 - `sort` (string, opcjonalny): pole sortowania (tylko `updated_at` jest wspierane)
 - `order` (string, opcjonalny): kierunek sortowania (`asc` lub `desc`, domyślnie `desc`)
 
 **Mechanizm paginacji:**
+
 - Keyset pagination używając pary (`updated_at`, `id`) jako klucza cursora
 - Cursor jest kodowany w Base64 i zawiera JSON: `{"updated_at": "2025-01-15T10:00:00Z", "id": "uuid"}`
 - Pobieranie `limit + 1` rekordów do wykrycia czy są kolejne strony
@@ -117,6 +129,7 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - Stabilne sortowanie zapewnia brak duplikatów i pominiętych rekordów między stronami
 
 **Mechanizm bezpieczeństwa:**
+
 - Weryfikacja uwierzytelnienia użytkownika (sesja Supabase)
 - Filtrowanie po `user_id` - użytkownik widzi tylko własne plany
 - RLS (Row Level Security) zapewnia dodatkową warstwę bezpieczeństwa
@@ -124,6 +137,7 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - Walidacja i dekodowanie cursora z obsługą błędów manipulacji
 
 **Powiązane pliki:**
+
 - Handler: `src/pages/api/plans/index.ts` (handler GET)
 - Walidacja: `src/lib/validation/plans.ts` (PlanListQuerySchema, encodePlanCursor, decodePlanCursor)
 - Serwis: `src/lib/services/plans.service.ts` (listPlans, PlanListQuery, PlanListResult)
@@ -140,15 +154,18 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 **Ścieżka:** `src/pages/api/plans/[plan_id].ts`
 
 **Funkcjonalność:**
+
 - Pobieranie szczegółów pojedynczego planu działki należącego do zalogowanego użytkownika
 - Zwracanie wszystkich metadanych planu (nazwa, wymiary, lokalizacja, orientacja, siatka)
 - Weryfikacja własności planu - użytkownik może zobaczyć tylko własne plany
 - Operacja tylko do odczytu, bez efektów ubocznych (idempotentna)
 
 **Parametry ścieżki:**
+
 - `plan_id` (UUID, wymagany): identyfikator planu do pobrania
 
 **Odpowiedzi:**
+
 - **200 OK**: Plan został znaleziony i zwrócony
   ```json
   {
@@ -176,6 +193,7 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - **500 InternalError**: Nieoczekiwany błąd serwera
 
 **Mechanizm bezpieczeństwa:**
+
 - Weryfikacja uwierzytelnienia użytkownika (sesja Supabase)
 - Filtrowanie po `user_id` - użytkownik widzi tylko własne plany
 - RLS (Row Level Security) zapewnia dodatkową warstwę bezpieczeństwa
@@ -184,12 +202,14 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - Brak efektów ubocznych - operacja GET jest bezpieczna i idempotentna
 
 **Wydajność:**
+
 - Zapytanie używa klucza głównego (indeks na `id`)
 - Dodatkowy filtr po `user_id` korzysta z indeksu `(user_id, updated_at desc)`
 - Oczekiwany czas odpowiedzi < 200ms dla pojedynczego rekordu
 - Brak kosztownych operacji - zwracanie tylko wymaganych kolumn
 
 **Powiązane pliki:**
+
 - Handler: `src/pages/api/plans/[plan_id].ts` (handler GET)
 - Walidacja: `src/lib/validation/plans.ts` (PlanIdParamSchema, PlanIdParams)
 - Serwis: `src/lib/services/plans.service.ts` (getPlanById)
@@ -197,6 +217,7 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - Błędy: `src/lib/http/errors.ts` (errorResponse, jsonResponse)
 
 **Decyzje projektowe:**
+
 1. **404 zamiast 403**: Gdy użytkownik próbuje pobrać plan innego użytkownika, zwracamy 404 zamiast 403, aby nie ujawniać istnienia planu. To jest standard bezpieczeństwa "security through obscurity" - nie ujawniamy informacji o istnieniu zasobów, do których użytkownik nie ma dostępu.
 
 2. **Użycie maybeSingle()**: W serwisie `getPlanById` używamy `.maybeSingle()` zamiast `.single()`, ponieważ oczekujemy przypadku gdy plan nie istnieje i chcemy zwrócić `null` zamiast rzucać wyjątek.
@@ -214,6 +235,7 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 ### Walidacja (src/lib/validation/plans.ts)
 
 **PlanCreateSchema:**
+
 - Wszystkie wymagane pola: name, width_cm, height_cm, cell_size_cm, orientation
 - Opcjonalne: latitude, longitude, hemisphere
 - Walidacja podzielności width_cm i height_cm przez cell_size_cm
@@ -221,6 +243,7 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - Strict mode - odrzuca nieznane pola
 
 **PlanUpdateSchema:**
+
 - Wszystkie pola opcjonalne
 - Wymaga co najmniej jednego pola do aktualizacji
 - Walidacja podzielności (jeśli podano width/height i cell_size razem)
@@ -229,15 +252,18 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - Strict mode - odrzuca nieznane pola
 
 **PlanUpdateQuerySchema:**
+
 - Walidacja parametru confirm_regenerate z coercion boolean
 - Domyślna wartość false
 
 **PlanIdParamSchema:**
+
 - Walidacja parametru ścieżki plan_id jako UUID
 - Używany w GET, PATCH i DELETE
 - Eksport typu PlanIdParams dla handlera
 
 **PlanListQuerySchema:**
+
 - Walidacja query parametrów dla GET /api/plans
 - `limit`: coercion do number, zakres 1-100, domyślnie 20
 - `cursor`: opcjonalny string, dekodowany i walidowany w transformacji
@@ -247,12 +273,14 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - Dekodowanie cursora z obsługą błędów (rzuca ZodError jeśli nieprawidłowy)
 
 **Funkcje pomocnicze paginacji:**
+
 - `encodePlanCursor(key)`: koduje `{updated_at, id}` do Base64 string
 - `decodePlanCursor(cursor)`: dekoduje Base64 string i waliduje strukturę, zwraca `PlanCursorKey | null`
 
 ### Serwisy (src/lib/services/plans.service.ts)
 
 **getPlanById():**
+
 - Pobiera pojedynczy plan z weryfikacją właściciela (user_id)
 - Parametry: `supabase`, `userId`, `planId`
 - Zwraca: `PlanDto | null`
@@ -262,12 +290,14 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - Propaguje błędy bazy danych (RLS, błędy sieci)
 
 **createPlan():**
+
 - Oblicza grid_width i grid_height
 - Wykonuje INSERT z pełnymi danymi
 - Zwraca utworzony plan jako PlanDto
 - Propaguje błędy bazy danych (unikatowość, RLS)
 
 **updatePlan():**
+
 - Pobiera aktualny plan z weryfikacją właściciela (user_id)
 - Merguje nowe wartości z aktualnymi
 - Oblicza nowe wymiary siatki
@@ -278,15 +308,18 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 - Zwraca null jeśli plan nie istnieje
 
 **UpdatePlanOptions:**
+
 - Interface z opcją confirmRegenerate (boolean)
 
 **deletePlan():**
+
 - Wykonuje DELETE z weryfikacją właściciela (user_id)
 - Zwraca boolean: true jeśli plan został usunięty, false jeśli nie istniał/nie należał do użytkownika
 - Kaskadowe usunięcie grid_cells i plant_placements obsługuje baza danych (ON DELETE CASCADE)
 - Propaguje błędy bazy danych (RLS, błędy sieci)
 
 **listPlans():**
+
 - Pobiera paginowaną listę planów użytkownika
 - Parametry: `supabase`, `userId`, `query: PlanListQuery`
 - Zwraca: `PlanListResult` z polami `items` i `nextCursor`
@@ -303,11 +336,13 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 ### Obsługa błędów (src/lib/http/errors.ts)
 
 **GridChangeRequiresConfirmationError:**
+
 - Niestandardowa klasa błędu dla wymuszenia potwierdzenia
 - Rozszerzenie Error
 - Mapowana na 409 Conflict w handlerze
 
 **Mapowanie błędów w handlerach:**
+
 - 400 ValidationError: nieprawidłowe dane wejściowe, JSON, zakresy
 - 401 Unauthorized: brak sesji
 - 403 Forbidden: naruszenie RLS
@@ -320,6 +355,7 @@ Ten dokument zawiera raport z implementacji endpointów API dla zarządzania pla
 ### Routing Astro
 
 Struktura plików:
+
 ```
 src/pages/api/plans/
 ├── index.ts          → POST /api/plans
@@ -329,6 +365,7 @@ src/pages/api/plans/
 ```
 
 Astro używa file-based routing:
+
 - `index.ts` obsługuje `/api/plans` (bez parametru):
   - Handler POST - tworzenie nowego planu
   - Handler GET - pobieranie listy planów z paginacją
@@ -342,6 +379,7 @@ Query parametry są dostępne w `ctx.url.searchParams`.
 ### Typy (src/types.ts)
 
 **Wykorzystywane typy:**
+
 - `PlanDto` - reprezentacja planu zwracana przez API
 - `PlanCreateCommand` - dane wejściowe dla POST
 - `PlanUpdateCommand` - dane wejściowe dla PATCH (wszystkie pola opcjonalne)
@@ -356,17 +394,20 @@ Query parametry są dostępne w `ctx.url.searchParams`.
 ## Bezpieczeństwo
 
 ### Uwierzytelnienie
+
 - Wszystkie endpointy wymagają aktywnej sesji Supabase
 - Weryfikacja poprzez `supabase.auth.getUser()`
 - Odrzucenie zapytań bez sesji (401)
 
 ### Autoryzacja
+
 - RLS (Row Level Security) na tabeli `plans`
 - Filtry w serwisach: `.eq("user_id", userId)`
 - Użytkownik może manipulować tylko swoimi planami
 - Plany innych użytkowników zwracają 404 (nie ujawniamy istnienia)
 
 ### Walidacja
+
 - Wszystkie parametry walidowane przez Zod
 - Strict mode - odrzucenie nieznanych pól
 - Walidacja UUID dla plan_id
@@ -374,6 +415,7 @@ Query parametry są dostępne w `ctx.url.searchParams`.
 - Trim dla stringów
 
 ### Ochrona przed utratą danych
+
 - Mechanizm confirm_regenerate dla zmian wymiarów siatki
 - Jasne komunikaty błędów wyjaśniające konsekwencje
 - Wymuszenie świadomej decyzji użytkownika
@@ -383,26 +425,33 @@ Query parametry są dostępne w `ctx.url.searchParams`.
 ## Testowanie
 
 ### Testy manualne
+
 Pełna dokumentacja testów znajduje się w `.ai/testing/plans-manual-tests.md`.
 
 **POST /api/plans:**
+
 - 17 przypadków testowych
 - Pokrycie: sukces, walidacja, uwierzytelnienie, konflikty, edge cases
 
 **PATCH /api/plans/:plan_id:**
+
 - 30 przypadków testowych
 - Pokrycie: sukces, walidacja, uwierzytelnienie, autoryzacja, konflikty, mechanizm potwierdzenia, edge cases
 
 **DELETE /api/plans/:plan_id:**
+
 - 9 przypadków testowych
 - Pokrycie: sukces, walidacja, uwierzytelnienie, autoryzacja, kaskadowe usuwanie, edge cases
 
 **GET /api/plans:**
+
 - 18 przypadków testowych
 - Pokrycie: sukces (różne scenariusze paginacji), walidacja query parametrów, uwierzytelnienie, autoryzacja, izolacja użytkowników, wydajność, stabilność sortowania
 
 ### Weryfikacja w bazie danych
+
 Po każdym teście zaleca się weryfikację:
+
 - Poprawność zapisanych danych
 - Obliczone wymiary siatki
 - Znaczniki czasowe (created_at, updated_at)
@@ -413,12 +462,14 @@ Po każdym teście zaleca się weryfikację:
 ## Znane ograniczenia i uwagi
 
 ### Walidacja częściowa w PATCH
+
 - PlanUpdateSchema waliduje zakresy siatki tylko gdy wszystkie 3 wartości (width_cm, height_cm, cell_size_cm) są podane razem
 - Walidacja z częściowymi danymi jest wykonywana w serwisie updatePlan()
 - Serwis merguje nowe wartości z aktualnymi i dopiero wtedy sprawdza zakresy
 - Błędy z serwisu są mapowane na 400 ValidationError
 
 ### Kasowanie komórek i roślin
+
 - **Dla DELETE:** Kaskadowe usuwanie (ON DELETE CASCADE) działa dla grid_cells i plant_placements
 - **Dla PATCH z regeneracją siatki:** Aktualnie nie zaimplementowano automatycznego kasowania komórek i roślin przy zmianie wymiarów siatki
 - Może to wymagać:
@@ -427,12 +478,14 @@ Po każdym teście zaleca się weryfikację:
 - Do rozważenia w przyszłości
 
 ### Polityka nazw
+
 - Ograniczenie unikatowości (user_id, name) na poziomie bazy
 - Użytkownik może mieć wiele planów, ale wszystkie muszą mieć unikalne nazwy
 - Nie ma limitu długości nazwy (do ustalenia)
 - Trim jest aplikowany automatycznie
 
 ### Wydajność paginacji GET
+
 - Keyset pagination jest wydajniejsza niż offset-based dla dużych zbiorów danych
 - Wymaga indeksu na (user_id, updated_at, id) dla optymalnej wydajności
 - Sortowanie po updated_at DESC może powodować częste zmiany kolejności przy aktywnym edytowaniu
@@ -477,6 +530,7 @@ Po każdym teście zaleca się weryfikację:
 ## Historia zmian
 
 ### 2025-11-15 (Wdrożenie 3)
+
 - ✅ Zaimplementowano GET /api/plans
 - ✅ Dodano serwis listPlans w plans.service.ts z keyset pagination
 - ✅ Dodano schemat walidacji PlanListQuerySchema
@@ -486,6 +540,7 @@ Po każdym teście zaleca się weryfikację:
 - ✅ Zaktualizowano dokumentację implementacji
 
 ### 2025-11-15 (Wdrożenie 2)
+
 - ✅ Zaimplementowano DELETE /api/plans/:plan_id
 - ✅ Dodano serwis deletePlan w plans.service.ts
 - ✅ Dodano schemat walidacji PlanIdParamSchema
@@ -494,6 +549,7 @@ Po każdym teście zaleca się weryfikację:
 - ✅ Zaktualizowano dokumentację implementacji
 
 ### 2025-11-15 (Wdrożenie 1)
+
 - ✅ Zaimplementowano POST /api/plans
 - ✅ Zaimplementowano PATCH /api/plans/:plan_id
 - ✅ Dodano walidację Zod dla obu endpointów
