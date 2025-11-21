@@ -1,11 +1,13 @@
 # API Endpoint Implementation Plan: PUT /api/plans/:plan_id/plants/:x/:y
 
 ## 1. Przegląd punktu końcowego
+
 - Cel: Dodanie lub aktualizacja pojedynczej rośliny w komórce siatki planu ogrodowego należącego do uwierzytelnionego użytkownika.
 - Zakres: Operacja idempotentna (upsert) na tabeli `plant_placements`, z weryfikacją planu, komórki oraz typu powierzchni `soil`.
 - Kontekst: Handler Astro 5 (`/src/pages/api`) wykorzystujący Supabase JS, Zod do walidacji i standardowe helpery `jsonResponse` / `errorResponse`.
 
 ## 2. Szczegóły żądania
+
 - Metoda HTTP: PUT
 - Struktura URL: `/api/plans/:plan_id/plants/:x/:y`
 - Parametry:
@@ -24,6 +26,7 @@
   - Walidacja autoryzacji użytkownika (`supabase.auth.getUser()`), w tym sprawdzenie `user.id` przez Zod.
 
 ## 3. Wykorzystywane typy
+
 - `PlantPlacementPathParams` (zapis wyników walidacji ścieżki).
 - `PlantPlacementUpsertBody` (typ inferowany z Zod schema dla body).
 - `PlantPlacementDto` (typ odpowiedzi – pola: `x`, `y`, `plant_name`, `sunlight_score`, `humidity_score`, `precip_score`, `overall_score`, `updated_at`).
@@ -31,6 +34,7 @@
 - Reuse typu Supabase `Database` (jeśli istnieje w `src/db/types`) do adnotacji klienta.
 
 ## 4. Szczegóły odpowiedzi
+
 - Sukces 200:
   ```json
   {
@@ -55,6 +59,7 @@
   - 500 `InternalError` — nieprzewidziane błędy serwera/Supabase.
 
 ## 5. Przepływ danych
+
 1. Handler pobiera `supabase` z `locals`; brak → 401.
 2. Autoryzuje użytkownika (`supabase.auth.getUser()`), waliduje `user.id`.
 3. Waliduje parametry ścieżki oraz ciało żądania przy użyciu Zod; mapuje błędy na 400 z `field_errors`.
@@ -67,6 +72,7 @@
 10. Handler zwraca `jsonResponse({ data: dto }, 200)`; błędy łapie i mapuje przez `errorResponse`.
 
 ## 6. Względy bezpieczeństwa
+
 - Supabase JWT wymagany w `Authorization` lub cookie; brak → 401.
 - RLS owner-only: weryfikacja `plan.user_id === user.id` przed zapisami, mimo domyślnego RLS.
 - Walidacja i normalizacja `plant_name` oraz score’ów zapobiega wstrzyknięciom i niezgodnym typom.
@@ -75,6 +81,7 @@
 - Rozważyć rejestrowanie prób naruszenia (422/403) w loggerze lub `analytics_events` (opcjonalnie).
 
 ## 7. Obsługa błędów
+
 - Walidacja Zod → `ValidationError` (400) z `details.field_errors`.
 - Supabase `auth` bez użytkownika → 401 `Unauthorized`.
 - RLS (`error.code === "42501"`) → 403 `Forbidden`.
@@ -85,12 +92,14 @@
 - Wszystkie wyjątki logować (`logger.error('[PUT /plants] upsert failed', { planId, x, y, error })`).
 
 ## 8. Rozważania dotyczące wydajności
+
 - Minimalizacja liczby zapytań: plan + komórka + upsert (3 hitty). Można rozważyć pojedynczy `rpc` w przyszłości, ale prostota ma priorytet.
 - Zapytania korzystają z indeksów `(plan_id, x, y)` (PK) oraz RLS, więc są O(1) dla pojedynczych rekordów.
 - Użycie `.single()` / `.maybeSingle()` ogranicza transfer danych do niezbędnych kolumn.
 - Brak pętli, brak ryzyka blokad; upsert na pojedynczym rekordzie.
 
 ## 9. Etapy wdrożenia
+
 1. Dodaj schematy Zod w `src/lib/validation/plant-placements.ts` (ścieżka + body + typy inferowane) i wyeksportuj helpery.
 2. Utwórz/uzupełnij serwis `src/lib/services/plant-placements.service.ts` funkcją `upsertPlantPlacement`, uwzględniając mapowanie błędów Supabase.
 3. Dodaj ewentualne re-eksporty serwisu i typów w centralnych plikach (`src/lib/services/index.ts`, `src/types.ts`).

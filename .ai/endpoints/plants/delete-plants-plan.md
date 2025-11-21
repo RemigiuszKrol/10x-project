@@ -1,11 +1,13 @@
 # API Endpoint Implementation Plan: DELETE /api/plans/:plan_id/plants/:x/:y
 
 ## 1. Przegląd punktu końcowego
+
 - Cel: Usunięcie nasadzenia rośliny z konkretnej komórki planu działki należącego do uwierzytelnionego użytkownika bez modyfikacji typu komórki.
 - Zakres: Operacja na tabeli `plant_placements` z kontrolą przynależności planu, granic siatki oraz istnienia komórki i wpisu rośliny.
 - Kontekst: Handler Astro 5 w `src/pages/api`, korzystający z Supabase JS, Zod, helperów odpowiedzi HTTP oraz centralnego loggera.
 
 ## 2. Szczegóły żądania
+
 - Metoda HTTP: DELETE
 - Struktura URL: `/api/plans/:plan_id/plants/:x/:y`
 - Parametry:
@@ -27,6 +29,7 @@
   - `SupabaseClient<Database>` – typ klienta z `src/db`.
 
 ## 3. Szczegóły odpowiedzi
+
 - Sukces 204 No Content – brak ciała odpowiedzi.
 - Błędy:
   - 400 `ValidationError` – nieprawidłowe parametry ścieżki lub współrzędne poza zakresem siatki.
@@ -36,6 +39,7 @@
   - 500 `InternalError` – nieprzewidziany błąd Supabase lub serwera.
 
 ## 4. Przepływ danych
+
 1. Pobierz `supabase` i `logger` z `locals`; brak klienta → 500 (konfiguracja) lub 401 jeśli wynika z braku sesji.
 2. Odczytaj użytkownika poprzez `supabase.auth.getUser()`; brak → 401.
 3. Zweryfikuj parametry ścieżki za pomocą Zod; błędy mapuj na 400 z `details.field_errors`.
@@ -47,6 +51,7 @@
 9. Zwróć `jsonResponse(null, 204)`; wszystkie wyjątki przechwyć, zmapuj przez `errorResponse`, zaloguj szczegóły (`logger.error`).
 
 ## 5. Względy bezpieczeństwa
+
 - Wymagana autoryzacja Supabase; korzystaj z `Authorization` lub sesji cookie.
 - RLS owner-only: dodatkowa walidacja `plan.user_id` chroni przed ujawnieniem, nawet jeśli RLS jest aktywny.
 - Ścisła walidacja parametrów ścieżki zapobiega wstrzyknięciom i nadmiernym zapytaniom.
@@ -54,6 +59,7 @@
 - Rozważ rejestrowanie powtarzających się naruszeń (403/400) w loggerze/monitoringu.
 
 ## 6. Obsługa błędów
+
 - Walidacja Zod → 400 `ValidationError` z `field_errors`.
 - Brak uwierzytelnienia → 401 `Unauthorized`.
 - Plan innego użytkownika (błąd RLS `42501` lub jawny check) → 403 `Forbidden`.
@@ -62,12 +68,14 @@
 - Wszystkie błędy loguj poprzez `logger.error('[DELETE /plants] failed', { planId, x, y, userId, error })`.
 
 ## 7. Wydajność
+
 - Zapytania korzystają z kluczy głównych i indeksów (`plans.id`, `grid_cells(plan_id,x,y)`, `plant_placements(plan_id,x,y)`), co gwarantuje O(1) odczyty/usunięcia.
 - Minimalna liczba zapytań: plan + komórka + nasadzenie + delete (4). Można połączyć krok 6 i 7 w jedno zapytanie `plant_placements` z `single()` aby zmniejszyć liczbę hitów.
 - Użycie `.single()`/`.maybeSingle()` ogranicza ilość danych; brak pętli.
 - Odpowiedź 204 bez ciała redukuje transfer.
 
 ## 8. Kroki implementacji
+
 1. Dodaj/rozszerz schemat `PlantPlacementPathSchema` oraz typy `PlantPlacementPathParams` w `src/lib/validation/plant-placements.ts`.
 2. Utwórz funkcję `deletePlantPlacement(command: DeletePlantPlacementCommand)` w `src/lib/services/plant-placements.service.ts`, zwracającą `DeletePlantPlacementResult` i mapującą błędy Supabase.
 3. Zapewnij eksport serwisu/typów w `src/lib/services/index.ts` oraz ewentualnie w `src/types.ts` (jeżeli projekt tak robi).
@@ -75,4 +83,3 @@
 5. Zaimplementuj orkiestrację w handlerze: autoryzacja, walidacja, odczyt planu i komórki, delegacja do serwisu, mapowanie błędów.
 6. Dodaj testy jednostkowe/kontraktowe lub scenariusze manualne w `.ai/testing/plans-plants-delete.md` obejmujące przypadki: sukces, brak rośliny, brak komórki, plan innego użytkownika, brak tokenu, Parametry spoza zakresu.
 7. Uzupełnij dokumentację API (np. `.ai/api-plan.md`) o nowy endpoint i uruchom `pnpm lint`/`pnpm test` przed PR.
-
