@@ -1,0 +1,118 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { EditorLayout } from "@/components/editor/EditorLayout";
+import type { PlanDto, GridMetadataDto, GridCellDto } from "@/types";
+import type { ApiItemResponse, ApiListResponse } from "@/types";
+
+/**
+ * Strona edytora planu działki - SSR z dynamicznym plan_id
+ * Pobiera wstępne dane planu, metadane siatki i komórki dla viewport
+ */
+
+// Guard: Weryfikacja sesji użytkownika (middleware powinien już to obsłużyć, ale double-check)
+const supabase = Astro.locals.supabase;
+if (!supabase) {
+  return Astro.redirect("/auth/login");
+}
+
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+if (!user) {
+  return Astro.redirect("/auth/login");
+}
+
+// Pobierz plan_id z parametrów ścieżki
+const { id: planId } = Astro.params;
+
+// Walidacja UUID
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+if (!planId || !uuidRegex.test(planId)) {
+  return Astro.redirect("/plans?error=invalid_plan_id");
+}
+
+// Pobierz dane planu z API
+let plan: PlanDto | null = null;
+let gridMetadata: GridMetadataDto | null = null;
+let initialCells: GridCellDto[] = [];
+
+try {
+  // 1. GET /api/plans/:id
+  const planResponse = await fetch(`${Astro.url.origin}/api/plans/${planId}`, {
+    headers: {
+      Cookie: Astro.request.headers.get("Cookie") || "",
+    },
+  });
+
+  if (!planResponse.ok) {
+    if (planResponse.status === 404) {
+      return Astro.redirect("/plans?error=plan_not_found");
+    }
+    if (planResponse.status === 403) {
+      return Astro.redirect("/plans?error=access_denied");
+    }
+    throw new Error("Failed to fetch plan");
+  }
+
+  const planData = (await planResponse.json()) as ApiItemResponse<PlanDto>;
+  plan = planData.data;
+
+  // 2. GET /api/plans/:id/grid
+  const gridResponse = await fetch(`${Astro.url.origin}/api/plans/${planId}/grid`, {
+    headers: {
+      Cookie: Astro.request.headers.get("Cookie") || "",
+    },
+  });
+
+  if (!gridResponse.ok) {
+    throw new Error("Failed to fetch grid metadata");
+  }
+
+  const gridData = (await gridResponse.json()) as ApiItemResponse<GridMetadataDto>;
+  gridMetadata = gridData.data;
+
+  // 3. GET /api/plans/:id/grid/cells - początkowa partia komórek
+  // Pobieramy pierwszą "stronę" komórek (bez filtrów, limit 100)
+  const cellsResponse = await fetch(`${Astro.url.origin}/api/plans/${planId}/grid/cells?limit=100`, {
+    headers: {
+      Cookie: Astro.request.headers.get("Cookie") || "",
+    },
+  });
+
+  if (!cellsResponse.ok) {
+    throw new Error("Failed to fetch grid cells");
+  }
+
+  const cellsData = (await cellsResponse.json()) as ApiListResponse<GridCellDto>;
+  initialCells = cellsData.data;
+} catch {
+  return Astro.redirect("/plans?error=load_failed");
+}
+
+// Jeśli wszystko OK, renderuj stronę edytora
+const pageTitle = plan ? `${plan.name} - Edytor - PlantsPlaner` : "Edytor planu - PlantsPlaner";
+---
+
+<Layout title={pageTitle} showNavbar={false}>
+  <main role="main" class="h-screen overflow-hidden">
+    {
+      plan && gridMetadata ? (
+        <EditorLayout client:load initialPlan={plan} initialGridMetadata={gridMetadata} initialCells={initialCells} />
+      ) : (
+        <div class="flex h-full items-center justify-center">
+          <p class="text-destructive">Nie udało się załadować planu</p>
+        </div>
+      )
+    }
+  </main>
+</Layout>
+
+<style>
+  /* Zapewnienie pełnoekranowego layoutu bez scrollowania strony */
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+</style>

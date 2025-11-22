@@ -15,6 +15,7 @@ Widok wykorzystuje pełnoekranowy layout z centralną siatką, bocznym drawerem 
 **Middleware:** Wymaga uwierzytelnienia (redirect do `/auth/login` jeśli brak sesji)
 
 **Pobieranie danych na serwerze:**
+
 - GET `/api/plans/:id` - szczegóły planu
 - GET `/api/plans/:id/grid` - metadane siatki
 - GET `/api/plans/:id/grid/cells` - początkowa partia komórek (bbox pokrywająca viewport)
@@ -71,6 +72,7 @@ PlanEditorPage (Astro)
 **Opis:** Główna strona Astro obsługująca SSR. Pobiera wstępne dane planu i siatki, weryfikuje uprawnienia, przekazuje dane do komponentu React EditorLayout.
 
 **Elementy:**
+
 - Layout z `<EditorLayout>` jako client:load
 - Przekazanie wstępnych danych przez props
 - Obsługa błędów 404, 403
@@ -80,6 +82,7 @@ PlanEditorPage (Astro)
 **Walidacja:** Sprawdzenie UUID plan_id, weryfikacja sesji użytkownika
 
 **Typy:**
+
 - `PlanDto` - szczegóły planu
 - `GridMetadataDto` - metadane siatki
 - `GridCellDto[]` - początkowa lista komórek
@@ -91,10 +94,12 @@ PlanEditorPage (Astro)
 **Opis:** Główny komponent React zarządzający stanem edytora. Kontener dla wszystkich podkomponentów, zarządzanie React Query, customowy hook `useGridEditor`.
 
 **Elementy:**
+
 - `<div className="flex h-screen flex-col">`
 - EditorTopbar, GridCanvas, SideDrawer, BottomPanel, Modals
 
 **Obsługiwane zdarzenia:**
+
 - Inicjalizacja stanu edytora
 - Synchronizacja z React Query
 - Obsługa skrótów klawiaturowych (Escape, Delete, Arrow keys)
@@ -103,10 +108,12 @@ PlanEditorPage (Astro)
 **Walidacja:** brak bezpośredniej (delegowana do child components)
 
 **Typy:**
+
 - `EditorState` (ViewModel) - lokalny stan edytora
 - `PlanDto`, `GridMetadataDto`, `GridCellDto[]`
 
 **Propsy:**
+
 ```typescript
 interface EditorLayoutProps {
   initialPlan: PlanDto;
@@ -120,6 +127,7 @@ interface EditorLayoutProps {
 **Opis:** Górny pasek edytora zawierający nazwę planu, toolbar z narzędziami oraz wskaźniki statusu.
 
 **Elementy:**
+
 - `<header className="border-b bg-background px-4 py-2">`
 - PlanNameDisplay (h1 z nazwą planu)
 - EditorToolbar (środek)
@@ -132,6 +140,7 @@ interface EditorLayoutProps {
 **Typy:** `PlanDto` (nazwa planu)
 
 **Propsy:**
+
 ```typescript
 interface EditorTopbarProps {
   plan: PlanDto;
@@ -145,20 +154,24 @@ interface EditorTopbarProps {
 **Opis:** Toolbar z narzędziami edycji: wybór trybu (zaznacz obszar, dodaj roślinę, zmień typ), przycisk zapisu siatki, tooltip o braku cofania.
 
 **Elementy:**
+
 - ButtonGroup z ToggleButton dla każdego narzędzia
 - SaveButton (z ikoną Save, disabled podczas zapisywania)
 - Tooltip "Brak możliwości cofnięcia - potwierdź operacje przed zapisem"
 
 **Obsługiwane zdarzenia:**
+
 - `onToolChange(tool: EditorTool)` - zmiana narzędzia
 - `onSave()` - zapis siatki (wywołanie PUT/POST + event analytics `grid_saved`)
 
 **Walidacja:** brak (tylko UI state)
 
 **Typy:**
+
 - `EditorTool = 'select' | 'add_plant' | 'change_type'`
 
 **Propsy:**
+
 ```typescript
 interface EditorToolbarProps {
   currentTool: EditorTool;
@@ -174,6 +187,7 @@ interface EditorToolbarProps {
 **Opis:** Komponent renderujący interaktywną siatkę planu. Wykorzystuje Canvas dla wydajności. Obsługuje zaznaczanie obszarów, focus management, hover tooltips.
 
 **Elementy:**
+
 - Container `<div className="relative flex-1 overflow-auto">` (scroll dla dużych siatek)
 - Grid layout `<div className="grid">` z dynamicznymi kolumnami/wierszami
 - Komórki `<GridCell>` dla każdej pozycji (x, y)
@@ -181,22 +195,26 @@ interface EditorToolbarProps {
 - `<CellFocusRing>` - podświetlenie aktywnej komórki (focus)
 
 **Obsługiwane zdarzenia:**
+
 - `onCellClick(x, y)` - kliknięcie komórki (rozpoczęcie zaznaczania lub akcja w zależności od narzędzia)
 - `onCellMouseDown(x, y)` + `onCellMouseEnter(x, y)` + `onCellMouseUp()` - zaznaczanie obszaru drag
 - `onCellHover(x, y)` - wyświetlenie tooltipa
 - `onKeyDown(event)` - nawigacja strzałkami, Enter (potwierdź zaznaczenie), Escape (anuluj)
 
 **Walidacja:**
+
 - Współrzędne x, y muszą być w granicach [0, grid_width), [0, grid_height)
 - Zaznaczony obszar: x1 <= x2, y1 <= y2
 
 **Typy:**
+
 - `GridMetadataDto` - wymiary siatki
 - `GridCellDto[]` - dane komórek
 - `CellPosition = { x: number; y: number }`
 - `CellSelection = { x1: number; y1: number; x2: number; y2: number } | null`
 
 **Propsy:**
+
 ```typescript
 interface GridCanvasProps {
   gridMetadata: GridMetadataDto;
@@ -215,11 +233,13 @@ interface GridCanvasProps {
 **Opis:** Pojedyncza komórka siatki. Renderuje wizualną reprezentację typu pola oraz ewentualnej rośliny.
 
 **Elementy:**
+
 - `<div className="grid-cell" data-type={type} data-x={x} data-y={y}>`
 - Ikona lub kolor tła w zależności od typu (soil=zielony, water=niebieski, path=szary, building=czerwony)
 - Ikona rośliny jeśli komórka zawiera roślinę
 
 **Obsługiwane zdarzenia:**
+
 - onClick, onMouseDown, onMouseEnter (przekazywane z GridCanvas)
 
 **Walidacja:** brak
@@ -227,6 +247,7 @@ interface GridCanvasProps {
 **Typy:** `GridCellDto`, `PlantPlacementDto | null`
 
 **Propsy:**
+
 ```typescript
 interface GridCellProps {
   x: number;
@@ -246,11 +267,13 @@ interface GridCellProps {
 **Opis:** Prawy panel z zakładkami. Zarządza stanem aktywnej zakładki i renderuje odpowiedni content.
 
 **Elementy:**
+
 - `<aside className="w-96 border-l bg-background">`
 - `<Tabs>` z trzema TabsTrigger: "Parametry", "Rośliny", "Pogoda"
 - `<TabsContent>` dla każdej zakładki
 
 **Obsługiwane zdarzenia:**
+
 - `onTabChange(tab: 'parameters' | 'plants' | 'weather')` - zmiana aktywnej zakładki
 
 **Walidacja:** brak
@@ -258,6 +281,7 @@ interface GridCellProps {
 **Typy:** `DrawerTab = 'parameters' | 'plants' | 'weather'`
 
 **Propsy:**
+
 ```typescript
 interface SideDrawerProps {
   activeTab: DrawerTab;
@@ -272,15 +296,18 @@ interface SideDrawerProps {
 **Opis:** Zakładka z formularzem parametrów planu (nazwa, orientacja, półkula, jednostka kratki). Obsługuje PATCH `/api/plans/:id` z `confirm_regenerate`.
 
 **Elementy:**
+
 - Formularz z polami: name (Input), orientation (Slider 0-359 + mini compass), hemisphere (Select), cell_size_cm (RadioGroup 10/25/50/100)
 - Przycisk "Zapisz zmiany"
 - Alert jeśli zmiana wymaga regeneracji siatki
 
 **Obsługiwane zdarzenia:**
+
 - `onSubmit(data: PlanUpdateCommand)` - zapis zmian
 - Obsługa 409 Conflict (wymaga potwierdzenia) → otwarcie `RegenerationConfirmDialog`
 
 **Walidacja:**
+
 - Nazwa: niepusta
 - Orientacja: 0-359
 - Jednostka kratki: {10, 25, 50, 100}
@@ -288,10 +315,12 @@ interface SideDrawerProps {
 - Grid_width, grid_height <= 200
 
 **Typy:**
+
 - `PlanDto` - aktualne dane
 - `PlanUpdateCommand` - dane do wysłania
 
 **Propsy:**
+
 ```typescript
 interface ParametersTabProps {
   plan: PlanDto;
@@ -304,12 +333,14 @@ interface ParametersTabProps {
 **Opis:** Zakładka zarządzania roślinami. Lista roślin w planie, wyszukiwarka (AI), formularz dodawania/edycji rośliny, wyświetlanie oceny dopasowania.
 
 **Elementy:**
+
 - PlantsList - lista roślin (GET `/api/plans/:id/plants`)
 - PlantSearchForm - input + przycisk "Szukaj" (POST `/api/ai/plants/search`)
 - PlantFitDisplay - wyniki oceny AI (sunlight_score, humidity_score, precip_score, overall_score, explanation)
 - AddPlantDialog - modal do dodania rośliny na zaznaczoną komórkę
 
 **Obsługiwane zdarzenia:**
+
 - `onSearchPlant(query: string)` - wyszukiwanie rośliny
 - `onSelectPlantCandidate(candidate: PlantSearchCandidateDto)` - wybór rośliny z wyników AI
 - `onCheckFit(plant_name, x, y)` - sprawdzenie dopasowania (POST `/api/ai/plants/fit`)
@@ -318,17 +349,20 @@ interface ParametersTabProps {
 - Obsługa błędów: 422 (komórka nie-soil), 504 (timeout AI), 429 (rate limit)
 
 **Walidacja:**
+
 - Dodanie rośliny tylko na komórkę typu 'soil'
 - plant_name: niepusty string
 - scores: opcjonalne, 1-5 jeśli podane
 
 **Typy:**
+
 - `PlantPlacementDto` - istniejąca roślina
 - `PlantSearchCommand`, `PlantSearchResultDto`
 - `PlantFitCommand`, `PlantFitResultDto`
 - `PlantPlacementUpsertCommand`
 
 **Propsy:**
+
 ```typescript
 interface PlantsTabProps {
   planId: string;
@@ -343,21 +377,25 @@ interface PlantsTabProps {
 **Opis:** Zakładka wyświetlająca dane pogodowe dla planu. Tabela/wykres miesięcznych metryk (nasłonecznienie, wilgotność, opady), data ostatniego odświeżenia, przycisk odświeżania.
 
 **Elementy:**
+
 - WeatherMonthlyChart - wykres trendu (np. Line chart dla 12 miesięcy)
 - WeatherMetricsTable - tabela z danymi (rok, miesiąc, sunlight, humidity, precip, last_refreshed_at)
 - WeatherRefreshButton - przycisk "Odśwież dane" (POST `/api/plans/:id/weather/refresh`)
 
 **Obsługiwane zdarzenia:**
+
 - `onRefresh(force: boolean)` - odświeżenie cache pogody
 - Obsługa błędów: 429 (rate limit), 504 (timeout Open-Meteo)
 
 **Walidacja:** brak (tylko odczyt i refresh)
 
 **Typy:**
+
 - `WeatherMonthlyDto[]` - dane miesięczne
 - `WeatherRefreshCommand`, `WeatherRefreshResultDto`
 
 **Propsy:**
+
 ```typescript
 interface WeatherTabProps {
   planId: string;
@@ -369,6 +407,7 @@ interface WeatherTabProps {
 **Opis:** Dolny panel statusu z logiem operacji i wskaźnikami postępu. Wykorzystuje aria-live dla komunikatów.
 
 **Elementy:**
+
 - OperationLog - lista ostatnich operacji z timestampami (np. "Zapisano siatkę", "Dodano roślinę 'tomato' na (3, 7)")
 - StatusBar - wskaźniki: liczba roślin, liczba komórek zaznaczonych, stan AI (idle/loading/error), stan pogody
 
@@ -377,16 +416,18 @@ interface WeatherTabProps {
 **Walidacja:** brak
 
 **Typy:**
+
 - `OperationLogEntry = { timestamp: string; message: string; type: 'info' | 'success' | 'error' }`
 
 **Propsy:**
+
 ```typescript
 interface BottomPanelProps {
   operations: OperationLogEntry[];
   plantsCount: number;
   selectedCellsCount: number;
-  aiStatus: 'idle' | 'loading' | 'error';
-  weatherStatus: 'idle' | 'loading' | 'error' | 'stale';
+  aiStatus: "idle" | "loading" | "error";
+  weatherStatus: "idle" | "loading" | "error" | "stale";
 }
 ```
 
@@ -395,20 +436,24 @@ interface BottomPanelProps {
 **Opis:** Modal potwierdzenia zmiany typu obszaru, gdy operacja usunie rośliny. Wyświetlany po błędzie 409 z endpointu POST `/api/plans/:id/grid/area-type`.
 
 **Elementy:**
+
 - AlertDialog z tytułem "Usuń rośliny?"
 - Opis: "Zmiana typu usunie X roślin z zaznaczonego obszaru. Kontynuować?"
 - Przyciski: "Anuluj", "Potwierdź"
 
 **Obsługiwane zdarzenia:**
+
 - `onConfirm()` - ponowne wywołanie POST z `confirm_plant_removal=true` + event `area_typed`
 - `onCancel()` - zamknięcie modalu
 
 **Walidacja:** brak
 
 **Typy:**
+
 - `GridAreaTypeCommand` - komenda z potwierdzeniem
 
 **Propsy:**
+
 ```typescript
 interface AreaTypeConfirmDialogProps {
   isOpen: boolean;
@@ -425,11 +470,13 @@ interface AreaTypeConfirmDialogProps {
 **Opis:** Modal potwierdzenia regeneracji siatki po zmianie parametrów planu (wymiary, jednostka kratki). Wyświetlany po błędzie 409 z PATCH `/api/plans/:id`.
 
 **Elementy:**
+
 - AlertDialog "Regenerować siatkę?"
 - Opis: "Zmiana parametrów spowoduje regenerację siatki i utratę wszystkich roślin. Kontynuować?"
 - Przyciski: "Anuluj", "Potwierdź i regeneruj"
 
 **Obsługiwane zdarzenia:**
+
 - `onConfirm()` - PATCH z `confirm_regenerate=true`
 - `onCancel()`
 
@@ -438,6 +485,7 @@ interface AreaTypeConfirmDialogProps {
 **Typy:** `PlanUpdateCommand`, `PlanUpdateQuery`
 
 **Propsy:**
+
 ```typescript
 interface GridRegenerationConfirmDialogProps {
   isOpen: boolean;
@@ -452,6 +500,7 @@ interface GridRegenerationConfirmDialogProps {
 ### 5.1. DTO (z types.ts)
 
 Wykorzystujemy istniejące typy:
+
 - `PlanDto` - szczegóły planu
 - `GridMetadataDto` - metadane siatki
 - `GridCellDto` - komórka siatki
@@ -479,7 +528,7 @@ export interface EditorState {
   clipboardArea: CellSelection | null; // dla przyszłego copy/paste (poza MVP)
 }
 
-export type EditorTool = 'select' | 'add_plant' | 'change_type';
+export type EditorTool = "select" | "add_plant" | "change_type";
 
 export interface CellPosition {
   x: number;
@@ -498,11 +547,11 @@ export interface OperationLogEntry {
   id: string;
   timestamp: string; // ISO
   message: string;
-  type: 'info' | 'success' | 'error' | 'warning';
+  type: "info" | "success" | "error" | "warning";
 }
 
 // Stan zakładek drawera
-export type DrawerTab = 'parameters' | 'plants' | 'weather';
+export type DrawerTab = "parameters" | "plants" | "weather";
 
 // Rozszerzony stan komórki dla UI (połączenie GridCell + PlantPlacement)
 export interface CellViewModel {
@@ -515,7 +564,7 @@ export interface CellViewModel {
 
 // Stan AI
 export interface AIState {
-  status: 'idle' | 'searching' | 'fitting' | 'error';
+  status: "idle" | "searching" | "fitting" | "error";
   searchResults: PlantSearchCandidateDto[] | null;
   fitResult: PlantFitResultDto | null;
   error: string | null;
@@ -523,7 +572,7 @@ export interface AIState {
 
 // Stan pogody
 export interface WeatherState {
-  status: 'idle' | 'loading' | 'error' | 'stale';
+  status: "idle" | "loading" | "error" | "stale";
   data: WeatherMonthlyDto[] | null;
   lastRefreshedAt: string | null;
   error: string | null;
@@ -537,6 +586,7 @@ export interface WeatherState {
 Wykorzystanie React Query do synchronizacji danych z API:
 
 **Queries:**
+
 - `usePlan(planId)` - GET `/api/plans/:id`
 - `useGridMetadata(planId)` - GET `/api/plans/:id/grid`
 - `useGridCells(planId, filters)` - GET `/api/plans/:id/grid/cells?...`
@@ -544,6 +594,7 @@ Wykorzystanie React Query do synchronizacji danych z API:
 - `useWeatherData(planId)` - GET `/api/plans/:id/weather`
 
 **Mutations:**
+
 - `useUpdatePlan()` - PATCH `/api/plans/:id`
 - `useUpdateGridCell()` - PUT `/api/plans/:id/grid/cells/:x/:y`
 - `useSetAreaType()` - POST `/api/plans/:id/grid/area-type`
@@ -554,6 +605,7 @@ Wykorzystanie React Query do synchronizacji danych z API:
 - `useRefreshWeather()` - POST `/api/plans/:id/weather/refresh`
 
 **Konfiguracja:**
+
 - `staleTime: 5 * 60 * 1000` (5 min dla danych planu i siatki)
 - `cacheTime: 10 * 60 * 1000` (10 min)
 - `retry: 1` dla AI (timeout wrażliwe)
@@ -586,7 +638,7 @@ interface UseGridEditorReturn {
 function useGridEditor(planId: string, initialPlan: PlanDto, initialGrid: GridMetadataDto): UseGridEditorReturn {
   // Stan lokalny
   const [state, setState] = useState<EditorState>({
-    currentTool: 'select',
+    currentTool: "select",
     selectedArea: null,
     focusedCell: null,
     hasUnsavedChanges: false,
@@ -596,7 +648,9 @@ function useGridEditor(planId: string, initialPlan: PlanDto, initialGrid: GridMe
   // React Query hooks
   const { data: plan } = usePlan(planId);
   const { data: gridMetadata } = useGridMetadata(planId);
-  const { data: cells } = useGridCells(planId, { /* filters */ });
+  const { data: cells } = useGridCells(planId, {
+    /* filters */
+  });
   const { data: plants } = usePlantPlacements(planId);
 
   // Mutations
@@ -606,18 +660,26 @@ function useGridEditor(planId: string, initialPlan: PlanDto, initialGrid: GridMe
   // ... inne mutations
 
   // Actions
-  const actions = useMemo(() => ({
-    setTool: (tool: EditorTool) => setState(s => ({ ...s, currentTool: tool })),
-    // ... inne akcje
-  }), [/* dependencies */]);
+  const actions = useMemo(
+    () => ({
+      setTool: (tool: EditorTool) => setState((s) => ({ ...s, currentTool: tool })),
+      // ... inne akcje
+    }),
+    [
+      /* dependencies */
+    ]
+  );
 
   // Derived state
-  const derived = useMemo(() => ({
-    selectedCellsCount: state.selectedArea 
-      ? (state.selectedArea.x2 - state.selectedArea.x1 + 1) * (state.selectedArea.y2 - state.selectedArea.y1 + 1)
-      : 0,
-    // ... inne derived values
-  }), [state, plants]);
+  const derived = useMemo(
+    () => ({
+      selectedCellsCount: state.selectedArea
+        ? (state.selectedArea.x2 - state.selectedArea.x1 + 1) * (state.selectedArea.y2 - state.selectedArea.y1 + 1)
+        : 0,
+      // ... inne derived values
+    }),
+    [state, plants]
+  );
 
   return { state, actions, derived };
 }
@@ -641,43 +703,43 @@ function useKeyboardNavigation(
       if (!focusedCell) return;
 
       switch (e.key) {
-        case 'ArrowUp':
+        case "ArrowUp":
           e.preventDefault();
           if (focusedCell.y > 0) {
             onFocusChange({ x: focusedCell.x, y: focusedCell.y - 1 });
           }
           break;
-        case 'ArrowDown':
+        case "ArrowDown":
           e.preventDefault();
           if (focusedCell.y < gridHeight - 1) {
             onFocusChange({ x: focusedCell.x, y: focusedCell.y + 1 });
           }
           break;
-        case 'ArrowLeft':
+        case "ArrowLeft":
           e.preventDefault();
           if (focusedCell.x > 0) {
             onFocusChange({ x: focusedCell.x - 1, y: focusedCell.y });
           }
           break;
-        case 'ArrowRight':
+        case "ArrowRight":
           e.preventDefault();
           if (focusedCell.x < gridWidth - 1) {
             onFocusChange({ x: focusedCell.x + 1, y: focusedCell.y });
           }
           break;
-        case 'Enter':
+        case "Enter":
           e.preventDefault();
           onConfirmSelection();
           break;
-        case 'Escape':
+        case "Escape":
           e.preventDefault();
           onCancelSelection();
           break;
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [focusedCell, gridWidth, gridHeight, onFocusChange, onConfirmSelection, onCancelSelection]);
 }
 ```
@@ -693,21 +755,21 @@ function useAnalyticsEvents(planId: string) {
   return {
     trackGridSaved: () => {
       sendEvent.mutate({
-        event_type: 'grid_saved',
+        event_type: "grid_saved",
         plan_id: planId,
         attributes: { timestamp: new Date().toISOString() },
       });
     },
     trackAreaTyped: (area: CellSelection, type: GridCellType) => {
       sendEvent.mutate({
-        event_type: 'area_typed',
+        event_type: "area_typed",
         plan_id: planId,
         attributes: { area, type },
       });
     },
     trackPlantConfirmed: (x: number, y: number, plantName: string) => {
       sendEvent.mutate({
-        event_type: 'plant_confirmed',
+        event_type: "plant_confirmed",
         plan_id: planId,
         attributes: { x, y, plant_name: plantName },
       });
@@ -725,6 +787,7 @@ function useAnalyticsEvents(planId: string) {
 **Request:** brak body, plan_id w path
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -757,6 +820,7 @@ function useAnalyticsEvents(planId: string) {
 **Request:** brak body, plan_id w path
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -777,10 +841,12 @@ function useAnalyticsEvents(planId: string) {
 **Cel:** Pobranie listy komórek siatki z filtrami i paginacją
 
 **Request:**
+
 - Query params: `type`, `x`, `y`, `bbox`, `limit`, `cursor`, `sort`, `order`
 - Przykład: `?bbox=0,0,19,15&limit=100`
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -802,11 +868,13 @@ function useAnalyticsEvents(planId: string) {
 **Cel:** Zmiana typu pojedynczej komórki
 
 **Request:**
+
 ```json
 { "type": "path" }
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": { "x": 1, "y": 2, "type": "path", "updated_at": "..." }
@@ -822,6 +890,7 @@ function useAnalyticsEvents(planId: string) {
 **Cel:** Zmiana typu prostokątnego obszaru siatki
 
 **Request:**
+
 ```json
 {
   "x1": 0,
@@ -834,6 +903,7 @@ function useAnalyticsEvents(planId: string) {
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -844,6 +914,7 @@ function useAnalyticsEvents(planId: string) {
 ```
 
 **Response 409 (wymaga potwierdzenia):**
+
 ```json
 {
   "error": {
@@ -863,6 +934,7 @@ function useAnalyticsEvents(planId: string) {
 **Cel:** Dodanie lub aktualizacja rośliny na komórce
 
 **Request:**
+
 ```json
 {
   "plant_name": "tomato",
@@ -874,6 +946,7 @@ function useAnalyticsEvents(planId: string) {
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -910,11 +983,13 @@ function useAnalyticsEvents(planId: string) {
 **Cel:** Wyszukiwanie roślin po nazwie przez AI (na ten moment tylko Mock z odpowiedzia na sztywno)
 
 **Request:**
+
 ```json
 { "query": "tomato" }
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -935,6 +1010,7 @@ function useAnalyticsEvents(planId: string) {
 **Cel:** Ocena dopasowania rośliny do lokalizacji i warunków pogodowych (mock na sztywno na ten moment)
 
 **Request:**
+
 ```json
 {
   "plan_id": "uuid",
@@ -945,6 +1021,7 @@ function useAnalyticsEvents(planId: string) {
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -966,6 +1043,7 @@ function useAnalyticsEvents(planId: string) {
 **Cel:** Aktualizacja parametrów planu
 
 **Request:**
+
 ```json
 {
   "name": "Nowa nazwa",
@@ -979,6 +1057,7 @@ function useAnalyticsEvents(planId: string) {
 **Response 200:** jak GET `/api/plans/:id`
 
 **Response 409 (wymaga potwierdzenia):**
+
 ```json
 {
   "error": {
@@ -1000,6 +1079,7 @@ function useAnalyticsEvents(planId: string) {
 **Request:** brak body
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -1025,11 +1105,13 @@ function useAnalyticsEvents(planId: string) {
 **Cel:** Odświeżenie cache pogody
 
 **Request:**
+
 ```json
 { "force": false }
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -1048,6 +1130,7 @@ function useAnalyticsEvents(planId: string) {
 ### 8.1. Zaznaczanie obszaru siatki
 
 **Scenariusz:**
+
 1. Użytkownik wybiera narzędzie "Zaznacz obszar" z toolbaru
 2. Kliknięcie na komórkę (x1, y1) rozpoczyna zaznaczanie
 3. Przeciąganie myszą do komórki (x2, y2)
@@ -1056,6 +1139,7 @@ function useAnalyticsEvents(planId: string) {
 6. Użytkownik może zmienić typ zaznaczonych komórek (toolbar → dropdown typ → "Zastosuj")
 
 **Alternatywa (klawiatura):**
+
 1. Nawigacja strzałkami do komórki początkowej
 2. Shift + strzałki rozszerza zaznaczenie
 3. Enter potwierdza zaznaczenie
@@ -1063,6 +1147,7 @@ function useAnalyticsEvents(planId: string) {
 ### 8.2. Zmiana typu obszaru
 
 **Scenariusz:**
+
 1. Użytkownik zaznacza obszar (patrz 8.1)
 2. Wybiera typ z dropdownu (np. "woda")
 3. Klika "Zastosuj"
@@ -1072,13 +1157,12 @@ function useAnalyticsEvents(planId: string) {
 7. GridCanvas odświeża się (React Query invalidation)
 
 **Alternatywa (bez roślin):**
-1-3. jak wyżej
-4. Brak roślin → POST bez potwierdzenia
-5. Sukces → toast + event
+1-3. jak wyżej 4. Brak roślin → POST bez potwierdzenia 5. Sukces → toast + event
 
 ### 8.3. Dodawanie rośliny
 
 **Scenariusz:**
+
 1. Użytkownik wybiera narzędzie "Dodaj roślinę" z toolbaru
 2. Klika na komórkę typu 'soil' (x, y)
 3. Otwiera się AddPlantDialog z zakładkami:
@@ -1095,19 +1179,15 @@ function useAnalyticsEvents(planId: string) {
 12. Dialog zamyka się, GridCanvas i PlantsList odświeżają się
 
 **Alternatywa (komórka nie-soil):**
-1-2. jak wyżej, ale komórka != 'soil'
-3. Wyświetla się CellNotSoilWarningDialog "Rośliny można dodawać tylko na pola typu 'ziemia'"
-4. Użytkownik zamyka dialog
+1-2. jak wyżej, ale komórka != 'soil' 3. Wyświetla się CellNotSoilWarningDialog "Rośliny można dodawać tylko na pola typu 'ziemia'" 4. Użytkownik zamyka dialog
 
 **Alternatywa (timeout AI):**
-4-5. Timeout po 10s
-6. Wyświetla się AITimeoutErrorDialog z przyciskami "Ponów" i "Dodaj bez oceny"
-7. "Ponów" → ponowne POST `/ai/plants/fit`
-8. "Dodaj bez oceny" → przejście do kroku 9 bez scores (PUT z plant_name tylko)
+4-5. Timeout po 10s 6. Wyświetla się AITimeoutErrorDialog z przyciskami "Ponów" i "Dodaj bez oceny" 7. "Ponów" → ponowne POST `/ai/plants/fit` 8. "Dodaj bez oceny" → przejście do kroku 9 bez scores (PUT z plant_name tylko)
 
 ### 8.4. Usuwanie rośliny
 
 **Scenariusz:**
+
 1. Użytkownik klika na komórkę z rośliną w GridCanvas
 2. Wyświetla się kontekstowe menu lub info panel z przyciskiem "Usuń roślinę"
 3. Klika "Usuń roślinę"
@@ -1120,6 +1200,7 @@ function useAnalyticsEvents(planId: string) {
 ### 8.5. Edycja parametrów planu
 
 **Scenariusz:**
+
 1. Użytkownik otwiera SideDrawer → zakładka "Parametry"
 2. Zmienia orientację z 0 na 90 (slider)
 3. Klika "Zapisz zmiany"
@@ -1127,18 +1208,12 @@ function useAnalyticsEvents(planId: string) {
 5. Sukces (200, brak wpływu na siatkę) → toast "Zaktualizowano plan"
 6. Plan odświeża się w React Query
 
-**Alternatywa (regeneracja siatki):**
-2. Zmienia cell_size_cm z 25 na 50
-3. Klika "Zapisz zmiany"
-4. PATCH `/plans/:id` bez confirm_regenerate
-5. Błąd 409 → wyświetla się GridRegenerationConfirmDialog
-6. Użytkownik potwierdza
-7. PATCH `/plans/:id?confirm_regenerate=true`
-8. Sukces → toast "Zregenerowano siatkę", wszystkie dane (grid, cells, plants) odświeżają się
+**Alternatywa (regeneracja siatki):** 2. Zmienia cell_size_cm z 25 na 50 3. Klika "Zapisz zmiany" 4. PATCH `/plans/:id` bez confirm_regenerate 5. Błąd 409 → wyświetla się GridRegenerationConfirmDialog 6. Użytkownik potwierdza 7. PATCH `/plans/:id?confirm_regenerate=true` 8. Sukces → toast "Zregenerowano siatkę", wszystkie dane (grid, cells, plants) odświeżają się
 
 ### 8.6. Odświeżanie danych pogodowych
 
 **Scenariusz:**
+
 1. Użytkownik otwiera SideDrawer → zakładka "Pogoda"
 2. Widzi tabelę z danymi i datą ostatniego odświeżenia
 3. Klika "Odśwież dane"
@@ -1146,13 +1221,12 @@ function useAnalyticsEvents(planId: string) {
 5. Sukces (200) → toast "Dane pogodowe zaktualizowane (12 miesięcy)"
 6. WeatherTab odświeża dane
 
-**Alternatywa (rate limit):**
-4. Błąd 429 → toast "Zbyt częste odświeżanie. Spróbuj ponownie za X minut"
-5. Przycisk "Odśwież" staje się disabled na X minut (countdown w tooltipie)
+**Alternatywa (rate limit):** 4. Błąd 429 → toast "Zbyt częste odświeżanie. Spróbuj ponownie za X minut" 5. Przycisk "Odśwież" staje się disabled na X minut (countdown w tooltipie)
 
 ### 8.7. Nawigacja klawiaturą po siatce
 
 **Scenariusz:**
+
 1. Użytkownik klika na GridCanvas (focus na kontener)
 2. Naciska Tab → focus przechodzi na pierwszą komórkę (0, 0)
 3. Strzałkami ↑↓←→ porusza się po siatce
@@ -1171,6 +1245,7 @@ function useAnalyticsEvents(planId: string) {
 **Komponenty:** GridCanvas, wszystkie operacje na komórkach
 
 **Wpływ na UI:**
+
 - Blokada interakcji poza granicami siatki
 - Błędy 422 z API mapowane na toast "Współrzędne poza granicami siatki"
 
@@ -1181,6 +1256,7 @@ function useAnalyticsEvents(planId: string) {
 **Komponenty:** AddPlantDialog, GridCanvas (narzędzie "add_plant")
 
 **Wpływ na UI:**
+
 - Disabled state przycisku "Dodaj roślinę" jeśli `cellType !== 'soil'`
 - CellNotSoilWarningDialog po próbie dodania na niewłaściwą komórkę
 - Błąd 422 z API → toast "Rośliny można dodawać tylko na pola typu 'ziemia'"
@@ -1192,6 +1268,7 @@ function useAnalyticsEvents(planId: string) {
 **Komponenty:** GridCanvas (SelectionOverlay)
 
 **Wpływ na UI:**
+
 - Automatyczna korekta podczas drag (wymuszenie poprawnej kolejności współrzędnych)
 - Nie pozwalamy na puste zaznaczenie (min 1 komórka)
 
@@ -1202,6 +1279,7 @@ function useAnalyticsEvents(planId: string) {
 **Komponenty:** ParametersTab, GridRegenerationConfirmDialog
 
 **Wpływ na UI:**
+
 - Przed wysłaniem PATCH sprawdzamy czy nowe wymiary różnią się od aktualnych
 - Jeśli tak → informujemy użytkownika o wpływie (alert box w formularzu)
 - Po błędzie 409 → GridRegenerationConfirmDialog
@@ -1214,6 +1292,7 @@ function useAnalyticsEvents(planId: string) {
 **Komponenty:** GridCanvas (operacje area-type), AreaTypeConfirmDialog
 
 **Wpływ na UI:**
+
 - Przed POST `/grid/area-type` sprawdzamy czy są rośliny w obszarze (query do plants z bbox)
 - Jeśli są → informujemy użytkownika (alert w UI) przed wysłaniem
 - Po błędzie 409 → AreaTypeConfirmDialog z liczbą roślin do usunięcia
@@ -1222,6 +1301,7 @@ function useAnalyticsEvents(planId: string) {
 ### 9.6. Walidacja parametrów planu
 
 **Warunki:**
+
 - `name`: niepuste
 - `orientation`: 0-359
 - `width_cm`, `height_cm`: > 0, podzielne przez `cell_size_cm`
@@ -1231,6 +1311,7 @@ function useAnalyticsEvents(planId: string) {
 **Komponenty:** ParametersTab (PlanParametersForm)
 
 **Wpływ na UI:**
+
 - Walidacja inline (Zod + React Hook Form)
 - Błędy wyświetlane pod polami formularza
 - Przycisk "Zapisz" disabled jeśli formularz niepoprawny
@@ -1239,12 +1320,14 @@ function useAnalyticsEvents(planId: string) {
 ### 9.7. Rate limiting
 
 **Warunki:**
+
 - AI search/fit: max 10/min/user
 - Weather refresh: max 2/h/plan
 
 **Komponenty:** PlantSearchForm, PlantFitDisplay, WeatherRefreshButton
 
 **Wpływ na UI:**
+
 - Błąd 429 → toast z komunikatem i czasem oczekiwania
 - Disabled state przycisków z countdown w tooltipie
 - Lokalny licznik requestów (opcjonalnie, aby uniknąć zbędnych wywołań API)
@@ -1256,6 +1339,7 @@ function useAnalyticsEvents(planId: string) {
 **Scenariusz:** Utrata sesji podczas pracy w edytorze
 
 **Obsługa:**
+
 - React Query onError → wykrycie 401
 - Wyświetlenie globalnego SessionExpiredModal (z `.ai/docs/ui-plan.md`)
 - Opcje: "Zaloguj ponownie" (inline form w modalu) lub "Wyloguj"
@@ -1266,6 +1350,7 @@ function useAnalyticsEvents(planId: string) {
 **Scenariusz:** Próba dostępu do planu innego użytkownika (manipulacja URL)
 
 **Obsługa:**
+
 - Redirect do `/plans` z toast "Brak uprawnień do tego planu"
 - Logowanie błędu (opcjonalnie do sentry/logów)
 
@@ -1274,6 +1359,7 @@ function useAnalyticsEvents(planId: string) {
 **Scenariusz:** Plan został usunięty przez inną sesję lub nie istnieje
 
 **Obsługa:**
+
 - Redirect do `/plans` z toast "Plan nie istnieje"
 - Jeśli błąd dotyczy komórki/rośliny → toast inline bez redirectu
 
@@ -1282,6 +1368,7 @@ function useAnalyticsEvents(planId: string) {
 **Scenariusz:** Niepoprawne dane wejściowe lub naruszenie constraintów DB
 
 **Obsługa:**
+
 - Wyświetlenie field_errors pod odpowiednimi polami formularza
 - Toast z głównym komunikatem błędu
 - Fokus na pierwszym błędnym polu
@@ -1292,6 +1379,7 @@ function useAnalyticsEvents(planId: string) {
 **Scenariusz:** Operacja wymaga potwierdzenia (usuwa rośliny, regeneruje siatkę)
 
 **Obsługa:**
+
 - Parsowanie `field_errors.requires_confirmation`
 - Wyświetlenie odpowiedniego modalu potwierdzenia:
   - AreaTypeConfirmDialog dla `/grid/area-type`
@@ -1303,6 +1391,7 @@ function useAnalyticsEvents(planId: string) {
 **Scenariusz:** Przekroczenie limitu wywołań AI lub weather refresh
 
 **Obsługa:**
+
 - Toast "Zbyt wiele żądań. Spróbuj ponownie za X minut"
 - Disabled state przycisku z countdown
 - Optionally: parsowanie nagłówka `Retry-After` z odpowiedzi
@@ -1312,6 +1401,7 @@ function useAnalyticsEvents(planId: string) {
 **Scenariusz:** AI lub Open-Meteo nie odpowiada w ciągu 10s
 
 **Obsługa:**
+
 - AITimeoutErrorDialog z opcjami:
   - "Ponów" → retry mutation
   - "Dodaj bez oceny" (dla plant fit) → dodanie rośliny z pustymi scores
@@ -1323,6 +1413,7 @@ function useAnalyticsEvents(planId: string) {
 **Scenariusz:** Błąd serwera, błąd bazy danych
 
 **Obsługa:**
+
 - Toast "Wystąpił nieoczekiwany błąd. Spróbuj ponownie"
 - Logowanie błędu do konsoli (dev) i sentry (prod)
 - Opcja "Ponów" w toaście
@@ -1333,6 +1424,7 @@ function useAnalyticsEvents(planId: string) {
 **Scenariusz:** Odpowiedź AI nie pasuje do schematu (US-027)
 
 **Obsługa:**
+
 - Walidacja odpowiedzi Zodem po stronie klienta (dodatkowy layer bezpieczeństwa)
 - Toast "Niepoprawna odpowiedź AI. Spróbuj ponownie lub dodaj roślinę ręcznie"
 - Logowanie błędu (developer-facing)
@@ -1343,6 +1435,7 @@ function useAnalyticsEvents(planId: string) {
 **Scenariusz:** Utrata połączenia z internetem
 
 **Obsługa:**
+
 - React Query retry z exponential backoff (1s, 2s, 4s)
 - Toast "Brak połączenia z internetem" (persistence toast)
 - Disabled state przycisków akcji (save, refresh)
@@ -1590,4 +1683,3 @@ function useAnalyticsEvents(planId: string) {
 - Szacowany czas implementacji: ~4-6 tygodni (1 developer)
 
 - Dependency risk: AI i Open-Meteo - przygotować fallbacki i graceful degradation
-

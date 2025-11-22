@@ -119,6 +119,7 @@ MVP (high-level):
   - Strict JSON response schema with sanity-check and a 10 s timeout.
   - Scores 1–5 with thresholds (≥90=5, 80–89=4, 70–79=3, 60–69=2, <60=1).
   - Weighted months: Apr–Sep weight 2, others 1; auto hemisphere, manual override available.
+  - **Mock data mode**: Set `PUBLIC_USE_MOCK_AI=true` in `.env` for development without AI provider (see `.ai/docs/ai-integration-guide.md`).
 - Analytics (minimal):
   - `plan_created`, `grid_saved`, `area_typed`, `plant_confirmed`.
 

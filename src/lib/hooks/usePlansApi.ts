@@ -31,7 +31,7 @@ export function usePlansApi() {
       });
 
       if (response.status === 401) {
-        window.location.href = "/auth/login";
+        window.location.assign("/auth/login");
         return;
       }
 
@@ -110,7 +110,7 @@ export function usePlansApi() {
       });
 
       if (response.status === 401) {
-        window.location.href = "/auth/login";
+        window.location.assign("/auth/login");
         return false;
       }
 

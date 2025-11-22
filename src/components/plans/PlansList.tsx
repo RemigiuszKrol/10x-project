@@ -44,7 +44,7 @@ export function PlansList() {
    * Nawigacja do edycji planu
    */
   const handleEdit = (planId: string) => {
-    window.location.href = `/plans/${planId}/edit`;
+    window.location.href = `/plans/${planId}`;
   };
 
   /**

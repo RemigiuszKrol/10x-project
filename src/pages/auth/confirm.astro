@@ -8,7 +8,7 @@
  * Ta strona po prostu sprawdza czy użytkownik jest zalogowany i przekierowuje
  * do odpowiedniego miejsca.
  */
- 
+
 // Jeśli użytkownik jest zalogowany (email został potwierdzony), przekieruj do planów
 if (Astro.locals.user) {
   return Astro.redirect("/plans");
@@ -19,23 +19,17 @@ const error = Astro.url.searchParams.get("error");
 const errorDescription = Astro.url.searchParams.get("error_description");
 
 import AuthLayout from "../../layouts/AuthLayout.astro";
+import { AutoRefresh } from "../../components/AutoRefresh";
 ---
 
-<AuthLayout
-  title="Potwierdzanie emaila - PlantsPlaner"
-  description="Weryfikacja adresu email"
->
+<AuthLayout title="Potwierdzanie emaila - PlantsPlaner" description="Weryfikacja adresu email">
   <div class="w-full max-w-md space-y-6">
     {
       error ? (
         <>
           {/* Błąd potwierdzenia */}
           <div class="flex justify-center">
-            <div
-              class="rounded-full bg-red-100 p-6"
-              role="img"
-              aria-label="Ikona błędu"
-            >
+            <div class="rounded-full bg-red-100 p-6" role="img" aria-label="Ikona błędu">
               <svg
                 class="h-16 w-16 text-red-600"
                 fill="none"
@@ -54,18 +48,12 @@ import AuthLayout from "../../layouts/AuthLayout.astro";
           </div>
 
           <div class="text-center">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">
-              Nie udało się potwierdzić emaila
-            </h1>
-            <p class="text-gray-600 mb-4">
-              {errorDescription || "Link weryfikacyjny jest nieprawidłowy lub wygasł"}
-            </p>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Nie udało się potwierdzić emaila</h1>
+            <p class="text-gray-600 mb-4">{errorDescription || "Link weryfikacyjny jest nieprawidłowy lub wygasł"}</p>
           </div>
 
           <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h2 class="text-sm font-semibold text-red-900 mb-2">
-              Co możesz zrobić?
-            </h2>
+            <h2 class="text-sm font-semibold text-red-900 mb-2">Co możesz zrobić?</h2>
             <ul class="list-disc list-inside space-y-2 text-sm text-red-800">
               <li>Sprawdź czy link w emailu jest kompletny</li>
               <li>Spróbuj zarejestrować się ponownie</li>
@@ -86,25 +74,14 @@ import AuthLayout from "../../layouts/AuthLayout.astro";
         <>
           {/* Ładowanie - użytkownik powinien być automatycznie przekierowany */}
           <div class="flex justify-center">
-            <div
-              class="rounded-full bg-blue-100 p-6"
-              role="img"
-              aria-label="Ładowanie"
-            >
+            <div class="rounded-full bg-blue-100 p-6" role="img" aria-label="Ładowanie">
               <svg
                 class="h-16 w-16 text-blue-600 animate-spin"
                 fill="none"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <circle
-                  class="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                />
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path
                   class="opacity-75"
                   fill="currentColor"
@@ -115,18 +92,12 @@ import AuthLayout from "../../layouts/AuthLayout.astro";
           </div>
 
           <div class="text-center">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">
-              Potwierdzanie emaila...
-            </h1>
-            <p class="text-gray-600">
-              Poczekaj chwilę, weryfikujemy Twój adres email
-            </p>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Potwierdzanie emaila...</h1>
+            <p class="text-gray-600">Poczekaj chwilę, weryfikujemy Twój adres email</p>
           </div>
 
           <div class="text-center pt-4">
-            <p class="text-sm text-gray-600 mb-2">
-              Jeśli nie zostaniesz automatycznie przekierowany:
-            </p>
+            <p class="text-sm text-gray-600 mb-2">Jeśli nie zostaniesz automatycznie przekierowany:</p>
             <a
               href="/auth/login"
               class="inline-block px-6 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
@@ -140,12 +111,5 @@ import AuthLayout from "../../layouts/AuthLayout.astro";
   </div>
 
   {/* Auto-refresh po 3 sekundach jeśli nie ma błędu */}
-  {!error && (
-    <script>
-      setTimeout(() => {
-        window.location.href = "/auth/login";
-      }, 3000);
-    </script>
-  )}
+  {!error && <AutoRefresh client:load redirectTo="/auth/login" />}
 </AuthLayout>
-
