@@ -21,8 +21,6 @@ export interface UseKeyboardNavigationProps {
  * - Arrow keys: Nawigacja po komórkach
  * - Enter: Potwierdzenie zaznaczenia
  * - Escape: Anulowanie zaznaczenia
- * - Space: Rozpoczęcie zaznaczania (TODO w przyszłości)
- * - Shift + Arrow: Rozszerzanie zaznaczenia (TODO w przyszłości)
  *
  * @param props - Konfiguracja nawigacji
  */
@@ -100,9 +98,6 @@ export function useKeyboardNavigation({
           // Usuń focus
           onFocusChange(null);
           break;
-
-        // TODO: Space - rozpoczęcie zaznaczania
-        // TODO: Shift + Arrow - rozszerzanie zaznaczenia
       }
     };
 

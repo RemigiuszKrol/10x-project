@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import type { WeatherMonthlyDto } from "@/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { denormalizeTemperatureNullable } from "@/lib/utils/temperature";
 
 /**
  * Props dla WeatherMetricsTable
@@ -55,21 +56,11 @@ export function WeatherMetricsTable({ data }: WeatherMetricsTableProps): ReactNo
   };
 
   /**
-   * Konwersja znormalizowanej temperatury (0-100) z powrotem do °C
-   * Zakres normalizacji: -30°C do +50°C → 0-100
-   * Formuła odwrotna: ((temp / 100) * 80) - 30
-   */
-  const denormalizeTemperature = (normalized: number | null): number | null => {
-    if (normalized === null) return null;
-    return Math.round((normalized / 100) * 80 - 30);
-  };
-
-  /**
    * Formatowanie temperatury: znormalizowana wartość + rzeczywista w °C
    */
   const formatTemperature = (value: number | null): string => {
     if (value === null) return "—";
-    const celsius = denormalizeTemperature(value);
+    const celsius = denormalizeTemperatureNullable(value);
     if (celsius === null) return `${value}%`;
     return `${value}% (${celsius > 0 ? "+" : ""}${celsius}°C)`;
   };

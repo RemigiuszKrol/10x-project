@@ -55,6 +55,7 @@ export const PlantFitResultSchema = z.object({
     sunlight_score: z.number().int().min(1).max(5),
     humidity_score: z.number().int().min(1).max(5),
     precip_score: z.number().int().min(1).max(5),
+    temperature_score: z.number().int().min(1).max(5),
     overall_score: z.number().int().min(1).max(5),
     explanation: z.string().optional(),
   }),

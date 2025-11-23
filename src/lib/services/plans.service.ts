@@ -1,7 +1,15 @@
 import type { SupabaseClient } from "@/db/supabase.client";
-import type { PlanDto, PlanCreateCommand, PlanUpdateCommand, GridMetadataDto } from "@/types";
+import type {
+  PlanDto,
+  PlanCreateCommand,
+  PlanUpdateCommand,
+  GridMetadataDto,
+  UpdatePlanOptions,
+  PlanListQuery,
+  PlanListResult,
+} from "@/types";
 import { GridChangeRequiresConfirmationError, ValidationError } from "@/lib/http/errors";
-import { encodePlanCursor, type PlanCursorKey } from "@/lib/validation/plans";
+import { encodePlanCursor } from "@/lib/validation/plans";
 
 /**
  * Pobiera pojedynczy plan działki należący do użytkownika
@@ -80,13 +88,6 @@ export async function createPlan(
   }
 
   return data as PlanDto;
-}
-
-/**
- * Opcje dla funkcji updatePlan
- */
-export interface UpdatePlanOptions {
-  confirmRegenerate?: boolean;
 }
 
 /**
@@ -239,23 +240,6 @@ export async function deletePlan(supabase: SupabaseClient, userId: string, planI
 
   // Jeśli data jest null, plan nie istniał lub nie należał do użytkownika
   return data !== null;
-}
-
-/**
- * Typ zapytania dla listowania planów
- */
-export interface PlanListQuery {
-  limit: number;
-  cursorKey: PlanCursorKey | null;
-  isAscending: boolean;
-}
-
-/**
- * Wynik listowania planów z paginacją
- */
-export interface PlanListResult {
-  items: PlanDto[];
-  nextCursor: string | null;
 }
 
 /**

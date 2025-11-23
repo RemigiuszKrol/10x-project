@@ -24,7 +24,7 @@ export interface EditorTopbarProps {
  * - Nazwę planu (h1)
  * - Informacje o siatce (wymiary)
  * - EditorToolbar (środek)
- * - EditorStatusIndicators (prawo) - TODO
+ * - EditorStatusIndicators (prawo)
  *
  * Layout: flex justify-between
  */
@@ -63,7 +63,7 @@ export function EditorTopbar({
           <EditorToolbar currentTool={currentTool} onToolChange={onToolChange} />
         </div>
 
-        {/* Right: Status indicators - TODO */}
+        {/* Right: Status indicators */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>Status: OK</span>
         </div>

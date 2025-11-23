@@ -62,15 +62,15 @@ export function AreaTypeConfirmDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Usunąć rośliny?</AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
-            <p>
+            <div>
               Zmiana typu na <span className="font-semibold">{typeLabel}</span> w zaznaczonym obszarze ({width}×{height}
               , {cellCount} {cellCount === 1 ? "komórka" : "komórek"}) spowoduje usunięcie{" "}
               <span className="font-semibold text-destructive">
                 {plantsCount} {plantsText}
               </span>
               .
-            </p>
-            <p className="text-sm">Czy chcesz kontynuować?</p>
+            </div>
+            <div className="text-sm">Czy chcesz kontynuować?</div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

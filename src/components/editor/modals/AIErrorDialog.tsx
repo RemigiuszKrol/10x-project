@@ -99,7 +99,7 @@ export function AIErrorDialog({
             <AlertDialogTitle>{getErrorTitle(error.type)}</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="space-y-2">
-            <p>{error.message}</p>
+            <div>{error.message}</div>
 
             {/* Details dla bad_json (dla deweloperów) */}
             {error.details && error.type === "bad_json" && (
@@ -113,9 +113,9 @@ export function AIErrorDialog({
 
             {/* Info o retry dla rate_limit */}
             {error.retryAfter && (
-              <p className="text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground">
                 Spróbuj ponownie za <strong>{formatRetryTime(error.retryAfter)}</strong>
-              </p>
+              </div>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>

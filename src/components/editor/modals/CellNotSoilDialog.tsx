@@ -45,11 +45,11 @@ export function CellNotSoilDialog({ isOpen, cellType, onClose }: CellNotSoilDial
             <AlertDialogTitle>Nieprawidłowy typ pola</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="space-y-2">
-            <p>Rośliny można dodawać tylko na pola typu &quot;Ziemia&quot;.</p>
-            <p className="text-sm">
+            <div>Rośliny można dodawać tylko na pola typu &quot;Ziemia&quot;.</div>
+            <div className="text-sm">
               Zaznaczone pole to: <strong>{typeLabel}</strong>
-            </p>
-            <p className="text-sm text-muted-foreground">Wybierz pole typu &quot;Ziemia&quot; aby dodać roślinę.</p>
+            </div>
+            <div className="text-sm text-muted-foreground">Wybierz pole typu &quot;Ziemia&quot; aby dodać roślinę.</div>
           </AlertDialogDescription>
         </AlertDialogHeader>
 

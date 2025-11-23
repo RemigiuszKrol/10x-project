@@ -10,7 +10,8 @@
     "astro": "astro",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:openrouter": "tsx scripts/test-openrouter.ts"
   },
   "dependencies": {
     "@astrojs/node": "^9.4.3",
@@ -38,6 +39,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.487.0",
     "next-themes": "^0.4.6",
+    "openai": "^6.9.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-leaflet": "^5.0.0",
@@ -53,6 +55,8 @@
     "@types/leaflet": "^1.9.21",
     "@typescript-eslint/eslint-plugin": "8.28.0",
     "@typescript-eslint/parser": "8.28.0",
+    "cross-env": "^7.0.3",
+    "dotenv": "^17.2.3",
     "eslint": "9.23.0",
     "eslint-config-prettier": "10.1.1",
     "eslint-import-resolver-typescript": "4.2.5",
@@ -63,11 +67,11 @@
     "eslint-plugin-react": "7.37.4",
     "eslint-plugin-react-compiler": "19.0.0-beta-aeaed83-20250323",
     "eslint-plugin-react-hooks": "5.2.0",
-    "cross-env": "^7.0.3",
     "husky": "9.1.7",
     "lint-staged": "15.5.0",
     "prettier-plugin-astro": "0.14.1",
     "supabase": "^2.54.11",
+    "tsx": "^4.20.6",
     "typescript-eslint": "8.28.0"
   },
   "lint-staged": {

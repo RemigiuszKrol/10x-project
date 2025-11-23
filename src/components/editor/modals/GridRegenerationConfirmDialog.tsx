@@ -56,12 +56,12 @@ export function GridRegenerationConfirmDialog({
             <AlertDialogTitle>Regenerować siatkę?</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="space-y-2 pt-2">
-            <p>
+            <div>
               Zmiana następujących parametrów spowoduje <strong>regenerację siatki</strong> i{" "}
               <strong>utratę wszystkich roślin</strong> w planie.
-            </p>
+            </div>
             <div className="rounded-md bg-muted p-3 text-sm">
-              <p className="font-medium">Zmiany wymagające regeneracji:</p>
+              <div className="font-medium">Zmiany wymagające regeneracji:</div>
               <ul className="mt-1 space-y-1 text-muted-foreground">
                 {hasWidthChange && <li>• Szerokość działki: {changes.width_cm} cm</li>}
                 {hasHeightChange && <li>• Wysokość działki: {changes.height_cm} cm</li>}
@@ -69,7 +69,7 @@ export function GridRegenerationConfirmDialog({
               </ul>
             </div>
             <div className="space-y-1 text-sm">
-              <p className="font-medium text-destructive">⚠️ Konsekwencje regeneracji:</p>
+              <div className="font-medium text-destructive">⚠️ Konsekwencje regeneracji:</div>
               <ul className="space-y-1 text-muted-foreground">
                 <li>• Wszystkie rośliny zostaną usunięte</li>
                 <li>• Wszystkie typy komórek zostaną zresetowane do &quot;ziemia&quot;</li>
@@ -77,9 +77,9 @@ export function GridRegenerationConfirmDialog({
                 <li>• Historia zmian zostanie zachowana</li>
               </ul>
             </div>
-            <p className="text-sm font-medium text-destructive">
+            <div className="text-sm font-medium text-destructive">
               💡 Przed potwierdzeniem rozważ skopiowanie listy roślin z zakładki &quot;Rośliny&quot;.
-            </p>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

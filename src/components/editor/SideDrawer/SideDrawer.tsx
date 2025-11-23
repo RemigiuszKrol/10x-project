@@ -17,7 +17,8 @@ export interface SideDrawerProps {
   isUpdatingPlan?: boolean;
   selectedCell: CellPosition | null;
   cellType: GridCellType | null;
-  onPlantAdded?: () => void;
+  onPlantAdded?: (plantName: string, x: number, y: number) => void;
+  onPlantRemoved?: (plantName: string, x: number, y: number) => void;
   onJumpToCell?: (x: number, y: number) => void;
 }
 
@@ -40,6 +41,7 @@ export function SideDrawer({
   selectedCell,
   cellType,
   onPlantAdded,
+  onPlantRemoved,
   onJumpToCell,
 }: SideDrawerProps): ReactNode {
   return (
@@ -86,6 +88,7 @@ export function SideDrawer({
               selectedCell={selectedCell}
               cellType={cellType}
               onPlantAdded={onPlantAdded}
+              onPlantRemoved={onPlantRemoved}
               onJumpToCell={onJumpToCell}
             />
           </TabsContent>

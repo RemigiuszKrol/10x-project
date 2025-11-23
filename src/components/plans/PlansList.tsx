@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { usePlansApi } from "@/lib/hooks/usePlansApi";
 import { PlansListHeader } from "./PlansListHeader";
 import { LoadingState } from "./LoadingState";
@@ -36,33 +36,33 @@ export function PlansList() {
   /**
    * Nawigacja do tworzenia nowego planu
    */
-  const handleCreateNew = () => {
+  const handleCreateNew = useCallback(() => {
     window.location.href = "/plans/new";
-  };
+  }, []);
 
   /**
    * Nawigacja do edycji planu
    */
-  const handleEdit = (planId: string) => {
+  const handleEdit = useCallback((planId: string) => {
     window.location.href = `/plans/${planId}`;
-  };
+  }, []);
 
   /**
    * Otwarcie dialogu potwierdzenia usunięcia
    */
-  const handleDeleteClick = (planId: string, planName: string) => {
+  const handleDeleteClick = useCallback((planId: string, planName: string) => {
     setDeleteDialog({
       open: true,
       planId,
       planName,
       isDeleting: false,
     });
-  };
+  }, []);
 
   /**
    * Potwierdzenie usunięcia planu
    */
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (!deleteDialog.planId) return;
 
     setDeleteDialog((prev) => ({ ...prev, isDeleting: true }));
@@ -81,35 +81,35 @@ export function PlansList() {
       setDeleteDialog((prev) => ({ ...prev, isDeleting: false }));
       alert("Nie udało się usunąć planu. Spróbuj ponownie.");
     }
-  };
+  }, [deleteDialog.planId, deletePlan]);
 
   /**
    * Anulowanie usunięcia
    */
-  const handleCancelDelete = () => {
+  const handleCancelDelete = useCallback(() => {
     setDeleteDialog({
       open: false,
       planId: null,
       planName: null,
       isDeleting: false,
     });
-  };
+  }, []);
 
   /**
    * Załadowanie kolejnej strony planów
    */
-  const handleLoadMore = async () => {
+  const handleLoadMore = useCallback(async () => {
     setIsLoadingMore(true);
     await loadMorePlans();
     setIsLoadingMore(false);
-  };
+  }, [loadMorePlans]);
 
   /**
    * Ponowne pobranie planów po błędzie
    */
-  const handleRetry = () => {
+  const handleRetry = useCallback(() => {
     fetchPlans();
-  };
+  }, [fetchPlans]);
 
   return (
     <div>

@@ -3,9 +3,9 @@ import type { GridAreaTypeCommand, GridAreaTypeResultDto, ApiItemResponse, ApiEr
 import { handleApiError, parseHttpError } from "@/lib/utils/toast-error-handler";
 
 /**
- * Parametry mutacji zmiany typu obszaru
+ * Parametry mutacji zmiany typu obszaru (dla React Query hook)
  */
-export interface SetAreaTypeParams {
+export interface SetAreaTypeMutationParams {
   planId: string;
   command: GridAreaTypeCommand;
 }
@@ -22,11 +22,11 @@ export interface SetAreaTypeParams {
  *
  * @returns Mutation result z liczbą zmodyfikowanych komórek i usuniętych roślin
  */
-export function useSetAreaType(): UseMutationResult<GridAreaTypeResultDto, Error, SetAreaTypeParams> {
+export function useSetAreaType(): UseMutationResult<GridAreaTypeResultDto, Error, SetAreaTypeMutationParams> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ planId, command }: SetAreaTypeParams) => {
+    mutationFn: async ({ planId, command }: SetAreaTypeMutationParams) => {
       const response = await fetch(`/api/plans/${planId}/grid/area-type`, {
         method: "POST",
         headers: {

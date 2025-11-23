@@ -52,14 +52,14 @@ export function DeletePlantConfirmDialog({
             <AlertDialogTitle>Usuń roślinę</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="space-y-3">
-            <p>Czy na pewno chcesz usunąć tę roślinę?</p>
+            <div>Czy na pewno chcesz usunąć tę roślinę?</div>
 
             {/* Info o roślinie */}
             <div className="rounded-lg border bg-muted/50 p-4">
               <div className="flex items-start gap-3">
                 <Sprout className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
                 <div className="flex-1 space-y-1">
-                  <p className="font-semibold">{plant.plant_name}</p>
+                  <div className="font-semibold">{plant.plant_name}</div>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <MapPin className="h-3 w-3" />
                     <span>
@@ -67,13 +67,13 @@ export function DeletePlantConfirmDialog({
                     </span>
                   </div>
                   {plant.overall_score !== null && (
-                    <p className="text-xs text-muted-foreground">Ocena dopasowania: {plant.overall_score}/5</p>
+                    <div className="text-xs text-muted-foreground">Ocena dopasowania: {plant.overall_score}/5</div>
                   )}
                 </div>
               </div>
             </div>
 
-            <p className="text-sm text-muted-foreground">Ta operacja jest nieodwracalna.</p>
+            <div className="text-sm text-muted-foreground">Ta operacja jest nieodwracalna.</div>
           </AlertDialogDescription>
         </AlertDialogHeader>
 

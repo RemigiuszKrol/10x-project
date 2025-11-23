@@ -1,19 +1,6 @@
 import type { SupabaseClient } from "@/db/supabase.client";
-import type { GridCellType, GridAreaTypeResultDto } from "@/types";
+import type { GridAreaTypeResultDto, SetAreaTypeServiceParams } from "@/types";
 import { PlantRemovalRequiresConfirmationError, ValidationError } from "@/lib/http/errors";
-
-/**
- * Parametry dla funkcji setAreaType
- */
-export interface SetAreaTypeParams {
-  planId: string;
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  type: GridCellType;
-  confirmPlantRemoval?: boolean;
-}
 
 /**
  * Ustawia typ komórek w prostokątnym obszarze siatki
@@ -32,7 +19,7 @@ export interface SetAreaTypeParams {
 export async function setAreaType(
   supabase: SupabaseClient,
   userId: string,
-  params: SetAreaTypeParams
+  params: SetAreaTypeServiceParams
 ): Promise<GridAreaTypeResultDto> {
   const { planId, x1, y1, x2, y2, type, confirmPlantRemoval = false } = params;
 

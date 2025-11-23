@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { PlanDto, ApiListResponse, ApiErrorResponse } from "@/types";
 import { planDtoToViewModel, type PlanViewModel } from "@/lib/viewmodels/plan.viewmodel";
 import { logger } from "@/lib/utils/logger";
@@ -20,11 +20,12 @@ export function usePlansApi() {
     status: "loading",
   });
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const nextCursorRef = useRef<string | null>(null);
 
   /**
    * Pobiera pierwszą stronę planów
    */
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     setPlansState({ status: "loading" });
     try {
       const response = await fetch("/api/plans?limit=20&order=desc", {
@@ -43,13 +44,15 @@ export function usePlansApi() {
 
       const data: ApiListResponse<PlanDto> = await response.json();
       const viewModels = data.data.map(planDtoToViewModel);
+      const newCursor = data.pagination.next_cursor;
 
       setPlansState({
         status: "success",
         plans: viewModels,
-        nextCursor: data.pagination.next_cursor,
+        nextCursor: newCursor,
       });
-      setNextCursor(data.pagination.next_cursor);
+      setNextCursor(newCursor);
+      nextCursorRef.current = newCursor;
     } catch (error) {
       if (error instanceof TypeError && error.message.includes("fetch")) {
         setPlansState({
@@ -68,80 +71,98 @@ export function usePlansApi() {
         });
       }
     }
-  };
+  }, []);
 
   /**
    * Ładuje kolejną stronę planów
    */
-  const loadMorePlans = async () => {
-    if (!nextCursor || plansState.status !== "success") return;
+  const loadMorePlans = useCallback(async () => {
+    const currentCursor = nextCursorRef.current;
+    if (!currentCursor) return;
 
-    try {
-      const response = await fetch(`/api/plans?limit=20&order=desc&cursor=${encodeURIComponent(nextCursor)}`, {
+    setPlansState((prevState) => {
+      if (prevState.status !== "success") return prevState;
+
+      // Uruchom fetch asynchronicznie
+      fetch(`/api/plans?limit=20&order=desc&cursor=${encodeURIComponent(currentCursor)}`, {
         credentials: "include",
-      });
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Nie udało się załadować więcej planów");
+          }
+          return response.json();
+        })
+        .then((data: ApiListResponse<PlanDto>) => {
+          const newViewModels = data.data.map(planDtoToViewModel);
+          const newCursor = data.pagination.next_cursor;
+          setPlansState((currentState) => {
+            if (currentState.status === "success") {
+              return {
+                status: "success",
+                plans: [...currentState.plans, ...newViewModels],
+                nextCursor: newCursor,
+              };
+            }
+            return currentState;
+          });
+          setNextCursor(newCursor);
+          nextCursorRef.current = newCursor;
+        })
+        .catch((error) => {
+          // Błąd podczas ładowania więcej - można pokazać toast
+          // Ale nie zmieniamy głównego stanu na error
+          if (error instanceof Error) {
+            logger.error("Błąd podczas ładowania więcej planów", { error: error.message });
+          } else {
+            logger.error("Nieoczekiwany błąd podczas ładowania więcej planów", { error: String(error) });
+          }
+        });
 
-      if (!response.ok) {
-        throw new Error("Nie udało się załadować więcej planów");
-      }
-
-      const data: ApiListResponse<PlanDto> = await response.json();
-      const newViewModels = data.data.map(planDtoToViewModel);
-
-      setPlansState({
-        status: "success",
-        plans: [...plansState.plans, ...newViewModels],
-        nextCursor: data.pagination.next_cursor,
-      });
-      setNextCursor(data.pagination.next_cursor);
-    } catch (error) {
-      // Błąd podczas ładowania więcej - można pokazać toast
-      // Ale nie zmieniamy głównego stanu na error
-      if (error instanceof Error) {
-        logger.error("Błąd podczas ładowania więcej planów", { error: error.message });
-      } else {
-        logger.error("Nieoczekiwany błąd podczas ładowania więcej planów", { error: String(error) });
-      }
-    }
-  };
+      return prevState;
+    });
+  }, []);
 
   /**
    * Usuwa plan
    */
-  const deletePlan = async (planId: string): Promise<boolean> => {
-    try {
-      const response = await fetch(`/api/plans/${planId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+  const deletePlan = useCallback(
+    async (planId: string): Promise<boolean> => {
+      try {
+        const response = await fetch(`/api/plans/${planId}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
 
-      if (response.status === 401) {
-        window.location.assign("/auth/login");
+        if (response.status === 401) {
+          window.location.assign("/auth/login");
+          return false;
+        }
+
+        if (!response.ok) {
+          const errorData: ApiErrorResponse = await response.json();
+          throw new Error(errorData.error.message);
+        }
+
+        // Refetch planów po usunięciu
+        await fetchPlans();
+        return true;
+      } catch (error) {
+        if (error instanceof Error) {
+          logger.error("Błąd podczas usuwania planu", { error: error.message });
+        } else {
+          logger.error("Nieoczekiwany błąd podczas usuwania planu", { error: String(error) });
+        }
         return false;
       }
-
-      if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(errorData.error.message);
-      }
-
-      // Refetch planów po usunięciu
-      await fetchPlans();
-      return true;
-    } catch (error) {
-      if (error instanceof Error) {
-        logger.error("Błąd podczas usuwania planu", { error: error.message });
-      } else {
-        logger.error("Nieoczekiwany błąd podczas usuwania planu", { error: String(error) });
-      }
-      return false;
-    }
-  };
+    },
+    [fetchPlans]
+  );
 
   // Fetch przy montowaniu
   useEffect(() => {
     fetchPlans();
-  }, []);
+  }, [fetchPlans]);
 
   return {
     plansState,

@@ -14,6 +14,7 @@ import { toast } from "sonner";
 export interface PlantsListProps {
   planId: string;
   onJumpToCell?: (x: number, y: number) => void;
+  onPlantRemoved?: (plantName: string, x: number, y: number) => void;
 }
 
 /**
@@ -28,7 +29,7 @@ export interface PlantsListProps {
  * - Loading state i error state
  * - Sortowanie po created_at desc (najnowsze na górze)
  */
-export function PlantsList({ planId, onJumpToCell }: PlantsListProps): ReactNode {
+export function PlantsList({ planId, onJumpToCell, onPlantRemoved }: PlantsListProps): ReactNode {
   const [filterText, setFilterText] = useState("");
   const [deletingPlant, setDeletingPlant] = useState<{ x: number; y: number } | null>(null);
 
@@ -68,6 +69,9 @@ export function PlantsList({ planId, onJumpToCell }: PlantsListProps): ReactNode
       toast.success("Usunięto roślinę", {
         description: `Roślina "${plant.plant_name}" została usunięta`,
       });
+
+      // Callback
+      onPlantRemoved?.(plant.plant_name, x, y);
     } catch (err) {
       // Error handled by mutation
       if (err instanceof Error) {

@@ -12,7 +12,8 @@ export interface PlantsTabProps {
   planId: string;
   selectedCell: CellPosition | null;
   cellType: GridCellType | null;
-  onPlantAdded?: () => void;
+  onPlantAdded?: (plantName: string, x: number, y: number) => void;
+  onPlantRemoved?: (plantName: string, x: number, y: number) => void;
   onJumpToCell?: (x: number, y: number) => void;
 }
 
@@ -30,7 +31,14 @@ export interface PlantsTabProps {
  *
  * Layout: Vertical tabs z scrollable content
  */
-export function PlantsTab({ planId, selectedCell, cellType, onPlantAdded, onJumpToCell }: PlantsTabProps): ReactNode {
+export function PlantsTab({
+  planId,
+  selectedCell,
+  cellType,
+  onPlantAdded,
+  onPlantRemoved,
+  onJumpToCell,
+}: PlantsTabProps): ReactNode {
   const [activeSubTab, setActiveSubTab] = useState<"list" | "search">("list");
 
   return (
@@ -57,7 +65,7 @@ export function PlantsTab({ planId, selectedCell, cellType, onPlantAdded, onJump
         </TabsList>
 
         <TabsContent value="list" className="mt-4 flex-1">
-          <PlantsList planId={planId} onJumpToCell={onJumpToCell} />
+          <PlantsList planId={planId} onJumpToCell={onJumpToCell} onPlantRemoved={onPlantRemoved} />
         </TabsContent>
 
         <TabsContent value="search" className="mt-4 flex-1 space-y-4">

@@ -107,6 +107,38 @@ export interface PlanUpdateQuery {
 }
 
 /**
+ * Opcje dla funkcji updatePlan
+ */
+export interface UpdatePlanOptions {
+  confirmRegenerate?: boolean;
+}
+
+/**
+ * Typ cursor klucza dla paginacji planów
+ */
+export interface PlanCursorKey {
+  updated_at: string;
+  id: string;
+}
+
+/**
+ * Typ zapytania dla listowania planów
+ */
+export interface PlanListQuery {
+  limit: number;
+  cursorKey: PlanCursorKey | null;
+  isAscending: boolean;
+}
+
+/**
+ * Wynik listowania planów z paginacją
+ */
+export interface PlanListResult {
+  items: PlanDto[];
+  nextCursor: string | null;
+}
+
+/**
  * 2.3 Komórki siatki (GridCells)
  */
 // GET /api/plans/:planId/grid – metadane siatki pochodzą bezpośrednio z planu
@@ -145,6 +177,42 @@ export interface GridAreaTypeResultDto {
 }
 
 /**
+ * Parametry serwisowe dla funkcji setAreaType
+ */
+export interface SetAreaTypeServiceParams {
+  planId: string;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  type: GridCellType;
+  confirmPlantRemoval?: boolean;
+}
+
+/**
+ * Parametry dla funkcji listGridCells
+ */
+export interface ListGridCellsParams {
+  planId: string;
+  type?: GridCellType;
+  x?: number;
+  y?: number;
+  bbox?: [number, number, number, number];
+  cursor?: string;
+  sort: "updated_at" | "x";
+  order: "asc" | "desc";
+}
+
+/**
+ * Interfejs dla metadanych siatki planu
+ */
+export interface PlanGridMetadata {
+  grid_width: number;
+  grid_height: number;
+  cell_size_cm: number;
+}
+
+/**
  * 2.4 Nasadzenia (PlantPlacements)
  */
 export type PlantPlacementDto = Pick<
@@ -155,6 +223,7 @@ export type PlantPlacementDto = Pick<
   | "sunlight_score"
   | "humidity_score"
   | "precip_score"
+  | "temperature_score"
   | "overall_score"
   | "created_at"
   | "updated_at"
@@ -171,7 +240,57 @@ export interface PlantPlacementUpsertCommand {
   sunlight_score?: NonNullable<DbPlantPlacement["sunlight_score"]>;
   humidity_score?: NonNullable<DbPlantPlacement["humidity_score"]>;
   precip_score?: NonNullable<DbPlantPlacement["precip_score"]>;
+  temperature_score?: NonNullable<DbPlantPlacement["temperature_score"]>;
   overall_score?: NonNullable<DbPlantPlacement["overall_score"]>;
+}
+
+/**
+ * Interfejs serwisowy dla upsert rośliny
+ */
+export interface UpsertPlantPlacementCommand {
+  planId: string;
+  x: number;
+  y: number;
+  payload: PlantPlacementUpsertCommand;
+  userId: string;
+}
+
+/**
+ * Interfejs serwisowy dla listowania nasadzeń
+ */
+export interface ListPlantPlacementsCommand {
+  planId: string;
+  userId: string;
+  limit: number;
+  cursorKey: PlantPlacementCursorKey | null;
+  name?: string;
+}
+
+/**
+ * Wynik listowania nasadzeń
+ */
+export interface ListPlantPlacementsResult {
+  items: PlantPlacementDto[];
+  nextCursor: string | null;
+}
+
+/**
+ * Interfejs serwisowy dla usuwania nasadzenia rośliny
+ */
+export interface DeletePlantPlacementCommand {
+  planId: string;
+  x: number;
+  y: number;
+  userId: string;
+}
+
+/**
+ * Typ cursor klucza dla paginacji nasadzeń (używa plant_name + x + y)
+ */
+export interface PlantPlacementCursorKey {
+  plant_name: string;
+  x: number;
+  y: number;
 }
 
 /**
@@ -220,8 +339,68 @@ export interface PlantFitResultDto {
   sunlight_score: NonNullable<DbPlantPlacement["sunlight_score"]>;
   humidity_score: NonNullable<DbPlantPlacement["humidity_score"]>;
   precip_score: NonNullable<DbPlantPlacement["precip_score"]>;
+  temperature_score: NonNullable<DbPlantPlacement["sunlight_score"]>; // 1-5, jak pozostałe
   overall_score: NonNullable<DbPlantPlacement["overall_score"]>;
   explanation?: string;
+}
+
+/**
+ * Konfiguracja usługi OpenRouter
+ */
+export interface OpenRouterConfig {
+  /** Klucz API z OpenRouter (OPENROUTER_API_KEY) */
+  apiKey: string;
+  /** Base URL API (domyślnie: https://openrouter.ai/api/v1) */
+  baseUrl?: string;
+  /** Model do wyszukiwania roślin (szybszy, tańszy) */
+  searchModel: string;
+  /** Model do oceny dopasowania (bardziej zaawansowany) */
+  fitModel: string;
+  /** Timeout w milisekundach (domyślnie: 10000) */
+  timeout?: number;
+  /** Maksymalna liczba prób ponowienia (domyślnie: 1) */
+  maxRetries?: number;
+  /** Temperatura modelu (0-2, domyślnie: 0.7) */
+  temperature?: number;
+  /** Top P sampling (0-1, domyślnie: 1) */
+  topP?: number;
+  /** Maksymalna liczba tokenów w odpowiedzi (domyślnie: 1000) */
+  maxTokens?: number;
+  /** Identyfikator aplikacji dla OpenRouter (opcjonalny) */
+  appName?: string;
+  /** URL strony aplikacji (opcjonalny) */
+  siteUrl?: string;
+}
+
+/**
+ * Kontekst dla oceny dopasowania rośliny
+ */
+export interface PlantFitContext {
+  plant_name: string;
+  location: {
+    lat: number;
+    lon: number;
+    address?: string;
+  };
+  orientation: number;
+  climate: {
+    zone?: string;
+    annual_temp_avg: number;
+    annual_precip: number;
+    frost_free_days?: number;
+  };
+  cell: {
+    x: number;
+    y: number;
+    sunlight_hours?: number;
+  };
+  weather_monthly?: {
+    month: number;
+    temperature: number;
+    sunlight: number;
+    humidity: number;
+    precip: number;
+  }[];
 }
 
 /**
@@ -638,16 +817,6 @@ export interface PlantCardViewModel {
   position: string;
   /** Czy roślina ma wypełnione scores (z AI) */
   hasScores: boolean;
-}
-
-/**
- * Parametry modułu AI
- */
-export interface AIServiceConfig {
-  searchEndpoint: string;
-  fitEndpoint: string;
-  timeout: number;
-  maxRetries: number;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { type ReactNode, useRef } from "react";
+import { type ReactNode, useRef, memo } from "react";
 import type { GridMetadataDto, GridCellDto, CellSelection, CellPosition, EditorTool, PlantPlacementDto } from "@/types";
 import { useGridSelection } from "@/lib/hooks/useGridSelection";
 import { SelectionOverlay } from "./SelectionOverlay";
@@ -20,6 +20,115 @@ export interface GridCanvasProps {
 }
 
 /**
+ * Props dla komponentu GridCell
+ */
+interface GridCellProps {
+  x: number;
+  y: number;
+  cell: GridCellDto | undefined;
+  plant: PlantPlacementDto | undefined;
+  isSelected: boolean;
+  isFocused: boolean;
+  currentTool: EditorTool;
+  isDragging: boolean;
+  onCellClick: (x: number, y: number) => void;
+  startSelection: (x: number, y: number) => void;
+  updateSelection: (x: number, y: number) => void;
+}
+
+/**
+ * GridCell - Pojedyncza komórka siatki zoptymalizowana z React.memo
+ */
+const GridCell = memo(
+  function GridCell({
+    x,
+    y,
+    cell,
+    plant,
+    isSelected,
+    isFocused,
+    currentTool,
+    isDragging,
+    onCellClick,
+    startSelection,
+    updateSelection,
+  }: GridCellProps) {
+    // Klasy dla focus - używamy ring dla focus, bo to jest tymczasowe
+    const focusedClasses = isFocused ? "ring-1 ring-blue-500" : "";
+
+    // Klasy dla tekstu w zaznaczonej komórce - mniejszy tekst dla mniejszych komórek
+    const textClasses = isSelected
+      ? "text-[9px] font-bold text-foreground leading-none"
+      : "text-[8px] text-muted-foreground/40 leading-none";
+
+    // Handler dla rozpoczęcia zaznaczania
+    const handleMouseDown = (e: React.MouseEvent) => {
+      if (currentTool === "select") {
+        e.preventDefault();
+        startSelection(x, y);
+      } else {
+        onCellClick(x, y);
+      }
+    };
+
+    // Handler dla aktualizacji zaznaczania podczas drag
+    const handleMouseEnter = () => {
+      if (isDragging && currentTool === "select") {
+        updateSelection(x, y);
+      }
+    };
+
+    return (
+      <div
+        className={`
+        relative flex items-center justify-center rounded border transition-all
+        ${getCellTypeColor(cell?.type || "soil")}
+        ${focusedClasses}
+        ${currentTool === "select" ? "hover:brightness-110" : "hover:brightness-110 cursor-pointer"}
+      `}
+        onMouseDown={handleMouseDown}
+        onMouseEnter={handleMouseEnter}
+        onClick={() => {
+          if (currentTool !== "select") {
+            onCellClick(x, y);
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onCellClick(x, y);
+          }
+        }}
+        role="gridcell"
+        aria-label={`Komórka ${x},${y}, typ: ${cell?.type || "soil"}${plant ? `, roślina: ${plant.plant_name}` : ""}`}
+        tabIndex={isFocused ? 0 : -1}
+      >
+        <span className={textClasses}>
+          {x + 1},{y + 1}
+        </span>
+
+        {/* Renderowanie ikony rośliny jeśli jest na komórce */}
+        {plant && <PlantIcon plantName={plant.plant_name} size="xs" />}
+      </div>
+    );
+  },
+  (prevProps, nextProps) => {
+    // Funkcja porównująca dla React.memo
+    // Zwraca true jeśli komponenty są równe (nie trzeba re-renderować)
+    return (
+      prevProps.x === nextProps.x &&
+      prevProps.y === nextProps.y &&
+      prevProps.cell?.type === nextProps.cell?.type &&
+      prevProps.plant?.plant_name === nextProps.plant?.plant_name &&
+      prevProps.isSelected === nextProps.isSelected &&
+      prevProps.isFocused === nextProps.isFocused &&
+      prevProps.currentTool === nextProps.currentTool &&
+      prevProps.isDragging === nextProps.isDragging
+    );
+  }
+);
+
+/**
  * GridCanvas - Komponent renderujący interaktywną siatkę planu
  *
  * Odpowiedzialności:
@@ -31,8 +140,7 @@ export interface GridCanvasProps {
  *
  * Wydajność:
  * - Używa CSS Grid dla layoutu
- * - React.memo dla GridCell (TODO w przyszłości)
- * - Virtualizacja dla dużych siatek (TODO jeśli > 100x100)
+ * - React.memo dla GridCell - zapobiega niepotrzebnym re-renderom komórek
  */
 export function GridCanvas({
   gridMetadata,
@@ -143,70 +251,25 @@ export function GridCanvas({
             Array.from({ length: grid_width ?? 0 }, (_, x) => {
               const cellKey = `${x},${y}`;
               const cell = cellsMap.get(cellKey);
+              const plant = plantsMap.get(cellKey);
               const isSelected = isCellSelected(x, y);
               const isFocused = isCellFocused(x, y);
 
-              // Klasy dla focus - używamy ring dla focus, bo to jest tymczasowe
-              const focusedClasses = isFocused ? "ring-1 ring-blue-500" : "";
-
-              // Klasy dla tekstu w zaznaczonej komórce - mniejszy tekst dla mniejszych komórek
-              const textClasses = isSelected
-                ? "text-[9px] font-bold text-foreground leading-none"
-                : "text-[8px] text-muted-foreground/40 leading-none";
-
-              // Handler dla rozpoczęcia zaznaczania
-              const handleMouseDown = (e: React.MouseEvent) => {
-                if (currentTool === "select") {
-                  e.preventDefault();
-                  startSelection(x, y);
-                } else {
-                  onCellClick(x, y);
-                }
-              };
-
-              // Handler dla aktualizacji zaznaczania podczas drag
-              const handleMouseEnter = () => {
-                if (isDragging && currentTool === "select") {
-                  updateSelection(x, y);
-                }
-              };
-
-              // NOWE: Sprawdzenie czy na komórce jest roślina
-              const plant = plantsMap.get(cellKey);
-
               return (
-                <div
+                <GridCell
                   key={cellKey}
-                  className={`
-                  relative flex items-center justify-center rounded border transition-all
-                  ${getCellTypeColor(cell?.type || "soil")}
-                  ${focusedClasses}
-                  ${currentTool === "select" ? "hover:brightness-110" : "hover:brightness-110 cursor-pointer"}
-                `}
-                  onMouseDown={handleMouseDown}
-                  onMouseEnter={handleMouseEnter}
-                  onClick={() => {
-                    if (currentTool !== "select") {
-                      onCellClick(x, y);
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      onCellClick(x, y);
-                    }
-                  }}
-                  role="gridcell"
-                  aria-label={`Komórka ${x},${y}, typ: ${cell?.type || "soil"}${plant ? `, roślina: ${plant.plant_name}` : ""}`}
-                  tabIndex={isFocused ? 0 : -1}
-                >
-                  <span className={textClasses}>
-                    {x + 1},{y + 1}
-                  </span>
-
-                  {/* NOWE: Renderowanie ikony rośliny jeśli jest na komórce */}
-                  {plant && <PlantIcon plantName={plant.plant_name} size="xs" />}
-                </div>
+                  x={x}
+                  y={y}
+                  cell={cell}
+                  plant={plant}
+                  isSelected={isSelected}
+                  isFocused={isFocused}
+                  currentTool={currentTool}
+                  isDragging={isDragging}
+                  onCellClick={onCellClick}
+                  startSelection={startSelection}
+                  updateSelection={updateSelection}
+                />
               );
             })
           )}

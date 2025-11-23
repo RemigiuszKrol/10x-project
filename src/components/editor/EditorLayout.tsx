@@ -1,19 +1,12 @@
-import { type ReactNode, useState } from "react";
-import type {
-  PlanDto,
-  GridMetadataDto,
-  GridCellDto,
-  OperationLogEntry,
-  DrawerTab,
-  PlanUpdateCommand,
-  GridCellType,
-} from "@/types";
+import { type ReactNode, useState, useEffect } from "react";
+import type { PlanDto, GridMetadataDto, GridCellDto, DrawerTab, PlanUpdateCommand, GridCellType } from "@/types";
 import { QueryProvider } from "./QueryProvider";
 import { ToastProvider } from "./ToastProvider";
 import { useGridEditor } from "@/lib/hooks/useGridEditor";
 import { useKeyboardNavigation } from "@/lib/hooks/useKeyboardNavigation";
 import { useAreaTypeWithConfirmation } from "@/lib/hooks/useAreaTypeWithConfirmation";
 import { useAnalytics, createAreaTypedEvent } from "@/lib/hooks/useAnalytics";
+import { useOperationLog } from "@/lib/hooks/useOperationLog";
 import { GridCanvas } from "./GridCanvas/GridCanvas";
 import { EditorTopbar } from "./EditorTopbar";
 import { BottomPanel } from "./BottomPanel";
@@ -89,6 +82,14 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
   // Hook do wysyłania analytics events
   const analytics = useAnalytics();
 
+  // Hook do zarządzania logiem operacji
+  const operationLog = useOperationLog();
+
+  // Inicjalizacja logu - dodaj wpis o załadowaniu edytora
+  useEffect(() => {
+    operationLog.logSuccess("Edytor załadowany pomyślnie");
+  }, [operationLog]);
+
   // Hook dla zmiany typu obszaru z obsługą 409 confirmation
   const areaTypeHandler = useAreaTypeWithConfirmation({
     planId: initialPlan.id,
@@ -100,6 +101,13 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
           : `Zmieniono typ ${result.affected_cells} komórek`;
 
       toast.success(message);
+
+      // Loguj operację
+      const logMessage =
+        result.removed_plants > 0
+          ? `Zmieniono typ ${result.affected_cells} komórek na "${options.type}" (usunięto ${result.removed_plants} roślin)`
+          : `Zmieniono typ ${result.affected_cells} komórek na "${options.type}"`;
+      operationLog.logSuccess(logMessage);
 
       // Wyślij analytics event
       try {
@@ -124,16 +132,6 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
       editor.actions.clearSelection();
     },
   });
-
-  // Mock operation log (TODO: integrate with real operations)
-  const [operations] = useState<OperationLogEntry[]>([
-    {
-      id: "1",
-      timestamp: new Date().toISOString(),
-      message: "Edytor załadowany pomyślnie",
-      type: "success",
-    },
-  ]);
 
   // Hook obsługi nawigacji klawiaturą
   useKeyboardNavigation({
@@ -200,10 +198,16 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
         toast.success("Siatka została zregenerowana", {
           description: "Wszystkie rośliny zostały usunięte. Możesz teraz dodać je ponownie.",
         });
+        operationLog.logWarning("Siatka została zregenerowana - wszystkie rośliny zostały usunięte");
       } else {
         toast.success("Plan zaktualizowany", {
           description: "Zmiany zostały zapisane pomyślnie.",
         });
+        // Loguj zmiany w parametrach planu
+        const changedFields = Object.keys(updates).filter((key) => updates[key as keyof PlanDto] !== undefined);
+        if (changedFields.length > 0) {
+          operationLog.logSuccess(`Zaktualizowano plan: ${changedFields.join(", ")}`);
+        }
       }
     } catch (error) {
       // Sprawdź czy to błąd 409 (wymaga potwierdzenia)
@@ -213,12 +217,14 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
           isOpen: true,
           changes: commandUpdates,
         });
+        operationLog.logWarning("Zmiana parametrów planu wymaga regeneracji siatki");
       } else {
         // Inny błąd - pokaż toast i zostaw obsługę dla mutation
         if (error instanceof Error) {
           toast.error("Nie udało się zaktualizować planu", {
             description: error.message,
           });
+          operationLog.logError(`Błąd aktualizacji planu: ${error.message}`);
         }
       }
     } finally {
@@ -299,9 +305,15 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
                 )?.type || null
               : null
           }
-          onPlantAdded={() => {
+          onPlantAdded={(plantName, x, y) => {
+            // Loguj dodanie rośliny
+            operationLog.logSuccess(`Dodano roślinę "${plantName}" na pozycji (${x}, ${y})`);
             // Opcjonalnie: switch to plants list tab po dodaniu
             // setActiveTab("plants");
+          }}
+          onPlantRemoved={(plantName, x, y) => {
+            // Loguj usunięcie rośliny
+            operationLog.logInfo(`Usunięto roślinę "${plantName}" z pozycji (${x}, ${y})`);
           }}
           onJumpToCell={editor.actions.jumpToCell} // NOWE: Przekazanie jumpToCell
         />
@@ -309,7 +321,7 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
 
       {/* Bottom panel */}
       <BottomPanel
-        operations={operations}
+        operations={operationLog.operations}
         plantsCount={editor.plants.data?.data.length || 0}
         selectedCellsCount={editor.derived.selectedCellsCount}
         aiStatus="idle"

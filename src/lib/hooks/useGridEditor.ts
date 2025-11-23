@@ -16,7 +16,7 @@ import {
   useAddPlant,
   useRemovePlant,
   type UpdatePlanParams,
-  type SetAreaTypeParams,
+  type SetAreaTypeMutationParams,
   type AddPlantParams,
   type RemovePlantParams,
 } from "./mutations";
@@ -41,7 +41,7 @@ export interface UseGridEditorReturn {
     clearSelection: () => void;
     focusCell: (position: CellPosition | null) => void;
     jumpToCell: (x: number, y: number) => void; // NOWE: Nawigacja do komórki
-    setAreaType: (params: Omit<SetAreaTypeParams, "planId">) => Promise<void>;
+    setAreaType: (params: Omit<SetAreaTypeMutationParams, "planId">) => Promise<void>;
     addPlant: (params: Omit<AddPlantParams, "planId">) => Promise<void>;
     removePlant: (params: Omit<RemovePlantParams, "planId">) => Promise<void>;
     updatePlan: (params: Omit<UpdatePlanParams, "planId">) => Promise<void>;
@@ -105,7 +105,7 @@ export function useGridEditor(
   const actions = useMemo(
     () => ({
       setTool: (tool: EditorTool) => {
-        setState((s) => ({ ...s, currentTool: tool }));
+        setState((s) => ({ ...s, currentTool: tool, selectedArea: null, focusedCell: null }));
       },
 
       selectArea: (selection: CellSelection | null) => {
@@ -123,11 +123,9 @@ export function useGridEditor(
       // NOWE: Nawigacja do komórki (focus + scroll)
       jumpToCell: (x: number, y: number) => {
         setState((s) => ({ ...s, focusedCell: { x, y } }));
-        // TODO: Implementacja scroll-to-cell (wymaga ref do GridCanvas)
-        // Na razie tylko focus, scroll można dodać później
       },
 
-      setAreaType: async (params: Omit<SetAreaTypeParams, "planId">) => {
+      setAreaType: async (params: Omit<SetAreaTypeMutationParams, "planId">) => {
         await setAreaTypeMutation.mutateAsync({ planId, ...params });
         setState((s) => ({ ...s, hasUnsavedChanges: false }));
       },

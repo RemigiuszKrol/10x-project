@@ -2,8 +2,9 @@ import type { APIRoute } from "astro";
 import { errorResponse, jsonResponse } from "@/lib/http/errors";
 import { PlantPlacementPathSchema, PlantPlacementUpsertSchema } from "@/lib/validation/plant-placements";
 import { upsertPlantPlacement, deletePlantPlacement } from "@/lib/services/plant-placements.service";
-import type { ApiItemResponse } from "@/types";
+import type { ApiItemResponse, PlantPlacementUpsertCommand } from "@/types";
 import { ZodError } from "zod";
+import { logger } from "@/lib/utils/logger";
 
 export const prerender = false;
 
@@ -127,12 +128,22 @@ export const PUT: APIRoute = async ({ locals, params, request }) => {
       );
     }
 
-    // 8. Wywołaj serwis upsert
+    // 8. Konwertuj payload: null -> undefined dla zgodności z PlantPlacementUpsertCommand
+    const commandPayload: PlantPlacementUpsertCommand = {
+      plant_name: payload.plant_name,
+      sunlight_score: payload.sunlight_score ?? undefined,
+      humidity_score: payload.humidity_score ?? undefined,
+      precip_score: payload.precip_score ?? undefined,
+      temperature_score: payload.temperature_score ?? undefined,
+      overall_score: payload.overall_score ?? undefined,
+    };
+
+    // 9. Wywołaj serwis upsert
     const plantPlacement = await upsertPlantPlacement(supabase, {
       planId,
       x,
       y,
-      payload,
+      payload: commandPayload,
       userId: user.id,
     });
 
@@ -153,9 +164,29 @@ export const PUT: APIRoute = async ({ locals, params, request }) => {
       return jsonResponse(errorResponse("ValidationError", "Validation failed", { field_errors: fieldErrors }), 400);
     }
 
-    // Loguj nieoczekiwane błędy (TODO: użyć logger w produkcji)
-    // eslint-disable-next-line no-console
-    console.error("[PUT /api/plans/:plan_id/plants/:x/:y] Unexpected error:", error);
+    // Próba pobrania user_id z locals (jeśli dostępne)
+    let userId: string | undefined;
+    try {
+      const supabase = locals.supabase;
+      if (supabase) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        userId = user?.id;
+      }
+    } catch {
+      // Ignoruj błędy przy próbie pobrania user_id
+    }
+
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    logger.error(`[PUT /api/plans/:plan_id/plants/:x/:y] Unexpected error: ${errorMessage}`, {
+      endpoint: "/api/plans/:plan_id/plants/:x/:y",
+      method: "PUT",
+      user_id: userId,
+      params: params,
+      stack: errorStack,
+    });
 
     // Zwróć generyczny błąd 500
     return jsonResponse(errorResponse("InternalError", "An unexpected error occurred"), 500);
@@ -280,9 +311,29 @@ export const DELETE: APIRoute = async ({ locals, params }) => {
       return jsonResponse(errorResponse("ValidationError", "Validation failed", { field_errors: fieldErrors }), 400);
     }
 
-    // Loguj nieoczekiwane błędy
-    // eslint-disable-next-line no-console
-    console.error("[DELETE /api/plans/:plan_id/plants/:x/:y] Unexpected error:", error);
+    // Próba pobrania user_id z locals (jeśli dostępne)
+    let userId: string | undefined;
+    try {
+      const supabase = locals.supabase;
+      if (supabase) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        userId = user?.id;
+      }
+    } catch {
+      // Ignoruj błędy przy próbie pobrania user_id
+    }
+
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    logger.error(`[DELETE /api/plans/:plan_id/plants/:x/:y] Unexpected error: ${errorMessage}`, {
+      endpoint: "/api/plans/:plan_id/plants/:x/:y",
+      method: "DELETE",
+      user_id: userId,
+      params: params,
+      stack: errorStack,
+    });
 
     // Zwróć generyczny błąd 500
     return jsonResponse(errorResponse("InternalError", "An unexpected error occurred"), 500);

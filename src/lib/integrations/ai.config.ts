@@ -89,5 +89,6 @@ export const FIT_PARAMETER_DESCRIPTIONS = {
   sunlight: "Ocena nasłonecznienia w lokalizacji względem wymagań rośliny",
   humidity: "Ocena wilgotności powietrza względem wymagań rośliny",
   precip: "Ocena opadów (deszcz, śnieg) względem wymagań rośliny",
+  temperature: "Ocena temperatury powietrza w lokalizacji względem wymagań rośliny",
   overall: "Ogólna ocena dopasowania uwzględniająca wszystkie parametry",
 } as const;

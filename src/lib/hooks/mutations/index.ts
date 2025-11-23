@@ -5,7 +5,7 @@
  */
 
 export { useUpdatePlan, type UpdatePlanParams } from "./useUpdatePlan";
-export { useSetAreaType, type SetAreaTypeParams } from "./useSetAreaType";
+export { useSetAreaType, type SetAreaTypeMutationParams } from "./useSetAreaType";
 export { useAddPlant, useRemovePlant, type AddPlantParams, type RemovePlantParams } from "./usePlantMutations";
 export { useSearchPlants, useCheckPlantFit } from "./useAIMutations";
 export { useRefreshWeather, type RefreshWeatherParams } from "./useRefreshWeather";

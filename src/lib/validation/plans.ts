@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { logger } from "@/lib/utils/logger";
+import type { PlanCursorKey } from "@/types";
 
 /**
  * Schemat walidacji dla tworzenia nowego planu działki
@@ -192,14 +193,6 @@ export type PlanIdParams = z.infer<typeof PlanIdParamSchema>;
 /**
  * Pomocnicze funkcje dla cursor-based pagination
  */
-
-/**
- * Typ cursor klucza dla paginacji planów (używa updated_at + id)
- */
-export interface PlanCursorKey {
-  updated_at: string;
-  id: string;
-}
 
 /**
  * Koduje cursor klucz do Base64 stringa

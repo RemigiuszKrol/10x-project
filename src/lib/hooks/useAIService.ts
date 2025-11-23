@@ -98,7 +98,6 @@ export function useAIService(config?: UseAIServiceConfig): UseAIServiceReturn {
         if (error.message.includes("Przekroczono limit czasu")) {
           aiError = createAIError("timeout", "search");
         } else if (error.message.includes("Zbyt wiele żądań")) {
-          // TODO: Parsowanie Retry-After z response (wymaga rozszerzenia mutation)
           aiError = createAIError("rate_limit", "search", 60);
         } else if (error.message.includes("nie odpowiada")) {
           aiError = createAIError("timeout", "search");

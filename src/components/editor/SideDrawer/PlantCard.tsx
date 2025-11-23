@@ -12,7 +12,7 @@ import type { PlantPlacementDto } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Sprout, MapPin, Trash2, Sun, Droplets, CloudRain, Star } from "lucide-react";
+import { Sprout, MapPin, Trash2, Sun, Droplets, CloudRain, Star, Thermometer } from "lucide-react";
 import { FIT_PARAMETER_DESCRIPTIONS } from "@/lib/integrations/ai.config";
 
 /**
@@ -86,6 +86,7 @@ export function PlantCard({ plant, onJumpTo, onDelete, isDeleting = false }: Pla
     plant.sunlight_score !== null ||
     plant.humidity_score !== null ||
     plant.precip_score !== null ||
+    plant.temperature_score !== null ||
     plant.overall_score !== null;
 
   return (
@@ -128,6 +129,12 @@ export function PlantCard({ plant, onJumpTo, onDelete, isDeleting = false }: Pla
                 label="Opady"
                 score={plant.precip_score}
                 description={FIT_PARAMETER_DESCRIPTIONS.precip}
+              />
+              <ScoreRow
+                icon={<Thermometer className="h-3 w-3" />}
+                label="Temperatura"
+                score={plant.temperature_score}
+                description={FIT_PARAMETER_DESCRIPTIONS.temperature}
               />
               <div className="border-t border-border pt-1.5">
                 <ScoreRow

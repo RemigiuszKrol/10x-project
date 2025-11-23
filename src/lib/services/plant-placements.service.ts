@@ -1,18 +1,13 @@
 import type { SupabaseClient } from "@/db/supabase.client";
-import type { PlantPlacementDto } from "@/types";
-import type { PlantPlacementUpsertBody, PlantPlacementCursorKey } from "@/lib/validation/plant-placements";
+import type {
+  PlantPlacementDto,
+  UpsertPlantPlacementCommand,
+  ListPlantPlacementsCommand,
+  ListPlantPlacementsResult,
+  DeletePlantPlacementCommand,
+} from "@/types";
+import type { DeletePlantPlacementResult } from "@/lib/validation/plant-placements";
 import { encodePlantPlacementCursor } from "@/lib/validation/plant-placements";
-
-/**
- * Interfejs serwisowy dla upsert rośliny
- */
-export interface UpsertPlantPlacementCommand {
-  planId: string;
-  x: number;
-  y: number;
-  payload: PlantPlacementUpsertBody;
-  userId: string;
-}
 
 /**
  * Tworzy lub aktualizuje nasadzenie rośliny w danej komórce siatki
@@ -36,6 +31,7 @@ export async function upsertPlantPlacement(
     sunlight_score: payload.sunlight_score ?? null,
     humidity_score: payload.humidity_score ?? null,
     precip_score: payload.precip_score ?? null,
+    temperature_score: payload.temperature_score ?? null,
     overall_score: payload.overall_score ?? null,
     updated_at: new Date().toISOString(),
   };
@@ -46,7 +42,9 @@ export async function upsertPlantPlacement(
     .upsert(upsertData as never, {
       onConflict: "plan_id,x,y",
     })
-    .select("x, y, plant_name, sunlight_score, humidity_score, precip_score, overall_score, created_at, updated_at")
+    .select(
+      "x, y, plant_name, sunlight_score, humidity_score, precip_score, temperature_score, overall_score, created_at, updated_at"
+    )
     .single();
 
   if (error) {
@@ -58,25 +56,6 @@ export async function upsertPlantPlacement(
   }
 
   return data as PlantPlacementDto;
-}
-
-/**
- * Interfejs serwisowy dla listowania nasadzeń
- */
-export interface ListPlantPlacementsCommand {
-  planId: string;
-  userId: string;
-  limit: number;
-  cursorKey: PlantPlacementCursorKey | null;
-  name?: string;
-}
-
-/**
- * Wynik listowania nasadzeń
- */
-export interface ListPlantPlacementsResult {
-  items: PlantPlacementDto[];
-  nextCursor: string | null;
 }
 
 /**
@@ -104,7 +83,9 @@ export async function listPlantPlacements(
   // Buduj bazowe zapytanie z limitowanymi kolumnami
   let query = supabase
     .from("plant_placements")
-    .select("x, y, plant_name, sunlight_score, humidity_score, precip_score, overall_score, created_at, updated_at")
+    .select(
+      "x, y, plant_name, sunlight_score, humidity_score, precip_score, temperature_score, overall_score, created_at, updated_at"
+    )
     .eq("plan_id", planId)
     .order("plant_name", { ascending: true })
     .order("x", { ascending: true })
@@ -164,23 +145,6 @@ export async function listPlantPlacements(
     items: items as PlantPlacementDto[],
     nextCursor,
   };
-}
-
-/**
- * Interfejs serwisowy dla usuwania nasadzenia rośliny
- */
-export interface DeletePlantPlacementCommand {
-  planId: string;
-  x: number;
-  y: number;
-  userId: string;
-}
-
-/**
- * Wynik operacji usunięcia nasadzenia
- */
-export interface DeletePlantPlacementResult {
-  deleted: boolean;
 }
 
 /**

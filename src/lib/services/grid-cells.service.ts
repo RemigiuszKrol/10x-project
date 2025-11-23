@@ -1,21 +1,14 @@
 import type { SupabaseClient } from "@/db/supabase.client";
-import type { GridCellDto, ApiListResponse, GridCellType, GridCellUpdateCommand } from "@/types";
+import type {
+  GridCellDto,
+  ApiListResponse,
+  GridCellType,
+  GridCellUpdateCommand,
+  ListGridCellsParams,
+  PlanGridMetadata,
+} from "@/types";
 import { ValidationError } from "@/lib/http/errors";
 import { parseGridCursor, type GridCellCursorPayload } from "@/lib/validation/grid";
-
-/**
- * Parametry dla funkcji listGridCells
- */
-export interface ListGridCellsParams {
-  planId: string;
-  type?: GridCellType;
-  x?: number;
-  y?: number;
-  bbox?: [number, number, number, number];
-  cursor?: string;
-  sort: "updated_at" | "x";
-  order: "asc" | "desc";
-}
 
 /**
  * Pobiera listę komórek siatki planu z paginacją kursorową
@@ -183,15 +176,6 @@ export async function listGridCells(
     data: dtoData,
     pagination: { next_cursor: nextCursor },
   };
-}
-
-/**
- * Interfejs dla metadanych siatki planu
- */
-export interface PlanGridMetadata {
-  grid_width: number;
-  grid_height: number;
-  cell_size_cm: number;
 }
 
 /**

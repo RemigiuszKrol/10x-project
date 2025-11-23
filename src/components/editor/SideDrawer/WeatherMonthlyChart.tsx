@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import type { WeatherMonthlyDto } from "@/types";
+import { denormalizeTemperatureNullable } from "@/lib/utils/temperature";
 
 /**
  * Props dla WeatherMonthlyChart
@@ -44,16 +45,6 @@ export function WeatherMonthlyChart({ data }: WeatherMonthlyChartProps): ReactNo
   const maxHumidity = 100;
   const maxPrecip = Math.max(...sortedData.map((d) => d.precip || 0), 100);
   const maxTemperature = 100;
-
-  /**
-   * Konwersja znormalizowanej temperatury (0-100) z powrotem do °C
-   * Zakres normalizacji: -30°C do +50°C → 0-100
-   * Formuła odwrotna: ((temp / 100) * 80) - 30
-   */
-  const denormalizeTemperature = (normalized: number | null): number | null => {
-    if (normalized === null) return null;
-    return Math.round((normalized / 100) * 80 - 30);
-  };
 
   /**
    * Konwersja wartości do współrzędnych Y
@@ -133,7 +124,7 @@ export function WeatherMonthlyChart({ data }: WeatherMonthlyChartProps): ReactNo
             {/* Punkty danych (tooltips) */}
             {sortedData.map((d) => {
               const x = scaleX(d.month);
-              const tempCelsius = denormalizeTemperature(d.temperature);
+              const tempCelsius = denormalizeTemperatureNullable(d.temperature);
               return (
                 <g key={d.month}>
                   <circle cx={x} cy={scaleY(d.sunlight, maxSunlight)} r="3" fill="#eab308">

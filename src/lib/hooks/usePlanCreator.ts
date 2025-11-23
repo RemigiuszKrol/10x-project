@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import type { PlanCreatorStep, PlanCreateFormData, PlanCreatorState, GridDimensions, PlanDraft } from "@/types";
 import { DEFAULT_FORM_DATA, DRAFT_VERSION, STEP_CONFIGS } from "@/types";
 import { PlanCreateSchema } from "@/lib/validation/plans";
-import type { PlanDto, PlanCreateCommand, ApiItemResponse, ApiErrorResponse } from "@/types";
+import type { PlanDto, ApiItemResponse, ApiErrorResponse } from "@/types";
 import { z } from "zod";
 import { logger } from "@/lib/utils/logger";
 
@@ -448,17 +448,13 @@ export function usePlanCreator(): UsePlanCreatorReturn {
     setState((prev) => ({ ...prev, isSubmitting: true, apiError: null }));
 
     try {
-      // Konwersja metrów na centymetry przed wysłaniem do API
-      const widthCm = width_m * 100;
-      const heightCm = height_m * 100;
-
-      // Mapowanie FormData → Command (DTO dla API)
-      const command: PlanCreateCommand = {
+      // Mapowanie FormData → Request Body (API oczekuje width_m i height_m)
+      const requestBody = {
         name: name.trim(),
         latitude: latitude,
         longitude: longitude,
-        width_cm: widthCm,
-        height_cm: heightCm,
+        width_m: width_m,
+        height_m: height_m,
         cell_size_cm: cell_size_cm,
         orientation: orientation,
         hemisphere: hemisphere,
@@ -469,7 +465,7 @@ export function usePlanCreator(): UsePlanCreatorReturn {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(command),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {

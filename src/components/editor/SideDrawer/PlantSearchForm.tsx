@@ -17,7 +17,7 @@ export interface PlantSearchFormProps {
   planId: string;
   selectedCell: CellPosition | null;
   cellType: GridCellType | null;
-  onPlantAdded?: () => void;
+  onPlantAdded?: (plantName: string, x: number, y: number) => void;
 }
 
 /**
@@ -144,7 +144,7 @@ export function PlantSearchForm({ planId, selectedCell, cellType, onPlantAdded }
       });
 
       // Callback
-      onPlantAdded?.();
+      onPlantAdded?.(selectedCandidate.name, selectedCell.x, selectedCell.y);
     } catch (err) {
       // Error handled by mutation
       if (err instanceof Error) {
@@ -181,7 +181,7 @@ export function PlantSearchForm({ planId, selectedCell, cellType, onPlantAdded }
       });
 
       // Callback
-      onPlantAdded?.();
+      onPlantAdded?.(query.trim(), selectedCell.x, selectedCell.y);
     } catch (err) {
       // Error handled by mutation
       if (err instanceof Error) {

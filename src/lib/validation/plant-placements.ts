@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { logger } from "@/lib/utils/logger";
+import type { PlantPlacementCursorKey } from "@/types";
 
 /**
  * Schemat walidacji dla parametrów ścieżki PUT /api/plans/:plan_id/plants/:x/:y
@@ -42,6 +43,10 @@ export const PlantPlacementUpsertSchema = z.object({
     .union([z.null(), z.number().int().min(1, "Precipitation score must be between 1 and 5").max(5)])
     .optional()
     .transform((val) => (val === undefined ? null : val)),
+  temperature_score: z
+    .union([z.null(), z.number().int().min(1, "Temperature score must be between 1 and 5").max(5)])
+    .optional()
+    .transform((val) => (val === undefined ? null : val)),
   overall_score: z
     .union([z.null(), z.number().int().min(1, "Overall score must be between 1 and 5").max(5)])
     .optional()
@@ -65,15 +70,6 @@ export const PlantPlacementsPathSchema = z.object({
  * Typ wejściowy dla parametrów ścieżki listy nasadzeń (wynikowy z Zod schema)
  */
 export type PlantPlacementsPathParams = z.infer<typeof PlantPlacementsPathSchema>;
-
-/**
- * Typ cursor klucza dla paginacji nasadzeń (używa plant_name + x + y)
- */
-export interface PlantPlacementCursorKey {
-  plant_name: string;
-  x: number;
-  y: number;
-}
 
 /**
  * Schemat walidacji dla query parametrów GET /api/plans/:plan_id/plants
