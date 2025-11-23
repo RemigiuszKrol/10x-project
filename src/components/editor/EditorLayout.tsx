@@ -84,11 +84,13 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
 
   // Hook do zarządzania logiem operacji
   const operationLog = useOperationLog();
+  const { logSuccess } = operationLog;
 
   // Inicjalizacja logu - dodaj wpis o załadowaniu edytora
+  // logSuccess jest stabilną funkcją z useCallback, więc możemy bezpiecznie użyć jej w zależnościach
   useEffect(() => {
-    operationLog.logSuccess("Edytor załadowany pomyślnie");
-  }, [operationLog]);
+    logSuccess("Edytor załadowany pomyślnie");
+  }, [logSuccess]);
 
   // Hook dla zmiany typu obszaru z obsługą 409 confirmation
   const areaTypeHandler = useAreaTypeWithConfirmation({

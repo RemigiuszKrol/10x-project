@@ -297,63 +297,29 @@ export function usePlanCreator(): UsePlanCreatorReturn {
    */
   const canGoForward = useMemo(() => {
     const currentIndex = STEP_CONFIGS.findIndex((s) => s.key === state.currentStep);
-    return currentIndex < STEP_CONFIGS.length - 1;
-  }, [state.currentStep]);
+
+    // Sprawdź czy nie jesteśmy na ostatnim kroku
+    if (currentIndex >= STEP_CONFIGS.length - 1) {
+      return false;
+    }
+
+    // Dla kroku lokalizacji wymagamy ustawionych współrzędnych
+    if (state.currentStep === "location") {
+      const hasLocation = state.formData.latitude !== undefined && state.formData.longitude !== undefined;
+      return hasLocation;
+    }
+
+    return true;
+  }, [state.currentStep, state.formData.latitude, state.formData.longitude]);
 
   /**
    * Aktualizuje dane formularza
-   * Obsługuje przeskalowanie wymiarów przy zmianie skali
    */
   const updateFormData = useCallback((data: Partial<PlanCreateFormData>) => {
-    setState((prev) => {
-      const newFormData = { ...prev.formData, ...data };
-
-      // Jeśli zmienia się cell_size_cm, przeskaluj wymiary
-      if (data.cell_size_cm !== undefined && data.cell_size_cm !== prev.formData.cell_size_cm) {
-        const oldCellSize = prev.formData.cell_size_cm;
-        const newCellSize = data.cell_size_cm;
-
-        if (oldCellSize && newFormData.width_m && newFormData.height_m) {
-          // Oblicz aktualną liczbę pól siatki
-          const oldWidthCm = newFormData.width_m * 100;
-          const oldHeightCm = newFormData.height_m * 100;
-          const gridWidth = oldWidthCm / oldCellSize;
-          const gridHeight = oldHeightCm / oldCellSize;
-
-          // Przeskaluj wymiary zachowując liczbę pól (jeśli to możliwe)
-          // Nowe wymiary w metrach = (gridWidth * newCellSize) / 100
-          const newWidthCm = gridWidth * newCellSize;
-          const newHeightCm = gridHeight * newCellSize;
-
-          // Użyj let zamiast const, aby móc modyfikować wartości
-          let newWidthM = newWidthCm / 100;
-          let newHeightM = newHeightCm / 100;
-
-          // Sprawdź czy nowe wymiary nie przekraczają maksimum
-          const scaleInMeters = newCellSize / 100;
-          const maxDimension = 200 * scaleInMeters;
-
-          // Zaokrąglij do najbliższej wielokrotności skali
-          newWidthM = Math.round(newWidthM / scaleInMeters) * scaleInMeters;
-          newHeightM = Math.round(newHeightM / scaleInMeters) * scaleInMeters;
-
-          // Jeśli przekraczają maksimum, ogranicz do maksimum (zachowując proporcje)
-          if (newWidthM > maxDimension || newHeightM > maxDimension) {
-            const ratio = Math.min(maxDimension / newWidthM, maxDimension / newHeightM);
-            newWidthM = Math.floor((newWidthM * ratio) / scaleInMeters) * scaleInMeters;
-            newHeightM = Math.floor((newHeightM * ratio) / scaleInMeters) * scaleInMeters;
-          }
-
-          newFormData.width_m = newWidthM;
-          newFormData.height_m = newHeightM;
-        }
-      }
-
-      return {
-        ...prev,
-        formData: newFormData,
-      };
-    });
+    setState((prev) => ({
+      ...prev,
+      formData: { ...prev.formData, ...data },
+    }));
   }, []);
 
   /**

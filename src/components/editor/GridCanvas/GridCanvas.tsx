@@ -3,6 +3,7 @@ import type { GridMetadataDto, GridCellDto, CellSelection, CellPosition, EditorT
 import { useGridSelection } from "@/lib/hooks/useGridSelection";
 import { SelectionOverlay } from "./SelectionOverlay";
 import { PlantIcon } from "./PlantIcon";
+import { PlantTooltip } from "./PlantTooltip";
 
 /**
  * Props dla komponentu GridCanvas
@@ -108,7 +109,15 @@ const GridCell = memo(
         </span>
 
         {/* Renderowanie ikony rośliny jeśli jest na komórce */}
-        {plant && <PlantIcon plantName={plant.plant_name} size="xs" />}
+        {plant && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <PlantTooltip plant={plant}>
+              <div className="pointer-events-auto">
+                <PlantIcon plantName={plant.plant_name} size="xs" />
+              </div>
+            </PlantTooltip>
+          </div>
+        )}
       </div>
     );
   },

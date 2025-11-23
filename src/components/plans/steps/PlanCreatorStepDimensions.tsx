@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,7 @@ export interface PlanCreatorStepDimensionsProps {
   onChange: (data: PlanDimensionsFormData) => void;
   errors: Partial<Record<keyof PlanDimensionsFormData, string>>;
   gridDimensions: GridDimensions;
+  latitude?: number;
 }
 
 /**
@@ -27,7 +28,13 @@ export interface PlanCreatorStepDimensionsProps {
  * - Walidacja w czasie rzeczywistym
  * - Ostrzeżenie o limicie 200×200
  */
-export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensions }: PlanCreatorStepDimensionsProps) {
+export function PlanCreatorStepDimensions({
+  data,
+  onChange,
+  errors,
+  gridDimensions,
+  latitude,
+}: PlanCreatorStepDimensionsProps) {
   /**
    * Oblicza maksymalną wartość dla danej skali (200m * skala)
    */
@@ -49,22 +56,38 @@ export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensio
    * Obsługa zmiany szerokości
    */
   const handleWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value);
-    onChange({
-      ...data,
-      width_m: isNaN(value) ? 0 : value,
-    });
+    const inputValue = e.target.value.trim();
+    if (inputValue === "") {
+      onChange({
+        ...data,
+        width_m: 0,
+      });
+    } else {
+      const value = parseFloat(inputValue);
+      onChange({
+        ...data,
+        width_m: isNaN(value) ? 0 : value,
+      });
+    }
   };
 
   /**
    * Obsługa zmiany wysokości
    */
   const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value);
-    onChange({
-      ...data,
-      height_m: isNaN(value) ? 0 : value,
-    });
+    const inputValue = e.target.value.trim();
+    if (inputValue === "") {
+      onChange({
+        ...data,
+        height_m: 0,
+      });
+    } else {
+      const value = parseFloat(inputValue);
+      onChange({
+        ...data,
+        height_m: isNaN(value) ? 0 : value,
+      });
+    }
   };
 
   /**
@@ -89,14 +112,35 @@ export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensio
   };
 
   /**
-   * Obsługa zmiany półkuli
+   * Automatyczne określenie półkuli na podstawie współrzędnych
+   * latitude >= 0 -> północna, latitude < 0 -> południowa
    */
-  const handleHemisphereChange = (value: string) => {
-    onChange({
-      ...data,
-      hemisphere: value as "northern" | "southern",
-    });
-  };
+  const determinedHemisphere = useMemo<"northern" | "southern">(() => {
+    if (latitude !== undefined && latitude !== null) {
+      return latitude >= 0 ? "northern" : "southern";
+    }
+    // Fallback do wartości z danych jeśli brak współrzędnych
+    return data.hemisphere || "northern";
+  }, [latitude, data.hemisphere]);
+
+  // Śledzenie poprzedniej wartości półkuli, aby uniknąć niepotrzebnych aktualizacji
+  const prevHemisphereRef = useRef(determinedHemisphere);
+
+  /**
+   * Aktualizuj półkulę w danych jeśli się zmieniła (na podstawie współrzędnych)
+   */
+  useEffect(() => {
+    if (determinedHemisphere !== prevHemisphereRef.current && determinedHemisphere !== data.hemisphere) {
+      prevHemisphereRef.current = determinedHemisphere;
+      onChange({
+        width_m: data.width_m,
+        height_m: data.height_m,
+        cell_size_cm: data.cell_size_cm,
+        orientation: data.orientation,
+        hemisphere: determinedHemisphere,
+      });
+    }
+  }, [determinedHemisphere, data, onChange]);
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -129,7 +173,7 @@ export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensio
                 min={stepValue}
                 max={maxDimension}
                 step={stepValue}
-                value={data.width_m || ""}
+                value={data.width_m && data.width_m > 0 ? data.width_m : ""}
                 onChange={handleWidthChange}
                 placeholder={`np. ${maxDimension.toFixed(1)}`}
                 aria-describedby={errors.width_m ? "width-error" : "width-help"}
@@ -162,7 +206,7 @@ export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensio
                 min={stepValue}
                 max={maxDimension}
                 step={stepValue}
-                value={data.height_m || ""}
+                value={data.height_m && data.height_m > 0 ? data.height_m : ""}
                 onChange={handleHeightChange}
                 placeholder={`np. ${maxDimension.toFixed(1)}`}
                 aria-describedby={errors.height_m ? "height-error" : "height-help"}
@@ -213,7 +257,7 @@ export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensio
             {/* Kompas */}
             <OrientationCompass value={data.orientation} onChange={handleOrientationChange} />
 
-            {/* Półkula */}
+            {/* Półkula - automatycznie określana na podstawie współrzędnych */}
             <div className="space-y-2">
               <Label htmlFor="hemisphere">
                 Półkula
@@ -221,16 +265,22 @@ export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensio
                   *
                 </span>
               </Label>
-              <Select value={data.hemisphere} onValueChange={handleHemisphereChange}>
-                <SelectTrigger id="hemisphere">
-                  <SelectValue placeholder="Wybierz półkulę" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="northern">Północna (Europa, Ameryka Północna, Azja)</SelectItem>
-                  <SelectItem value="southern">Południowa (Australia, Ameryka Południowa, Afryka)</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-muted-foreground">Półkula wpływa na nasłonecznienie i pory roku</p>
+              <div className="relative">
+                <Select value={determinedHemisphere} disabled>
+                  <SelectTrigger id="hemisphere" className="bg-muted cursor-not-allowed">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="northern">Północna (Europa, Ameryka Północna, Azja)</SelectItem>
+                    <SelectItem value="southern">Południowa (Australia, Ameryka Południowa, Afryka)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {latitude !== undefined && latitude !== null
+                  ? `Półkula określona automatycznie na podstawie współrzędnych (${latitude >= 0 ? "północna" : "południowa"})`
+                  : "Półkula zostanie określona automatycznie po ustawieniu lokalizacji działki"}
+              </p>
             </div>
           </div>
         </div>

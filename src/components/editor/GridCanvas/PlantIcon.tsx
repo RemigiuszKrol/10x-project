@@ -10,7 +10,6 @@
 
 import { type ReactNode } from "react";
 import { Leaf } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 /**
  * Props dla PlantIcon
@@ -38,26 +37,15 @@ const sizeMap = {
  * <PlantIcon plantName="Pomidor" size="md" />
  * ```
  */
-export function PlantIcon({ plantName, size = "md" }: PlantIconProps): ReactNode {
+export function PlantIcon({ size = "md" }: PlantIconProps): ReactNode {
   const iconClass = sizeMap[size];
 
   // Dostosuj padding na podstawie rozmiaru
   const paddingClass = size === "xs" ? "p-0.5" : size === "sm" ? "p-1" : "p-1.5";
 
   return (
-    <TooltipProvider delayDuration={300}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className={`rounded-full bg-green-600/90 ${paddingClass} shadow-sm`}>
-              <Leaf className={`${iconClass} text-white`} />
-            </div>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="top">
-          <p className="text-sm font-medium">{plantName}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <div className={`rounded-full bg-green-600/90 ${paddingClass} shadow-sm`}>
+      <Leaf className={`${iconClass} text-white`} />
+    </div>
   );
 }

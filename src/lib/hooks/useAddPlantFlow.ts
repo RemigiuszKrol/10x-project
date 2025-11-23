@@ -342,6 +342,7 @@ export function useAddPlantFlow({ planId, cell, onSuccess }: UseAddPlantFlowPara
             sunlight_score: state.fitResult.sunlight_score,
             humidity_score: state.fitResult.humidity_score,
             precip_score: state.fitResult.precip_score,
+            temperature_score: state.fitResult.temperature_score,
             overall_score: state.fitResult.overall_score,
           }),
         },

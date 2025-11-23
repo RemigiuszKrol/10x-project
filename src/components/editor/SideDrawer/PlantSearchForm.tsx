@@ -128,6 +128,7 @@ export function PlantSearchForm({ planId, selectedCell, cellType, onPlantAdded }
           sunlight_score: checkPlantFit.data?.sunlight_score,
           humidity_score: checkPlantFit.data?.humidity_score,
           precip_score: checkPlantFit.data?.precip_score,
+          temperature_score: checkPlantFit.data?.temperature_score,
           overall_score: checkPlantFit.data?.overall_score,
         },
       });
@@ -328,6 +329,14 @@ export function PlantSearchForm({ planId, selectedCell, cellType, onPlantAdded }
                 {"⭐".repeat(checkPlantFit.data.precip_score)}
                 {"☆".repeat(5 - checkPlantFit.data.precip_score)}
                 <span className="ml-2 text-muted-foreground">({checkPlantFit.data.precip_score}/5)</span>
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Temperatura:</span>
+              <span className="font-medium">
+                {"⭐".repeat(checkPlantFit.data.temperature_score)}
+                {"☆".repeat(5 - checkPlantFit.data.temperature_score)}
+                <span className="ml-2 text-muted-foreground">({checkPlantFit.data.temperature_score}/5)</span>
               </span>
             </div>
             <div className="flex items-center justify-between border-t pt-2 text-sm font-semibold">

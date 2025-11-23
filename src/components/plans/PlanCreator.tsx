@@ -128,8 +128,8 @@ export function PlanCreator() {
         return (
           <PlanCreatorStepDimensions
             data={{
-              width_m: creator.state.formData.width_m || 10,
-              height_m: creator.state.formData.height_m || 10,
+              width_m: creator.state.formData.width_m ?? 0,
+              height_m: creator.state.formData.height_m ?? 0,
               cell_size_cm: creator.state.formData.cell_size_cm || 25,
               orientation: creator.state.formData.orientation || 0,
               hemisphere: creator.state.formData.hemisphere || "northern",
@@ -143,6 +143,7 @@ export function PlanCreator() {
               hemisphere: creator.state.errors.hemisphere,
             }}
             gridDimensions={creator.gridDimensions}
+            latitude={creator.state.formData.latitude}
           />
         );
 

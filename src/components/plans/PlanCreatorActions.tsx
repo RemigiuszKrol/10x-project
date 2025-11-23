@@ -77,7 +77,7 @@ export function PlanCreatorActions({
   return (
     <>
       {/* Pasek akcji */}
-      <div className="sticky bottom-0 bg-background border-t border-gray-200 dark:border-gray-800 mt-8 py-4 -mx-4 px-4 md:-mx-8 md:px-8">
+      <div className="sticky bottom-0 bg-background border-t border-gray-200 dark:border-gray-800 mt-8 py-4 -mx-4 px-4 md:-mx-8 md:px-8 z-[1001]">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Lewa strona - Cofnij */}
           <div className="flex-1">
@@ -124,7 +124,7 @@ export function PlanCreatorActions({
               <Button
                 type="button"
                 onClick={handleForwardOrSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || (!isLastStep && !canGoForward)}
                 className="w-full sm:w-auto"
               >
                 {isSubmitting ? (

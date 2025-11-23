@@ -2,7 +2,7 @@
  * PlantFitDisplay - Wyświetlanie wyników oceny dopasowania rośliny
  *
  * Pokazuje:
- * - 4 scores jako gwiazdki (sunlight, humidity, precip, overall)
+ * - 5 scores jako gwiazdki (sunlight, humidity, precip, temperature, overall)
  * - Explanation text od AI (collapsible)
  * - Season info tooltip
  * - Loading state podczas sprawdzania
@@ -14,7 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Loader2, Sun, Droplets, CloudRain, Star, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
+import { Loader2, Sun, Droplets, CloudRain, Thermometer, Star, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
 import { FIT_PARAMETER_DESCRIPTIONS, SCORE_LABELS } from "@/lib/integrations/ai.config";
 
 /**
@@ -131,6 +131,7 @@ export function PlantFitDisplay({ fitResult, isLoading }: PlantFitDisplayProps):
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full col-span-2" />
         </div>
       </Card>
     );
@@ -149,7 +150,7 @@ export function PlantFitDisplay({ fitResult, isLoading }: PlantFitDisplayProps):
         <SeasonInfoTooltip />
       </div>
 
-      {/* Grid 2x2 dla scores */}
+      {/* Grid 2x3 dla scores */}
       <div className="grid grid-cols-2 gap-3">
         <ScoreCard
           icon={<Sun className="h-5 w-5" />}
@@ -168,6 +169,12 @@ export function PlantFitDisplay({ fitResult, isLoading }: PlantFitDisplayProps):
           label="Opady"
           score={fitResult.precip_score}
           description={FIT_PARAMETER_DESCRIPTIONS.precip}
+        />
+        <ScoreCard
+          icon={<Thermometer className="h-5 w-5" />}
+          label="Temperatura"
+          score={fitResult.temperature_score}
+          description={FIT_PARAMETER_DESCRIPTIONS.temperature}
         />
         <ScoreCard
           icon={<Star className="h-5 w-5" />}

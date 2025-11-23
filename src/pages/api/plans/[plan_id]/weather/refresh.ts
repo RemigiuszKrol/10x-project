@@ -10,7 +10,7 @@
  * @returns 401 - Unauthorized - brak autoryzacji
  * @returns 404 - NotFound - plan nie istnieje lub nie należy do użytkownika
  * @returns 422 - UnprocessableEntity - plan nie ma ustawionej lokalizacji
- * @returns 429 - RateLimited - przekroczono limit zapytań (1/15min per plan)
+ * @returns 429 - RateLimited - przekroczono limit zapytań (1/2min per plan)
  * @returns 500 - InternalError - nieoczekiwany błąd serwera
  * @returns 502 - UpstreamError - błąd Open-Meteo API
  * @returns 504 - UpstreamTimeout - timeout Open-Meteo API

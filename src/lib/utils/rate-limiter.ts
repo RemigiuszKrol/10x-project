@@ -58,9 +58,9 @@ export class InMemoryRateLimiter {
 
 /**
  * Singleton instance dla weather refresh rate limiting
- * Limit: 1 request na 15 minut per plan
+ * Limit: 1 request na 2 minuty per plan
  */
-export const weatherRefreshLimiter = new InMemoryRateLimiter(15 * 60 * 1000);
+export const weatherRefreshLimiter = new InMemoryRateLimiter(2 * 60 * 1000);
 
 /**
  * Singleton instance dla AI endpoints rate limiting

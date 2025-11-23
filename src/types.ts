@@ -339,7 +339,7 @@ export interface PlantFitResultDto {
   sunlight_score: NonNullable<DbPlantPlacement["sunlight_score"]>;
   humidity_score: NonNullable<DbPlantPlacement["humidity_score"]>;
   precip_score: NonNullable<DbPlantPlacement["precip_score"]>;
-  temperature_score: NonNullable<DbPlantPlacement["sunlight_score"]>; // 1-5, jak pozostałe
+  temperature_score: NonNullable<DbPlantPlacement["sunlight_score"]>;
   overall_score: NonNullable<DbPlantPlacement["overall_score"]>;
   explanation?: string;
 }
