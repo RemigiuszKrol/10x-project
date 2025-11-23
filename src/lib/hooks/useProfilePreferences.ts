@@ -98,14 +98,24 @@ export function useProfilePreferences() {
               fieldErrors: errorData.error.details?.field_errors,
             },
           });
-        } catch {
-          setState({
-            status: "error",
-            error: {
-              code: "InternalError",
-              message: "Wystąpił nieoczekiwany błąd.",
-            },
-          });
+        } catch (error) {
+          if (error instanceof Error) {
+            setState({
+              status: "error",
+              error: {
+                code: "InternalError",
+                message: error.message,
+              },
+            });
+          } else {
+            setState({
+              status: "error",
+              error: {
+                code: "InternalError",
+                message: "Wystąpił nieoczekiwany błąd.",
+              },
+            });
+          }
         }
         return;
       }
@@ -115,15 +125,25 @@ export function useProfilePreferences() {
       const viewModel = mapProfileDtoToViewModel(data.data);
 
       setState({ status: "ready", data: viewModel });
-    } catch {
-      // Obsługa błędów sieci / timeout
-      setState({
-        status: "error",
-        error: {
-          code: "InternalError",
-          message: "Nie udało się połączyć z serwerem. Spróbuj ponownie.",
-        },
-      });
+    } catch (error) {
+      if (error instanceof Error) {
+        setState({
+          status: "error",
+          error: {
+            code: "InternalError",
+            message: error.message,
+          },
+        });
+      } else {
+        // Obsługa błędów sieci / timeout
+        setState({
+          status: "error",
+          error: {
+            code: "InternalError",
+            message: "Nie udało się połączyć z serwerem. Spróbuj ponownie.",
+          },
+        });
+      }
     }
   }, []);
 

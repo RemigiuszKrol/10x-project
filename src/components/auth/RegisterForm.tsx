@@ -83,10 +83,16 @@ export function RegisterForm() {
           });
         }
       }
-    } catch {
-      setErrors({
-        general: "Nie udało się połączyć z serwerem. Sprawdź połączenie i spróbuj ponownie.",
-      });
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrors({
+          general: error.message,
+        });
+      } else {
+        setErrors({
+          general: "Nie udało się połączyć z serwerem. Sprawdź połączenie i spróbuj ponownie.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

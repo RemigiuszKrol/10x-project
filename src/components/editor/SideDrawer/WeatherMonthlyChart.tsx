@@ -17,15 +17,15 @@ const MONTH_LABELS = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "W
  * WeatherMonthlyChart - Wykres linii dla danych pogodowych
  *
  * Features:
- * - 3 linie: sunlight (żółty), humidity (niebieski), precip (granatowy)
+ * - 4 linie: sunlight (żółty), humidity (niebieski), precip (granatowy), temperature (czerwony)
  * - 12 punktów (miesiące)
  * - Legenda z kolorami
  * - Responsive SVG
- * - Tooltips na hover (title attribute)
+ * - Tooltips na hover (title attribute) z wartościami znormalizowanymi i rzeczywistymi (°C)
  *
  * Implementacja:
  * - Prosty SVG line chart bez zewnętrznych bibliotek
- * - Skalowanie do 0-100 (normalizacja dla precip)
+ * - Skalowanie do 0-100 (normalizacja dla precip i temperature)
  * - Grid lines dla czytelności
  */
 export function WeatherMonthlyChart({ data }: WeatherMonthlyChartProps): ReactNode {
@@ -43,6 +43,17 @@ export function WeatherMonthlyChart({ data }: WeatherMonthlyChartProps): ReactNo
   const maxSunlight = 100;
   const maxHumidity = 100;
   const maxPrecip = Math.max(...sortedData.map((d) => d.precip || 0), 100);
+  const maxTemperature = 100;
+
+  /**
+   * Konwersja znormalizowanej temperatury (0-100) z powrotem do °C
+   * Zakres normalizacji: -30°C do +50°C → 0-100
+   * Formuła odwrotna: ((temp / 100) * 80) - 30
+   */
+  const denormalizeTemperature = (normalized: number | null): number | null => {
+    if (normalized === null) return null;
+    return Math.round((normalized / 100) * 80 - 30);
+  };
 
   /**
    * Konwersja wartości do współrzędnych Y
@@ -63,7 +74,7 @@ export function WeatherMonthlyChart({ data }: WeatherMonthlyChartProps): ReactNo
   /**
    * Generowanie ścieżki SVG dla linii
    */
-  const generatePath = (dataKey: "sunlight" | "humidity" | "precip", max: number): string => {
+  const generatePath = (dataKey: "sunlight" | "humidity" | "precip" | "temperature", max: number): string => {
     return sortedData
       .map((d, i) => {
         const x = scaleX(d.month);
@@ -77,6 +88,7 @@ export function WeatherMonthlyChart({ data }: WeatherMonthlyChartProps): ReactNo
   const sunlightPath = generatePath("sunlight", maxSunlight);
   const humidityPath = generatePath("humidity", maxHumidity);
   const precipPath = generatePath("precip", maxPrecip);
+  const temperaturePath = generatePath("temperature", maxTemperature);
 
   return (
     <div className="space-y-4">
@@ -115,9 +127,13 @@ export function WeatherMonthlyChart({ data }: WeatherMonthlyChartProps): ReactNo
             {/* Linia opadów (granatowa, dotted) */}
             <path d={precipPath} fill="none" stroke="#1e40af" strokeWidth="2" strokeDasharray="4 2" />
 
+            {/* Linia temperatury (czerwona) */}
+            <path d={temperaturePath} fill="none" stroke="#ef4444" strokeWidth="2" />
+
             {/* Punkty danych (tooltips) */}
             {sortedData.map((d) => {
               const x = scaleX(d.month);
+              const tempCelsius = denormalizeTemperature(d.temperature);
               return (
                 <g key={d.month}>
                   <circle cx={x} cy={scaleY(d.sunlight, maxSunlight)} r="3" fill="#eab308">
@@ -133,6 +149,12 @@ export function WeatherMonthlyChart({ data }: WeatherMonthlyChartProps): ReactNo
                   <circle cx={x} cy={scaleY(d.precip, maxPrecip)} r="3" fill="#1e40af">
                     <title>
                       {MONTH_LABELS[d.month - 1]}: Opady {d.precip} mm
+                    </title>
+                  </circle>
+                  <circle cx={x} cy={scaleY(d.temperature, maxTemperature)} r="3" fill="#ef4444">
+                    <title>
+                      {MONTH_LABELS[d.month - 1]}: Temperatura {d.temperature}%
+                      {tempCelsius !== null ? ` (${tempCelsius > 0 ? "+" : ""}${tempCelsius}°C)` : ""}
                     </title>
                   </circle>
                 </g>
@@ -167,6 +189,10 @@ export function WeatherMonthlyChart({ data }: WeatherMonthlyChartProps): ReactNo
         <div className="flex items-center gap-2">
           <div className="h-3 w-8 rounded border-2 border-dashed border-[#1e40af]" />
           <span className="text-muted-foreground">Opady (mm, normalizowane)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-8 rounded bg-[#ef4444]" />
+          <span className="text-muted-foreground">Temperatura (normalizowana, °C w tooltip)</span>
         </div>
       </div>
 

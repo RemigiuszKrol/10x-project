@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { UiTheme } from "@/types";
+import { logger } from "@/lib/utils/logger";
 
 interface ThemeContextValue {
   theme: UiTheme;
@@ -32,8 +33,16 @@ export function ThemeProvider({
         if (stored === "light" || stored === "dark") {
           return stored;
         }
-      } catch {
+      } catch (error) {
         // Ignoruj błędy localStorage
+        if (error instanceof Error) {
+          logger.warn("Błąd podczas wczytywania motywu z localStorage", { error: error.message, storageKey });
+        } else {
+          logger.warn("Nieoczekiwany błąd podczas wczytywania motywu z localStorage", {
+            error: String(error),
+            storageKey,
+          });
+        }
       }
     }
     return defaultTheme;
@@ -52,8 +61,17 @@ export function ThemeProvider({
     // Zapisz w localStorage
     try {
       localStorage.setItem(storageKey, theme);
-    } catch {
+    } catch (error) {
       // Ignoruj błędy localStorage
+      if (error instanceof Error) {
+        logger.warn("Błąd podczas zapisywania motywu do localStorage", { error: error.message, storageKey, theme });
+      } else {
+        logger.warn("Nieoczekiwany błąd podczas zapisywania motywu do localStorage", {
+          error: String(error),
+          storageKey,
+          theme,
+        });
+      }
     }
   }, [theme, storageKey]);
 

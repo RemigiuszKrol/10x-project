@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Schemat walidacji dla parametrów ścieżki PUT /api/plans/:plan_id/plants/:x/:y
@@ -104,8 +105,11 @@ export const PlantPlacementsQuerySchema = z
         let decodedCursor = data.cursor;
         try {
           decodedCursor = decodeURIComponent(data.cursor);
-        } catch {
+        } catch (error) {
           // Jeśli dekodowanie URL się nie powiodło, użyj oryginalnego stringa
+          if (error instanceof Error) {
+            logger.warn("Nie udało się zdekodować URL cursor, używam oryginalnego", { error: error.message });
+          }
           decodedCursor = data.cursor;
         }
 
@@ -131,7 +135,17 @@ export const PlantPlacementsQuerySchema = z
             },
           ]);
         }
-      } catch {
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          // Jeśli to już ZodError, przekaż dalej
+          throw error;
+        }
+        // Inny błąd - loguj i rzuć ogólny błąd walidacji
+        if (error instanceof Error) {
+          logger.error("Błąd podczas dekodowania cursor", { error: error.message });
+        } else {
+          logger.error("Nieoczekiwany błąd podczas dekodowania cursor", { error: String(error) });
+        }
         throw new z.ZodError([
           {
             code: "custom",

@@ -19,6 +19,7 @@ interface NormalizedMonthlyData {
   sunlight: number; // 0-100
   humidity: number; // 0-100
   precip: number; // 0-100
+  temperature: number; // 0-100
 }
 
 export class WeatherService {
@@ -120,6 +121,7 @@ export class WeatherService {
    * - sunshine_duration: seconds/day
    * - relative_humidity_2m_mean: % (już 0-100)
    * - precipitation_sum: mm
+   * - temperature_2m_mean: °C
    */
   private normalizeWeatherData(raw: OpenMeteoRawResponse): NormalizedMonthlyData[] {
     const dailyData = raw.daily;
@@ -130,6 +132,7 @@ export class WeatherService {
         sunshine: number[];
         humidity: number[];
         precip: number[];
+        temperature: number[];
       }
     >();
 
@@ -144,6 +147,7 @@ export class WeatherService {
           sunshine: [],
           humidity: [],
           precip: [],
+          temperature: [],
         });
       }
 
@@ -153,6 +157,7 @@ export class WeatherService {
         month.sunshine.push(dailyData.sunshine_duration[i] || 0);
         month.humidity.push(dailyData.relative_humidity_2m_mean[i] || 0);
         month.precip.push(dailyData.precipitation_sum[i] || 0);
+        month.temperature.push(dailyData.temperature_2m_mean[i] ?? 0);
       }
     }
 
@@ -167,6 +172,7 @@ export class WeatherService {
       const avgSunshineSec = average(values.sunshine); // seconds/day
       const avgHumidity = average(values.humidity); // %
       const totalPrecip = sum(values.precip); // mm/month
+      const avgTemperature = average(values.temperature); // °C
 
       // Konwersja sunshine z sekund na godziny
       const avgSunshineHours = avgSunshineSec / 3600;
@@ -179,12 +185,16 @@ export class WeatherService {
       // Normalizacja opadów: zakres 0-300mm/miesiąc
       const precip = Math.round(Math.min((totalPrecip / 300) * 100, 100));
 
+      // Normalizacja temperatury: zakres -30°C do +50°C → 0-100
+      const temperature = Math.round(normalizeTemperature(avgTemperature));
+
       normalized.push({
         year,
         month,
         sunlight: clamp(sunlight, 0, 100),
         humidity: clamp(humidity, 0, 100),
         precip: clamp(precip, 0, 100),
+        temperature: clamp(temperature, 0, 100),
       });
     }
 
@@ -211,6 +221,7 @@ export class WeatherService {
       sunlight: d.sunlight as number,
       humidity: d.humidity as number,
       precip: d.precip as number,
+      temperature: d.temperature as number,
       last_refreshed_at: now,
     }));
 
@@ -254,6 +265,15 @@ function normalizeSunshine(hours: number): number {
   return Math.min((hours / 16) * 100, 100);
 }
 
+/**
+ * Normalizuje temperaturę z °C do 0-100
+ * Zakres: -30°C do +50°C → 0-100
+ * Formuła: ((temp + 30) / 80) * 100
+ */
+function normalizeTemperature(celsius: number): number {
+  return ((celsius + 30) / 80) * 100;
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
@@ -286,7 +306,7 @@ export async function getPlanWeather(options: {
   // Pobierz dane pogodowe (RLS automatycznie filtruje)
   const { data, error } = await supabase
     .from("weather_monthly")
-    .select("year, month, sunlight, humidity, precip, last_refreshed_at")
+    .select("year, month, sunlight, humidity, precip, temperature, last_refreshed_at")
     .eq("plan_id", planId)
     .order("year", { ascending: false })
     .order("month", { ascending: false })

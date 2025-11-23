@@ -4,6 +4,7 @@ import { GRID_CELL_TYPE_LABELS } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Propsy komponentu AreaTypePanel
@@ -45,8 +46,13 @@ export function AreaTypePanel({ selection, cellCount, onApply, onCancel, isApply
     try {
       await onApply(selectedType);
       // Po sukcesie parent wyczyści zaznaczenie i zamknie panel
-    } catch {
+    } catch (error) {
       // Błędy obsługiwane w parent (useAreaTypeWithConfirmation)
+      if (error instanceof Error) {
+        logger.error("Błąd podczas zastosowania typu obszaru", { error: error.message, selectedType });
+      } else {
+        logger.error("Nieoczekiwany błąd podczas zastosowania typu obszaru", { error: String(error), selectedType });
+      }
     }
   };
 

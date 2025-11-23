@@ -1,6 +1,7 @@
 import type { APIContext } from "astro";
 import type { ApiItemResponse, GridAreaTypeResultDto } from "@/types";
 import { errorResponse, jsonResponse, PlantRemovalRequiresConfirmationError, ValidationError } from "@/lib/http/errors";
+import { logApiError } from "@/lib/http/error-handler";
 import { setAreaType } from "@/lib/services/grid-area.service";
 import { gridAreaTypePathSchema, gridAreaTypePayloadSchema } from "@/lib/validation/grid-area";
 import { z } from "zod";
@@ -19,6 +20,11 @@ export async function POST(ctx: APIContext) {
   // 1. Sprawdź klienta Supabase
   const supabase = ctx.locals.supabase;
   if (!supabase) {
+    logApiError(new Error("Supabase client not available"), {
+      endpoint: "POST /api/plans/:plan_id/grid/area-type",
+      method: "POST",
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -26,6 +32,11 @@ export async function POST(ctx: APIContext) {
   const { data: userData } = await supabase.auth.getUser();
   const user = userData?.user;
   if (!user) {
+    logApiError(new Error("User not found in session"), {
+      endpoint: "POST /api/plans/:plan_id/grid/area-type",
+      method: "POST",
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -33,6 +44,12 @@ export async function POST(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const idParse = idSchema.safeParse(user.id);
   if (!idParse.success) {
+    logApiError(new Error("Invalid user id format"), {
+      endpoint: "POST /api/plans/:plan_id/grid/area-type",
+      method: "POST",
+      user_id: user.id,
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("UnprocessableEntity", "Invalid user id."), 422);
   }
 
@@ -49,6 +66,13 @@ export async function POST(ctx: APIContext) {
     // Główny komunikat błędu
     const message = paramsParse.error.issues[0]?.message || "Invalid plan_id parameter.";
 
+    logApiError(new ValidationError(message), {
+      endpoint: "POST /api/plans/:plan_id/grid/area-type",
+      method: "POST",
+      user_id: user.id,
+      params: { plan_id: ctx.params.plan_id },
+    });
+
     return jsonResponse(errorResponse("ValidationError", message, { field_errors: fieldErrors }), 422);
   }
 
@@ -58,7 +82,13 @@ export async function POST(ctx: APIContext) {
   let requestBody: unknown;
   try {
     requestBody = await ctx.request.json();
-  } catch {
+  } catch (error) {
+    logApiError(error instanceof Error ? error : new Error("Invalid JSON body"), {
+      endpoint: "POST /api/plans/:plan_id/grid/area-type",
+      method: "POST",
+      user_id: user.id,
+      params: { plan_id },
+    });
     return jsonResponse(errorResponse("ValidationError", "Invalid JSON body."), 400);
   }
 
@@ -73,6 +103,13 @@ export async function POST(ctx: APIContext) {
 
     // Główny komunikat błędu
     const message = bodyParse.error.issues[0]?.message || "Invalid input data.";
+
+    logApiError(new ValidationError(message), {
+      endpoint: "POST /api/plans/:plan_id/grid/area-type",
+      method: "POST",
+      user_id: user.id,
+      params: { plan_id },
+    });
 
     return jsonResponse(errorResponse("ValidationError", message, { field_errors: fieldErrors }), 422);
   }
@@ -104,6 +141,12 @@ export async function POST(ctx: APIContext) {
         .maybeSingle();
 
       if (!planCheck) {
+        logApiError(new Error("Plan not found"), {
+          endpoint: "POST /api/plans/:plan_id/grid/area-type",
+          method: "POST",
+          user_id: user.id,
+          params: { plan_id },
+        });
         return jsonResponse(errorResponse("NotFound", "Plan not found."), 404);
       }
     }
@@ -113,6 +156,13 @@ export async function POST(ctx: APIContext) {
     return jsonResponse(body, 200);
   } catch (e: unknown) {
     // 9. Obsługa błędów
+    // Logowanie błędu PRZED zwróceniem odpowiedzi
+    logApiError(e, {
+      endpoint: "POST /api/plans/:plan_id/grid/area-type",
+      method: "POST",
+      user_id: user.id,
+      params: { plan_id },
+    });
 
     // Błąd walidacji z serwisu (współrzędne poza granicami)
     if (e instanceof ValidationError) {

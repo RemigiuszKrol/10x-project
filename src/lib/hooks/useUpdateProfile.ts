@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import type { ProfileUpdateCommand, ProfileDto, ApiItemResponse, ApiErrorResponse } from "@/types";
 import type { ProfileViewModel, ProfileError } from "./useProfilePreferences";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Payload aktualizacji profilu (używa snake_case zgodnie z API)
@@ -99,7 +100,12 @@ export function useUpdateProfile(options?: {
                 message: errorData.error.message,
                 fieldErrors: errorData.error.details?.field_errors,
               };
-            } catch {
+            } catch (error) {
+              if (error instanceof Error) {
+                logger.error("Błąd podczas parsowania odpowiedzi błędu z API", { error: error.message });
+              } else {
+                logger.error("Nieoczekiwany błąd podczas parsowania odpowiedzi błędu", { error: String(error) });
+              }
               errorObj = {
                 code: "InternalError",
                 message: "Wystąpił nieoczekiwany błąd.",
@@ -133,11 +139,18 @@ export function useUpdateProfile(options?: {
         }
 
         return { success: true, data: viewModel };
-      } catch {
+      } catch (error) {
         // Obsługa błędów sieci / timeout
+        let errorMessage = "Nie udało się połączyć z serwerem. Spróbuj ponownie.";
+        if (error instanceof Error) {
+          errorMessage = error.message || errorMessage;
+          logger.error("Błąd sieci podczas aktualizacji profilu", { error: error.message });
+        } else {
+          logger.error("Nieoczekiwany błąd podczas aktualizacji profilu", { error: String(error) });
+        }
         const errorObj: ProfileError = {
           code: "InternalError",
-          message: "Nie udało się połączyć z serwerem. Spróbuj ponownie.",
+          message: errorMessage,
         };
 
         setError(errorObj);

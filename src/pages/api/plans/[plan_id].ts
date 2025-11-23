@@ -1,6 +1,7 @@
 import type { APIContext } from "astro";
 import type { ApiItemResponse, PlanDto } from "@/types";
 import { errorResponse, jsonResponse, GridChangeRequiresConfirmationError, ValidationError } from "@/lib/http/errors";
+import { logApiError } from "@/lib/http/error-handler";
 import { getPlanById, updatePlan, deletePlan } from "@/lib/services/plans.service";
 import { PlanIdParamSchema, PlanUpdateSchema, PlanUpdateQuerySchema } from "@/lib/validation/plans";
 import { z } from "zod";
@@ -13,6 +14,11 @@ export const prerender = false;
 export async function GET(ctx: APIContext) {
   const supabase = ctx.locals.supabase;
   if (!supabase) {
+    logApiError(new Error("Supabase client not available"), {
+      endpoint: "GET /api/plans/:plan_id",
+      method: "GET",
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -20,6 +26,11 @@ export async function GET(ctx: APIContext) {
   const { data: userData } = await supabase.auth.getUser();
   const user = userData?.user;
   if (!user) {
+    logApiError(new Error("User not found in session"), {
+      endpoint: "GET /api/plans/:plan_id",
+      method: "GET",
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -27,6 +38,12 @@ export async function GET(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const idParse = idSchema.safeParse(user.id);
   if (!idParse.success) {
+    logApiError(new Error("Invalid user id format"), {
+      endpoint: "GET /api/plans/:plan_id",
+      method: "GET",
+      user_id: user.id,
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("UnprocessableEntity", "Invalid user id."), 400);
   }
 
@@ -43,6 +60,13 @@ export async function GET(ctx: APIContext) {
     // Główny komunikat błędu
     const message = paramsParse.error.issues[0]?.message || "Invalid plan_id parameter.";
 
+    logApiError(new ValidationError(message), {
+      endpoint: "GET /api/plans/:plan_id",
+      method: "GET",
+      user_id: user.id,
+      params: { plan_id: ctx.params.plan_id },
+    });
+
     return jsonResponse(errorResponse("ValidationError", message, { field_errors: fieldErrors }), 400);
   }
 
@@ -54,6 +78,12 @@ export async function GET(ctx: APIContext) {
 
     // 5. Sprawdź czy plan istnieje
     if (!plan) {
+      logApiError(new Error("Plan not found"), {
+        endpoint: "GET /api/plans/:plan_id",
+        method: "GET",
+        user_id: user.id,
+        params: { plan_id },
+      });
       return jsonResponse(errorResponse("NotFound", "Plan not found."), 404);
     }
 
@@ -61,6 +91,14 @@ export async function GET(ctx: APIContext) {
     const body: ApiItemResponse<PlanDto> = { data: plan };
     return jsonResponse(body, 200);
   } catch (e: unknown) {
+    // Logowanie błędu PRZED zwróceniem odpowiedzi
+    logApiError(e, {
+      endpoint: "GET /api/plans/:plan_id",
+      method: "GET",
+      user_id: user.id,
+      params: { plan_id },
+    });
+
     // Sprawdź typ błędu
     const error = e as { code?: string; message?: string };
     const msg = String(error?.message ?? "");
@@ -85,6 +123,11 @@ export async function GET(ctx: APIContext) {
 export async function PATCH(ctx: APIContext) {
   const supabase = ctx.locals.supabase;
   if (!supabase) {
+    logApiError(new Error("Supabase client not available"), {
+      endpoint: "PATCH /api/plans/:plan_id",
+      method: "PATCH",
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -92,6 +135,11 @@ export async function PATCH(ctx: APIContext) {
   const { data: userData } = await supabase.auth.getUser();
   const user = userData?.user;
   if (!user) {
+    logApiError(new Error("User not found in session"), {
+      endpoint: "PATCH /api/plans/:plan_id",
+      method: "PATCH",
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -99,6 +147,12 @@ export async function PATCH(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const idParse = idSchema.safeParse(user.id);
   if (!idParse.success) {
+    logApiError(new Error("Invalid user id format"), {
+      endpoint: "PATCH /api/plans/:plan_id",
+      method: "PATCH",
+      user_id: user.id,
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("UnprocessableEntity", "Invalid user id."), 400);
   }
 
@@ -114,6 +168,13 @@ export async function PATCH(ctx: APIContext) {
 
     // Główny komunikat błędu
     const message = paramsParse.error.issues[0]?.message || "Invalid plan_id parameter.";
+
+    logApiError(new ValidationError(message), {
+      endpoint: "PATCH /api/plans/:plan_id",
+      method: "PATCH",
+      user_id: user.id,
+      params: { plan_id: ctx.params.plan_id },
+    });
 
     return jsonResponse(errorResponse("ValidationError", message, { field_errors: fieldErrors }), 400);
   }
@@ -138,6 +199,13 @@ export async function PATCH(ctx: APIContext) {
     // Główny komunikat błędu
     const message = queryParse.error.issues[0]?.message || "Invalid query parameters.";
 
+    logApiError(new ValidationError(message), {
+      endpoint: "PATCH /api/plans/:plan_id",
+      method: "PATCH",
+      user_id: user.id,
+      params: { plan_id },
+    });
+
     return jsonResponse(errorResponse("ValidationError", message, { field_errors: fieldErrors }), 400);
   }
 
@@ -147,7 +215,13 @@ export async function PATCH(ctx: APIContext) {
   let requestBody: unknown;
   try {
     requestBody = await ctx.request.json();
-  } catch {
+  } catch (error) {
+    logApiError(error instanceof Error ? error : new Error("Invalid JSON body"), {
+      endpoint: "PATCH /api/plans/:plan_id",
+      method: "PATCH",
+      user_id: user.id,
+      params: { plan_id },
+    });
     return jsonResponse(errorResponse("ValidationError", "Invalid JSON body."), 400);
   }
 
@@ -163,6 +237,13 @@ export async function PATCH(ctx: APIContext) {
     // Główny komunikat błędu
     const message = bodyParse.error.issues[0]?.message || "Invalid input data.";
 
+    logApiError(new ValidationError(message), {
+      endpoint: "PATCH /api/plans/:plan_id",
+      method: "PATCH",
+      user_id: user.id,
+      params: { plan_id },
+    });
+
     return jsonResponse(errorResponse("ValidationError", message, { field_errors: fieldErrors }), 400);
   }
 
@@ -176,6 +257,12 @@ export async function PATCH(ctx: APIContext) {
 
     // 7. Sprawdź czy plan istnieje
     if (!plan) {
+      logApiError(new Error("Plan not found"), {
+        endpoint: "PATCH /api/plans/:plan_id",
+        method: "PATCH",
+        user_id: user.id,
+        params: { plan_id },
+      });
       return jsonResponse(errorResponse("NotFound", "Plan not found."), 404);
     }
 
@@ -183,6 +270,14 @@ export async function PATCH(ctx: APIContext) {
     const body: ApiItemResponse<PlanDto> = { data: plan };
     return jsonResponse(body, 200);
   } catch (e: unknown) {
+    // Logowanie błędu PRZED zwróceniem odpowiedzi
+    logApiError(e, {
+      endpoint: "PATCH /api/plans/:plan_id",
+      method: "PATCH",
+      user_id: user.id,
+      params: { plan_id },
+    });
+
     // Sprawdź typ błędu
     const error = e as { code?: string; message?: string };
 
@@ -233,6 +328,11 @@ export async function PATCH(ctx: APIContext) {
 export async function DELETE(ctx: APIContext) {
   const supabase = ctx.locals.supabase;
   if (!supabase) {
+    logApiError(new Error("Supabase client not available"), {
+      endpoint: "DELETE /api/plans/:plan_id",
+      method: "DELETE",
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -240,6 +340,11 @@ export async function DELETE(ctx: APIContext) {
   const { data: userData } = await supabase.auth.getUser();
   const user = userData?.user;
   if (!user) {
+    logApiError(new Error("User not found in session"), {
+      endpoint: "DELETE /api/plans/:plan_id",
+      method: "DELETE",
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -247,6 +352,12 @@ export async function DELETE(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const idParse = idSchema.safeParse(user.id);
   if (!idParse.success) {
+    logApiError(new Error("Invalid user id format"), {
+      endpoint: "DELETE /api/plans/:plan_id",
+      method: "DELETE",
+      user_id: user.id,
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("UnprocessableEntity", "Invalid user id."), 400);
   }
 
@@ -263,6 +374,13 @@ export async function DELETE(ctx: APIContext) {
     // Główny komunikat błędu
     const message = paramsParse.error.issues[0]?.message || "Invalid plan_id parameter.";
 
+    logApiError(new ValidationError(message), {
+      endpoint: "DELETE /api/plans/:plan_id",
+      method: "DELETE",
+      user_id: user.id,
+      params: { plan_id: ctx.params.plan_id },
+    });
+
     return jsonResponse(errorResponse("ValidationError", message, { field_errors: fieldErrors }), 400);
   }
 
@@ -274,12 +392,26 @@ export async function DELETE(ctx: APIContext) {
 
     // 5. Sprawdź czy plan został usunięty
     if (!deleted) {
+      logApiError(new Error("Plan not found"), {
+        endpoint: "DELETE /api/plans/:plan_id",
+        method: "DELETE",
+        user_id: user.id,
+        params: { plan_id },
+      });
       return jsonResponse(errorResponse("NotFound", "Plan not found."), 404);
     }
 
     // 6. Zwróć sukces (204 No Content - bez treści)
     return new Response(null, { status: 204 });
   } catch (e: unknown) {
+    // Logowanie błędu PRZED zwróceniem odpowiedzi
+    logApiError(e, {
+      endpoint: "DELETE /api/plans/:plan_id",
+      method: "DELETE",
+      user_id: user.id,
+      params: { plan_id },
+    });
+
     // Sprawdź typ błędu
     const error = e as { code?: string; message?: string };
     const msg = String(error?.message ?? "");

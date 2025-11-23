@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 
 import type { AuthResponse, ForgotPasswordDto } from "../../../types.ts";
 import { forgotPasswordSchema } from "../../../lib/validation/auth.ts";
+import { logError } from "../../../lib/utils/logger.ts";
 
 export const prerender = false;
 
@@ -64,7 +65,21 @@ export const POST: APIRoute = async ({ request, locals, url }) => {
         "Content-Type": "application/json",
       },
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error) {
+      logError("Błąd podczas wysyłania linku resetującego hasło", {
+        endpoint: "POST /api/auth/forgot-password",
+        method: "POST",
+        error: error.message,
+        stack: error.stack,
+      });
+    } else {
+      logError("Nieoczekiwany błąd podczas wysyłania linku resetującego hasło", {
+        endpoint: "POST /api/auth/forgot-password",
+        method: "POST",
+        error: String(error),
+      });
+    }
     const response: AuthResponse = {
       success: false,
       error: {

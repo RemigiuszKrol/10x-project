@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { logger } from "@/lib/utils/logger";
 
 interface LanguageContextValue {
   languageCode: string;
@@ -30,8 +31,16 @@ export function LanguageProvider({
         if (stored) {
           return stored;
         }
-      } catch {
+      } catch (error) {
         // Ignoruj błędy localStorage
+        if (error instanceof Error) {
+          logger.warn("Błąd podczas wczytywania języka z localStorage", { error: error.message, storageKey });
+        } else {
+          logger.warn("Nieoczekiwany błąd podczas wczytywania języka z localStorage", {
+            error: String(error),
+            storageKey,
+          });
+        }
       }
     }
     return defaultLanguage;
@@ -41,8 +50,21 @@ export function LanguageProvider({
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, languageCode);
-    } catch {
+    } catch (error) {
       // Ignoruj błędy localStorage
+      if (error instanceof Error) {
+        logger.warn("Błąd podczas zapisywania języka do localStorage", {
+          error: error.message,
+          storageKey,
+          languageCode,
+        });
+      } else {
+        logger.warn("Nieoczekiwany błąd podczas zapisywania języka do localStorage", {
+          error: String(error),
+          storageKey,
+          languageCode,
+        });
+      }
     }
 
     // Opcjonalnie: ustaw lang attribute na <html>

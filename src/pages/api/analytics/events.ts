@@ -1,6 +1,7 @@
 import type { APIContext } from "astro";
 import type { ApiItemResponse, AnalyticsEventDto } from "@/types";
-import { errorResponse, jsonResponse } from "@/lib/http/errors";
+import { errorResponse, jsonResponse, ValidationError } from "@/lib/http/errors";
+import { logApiError } from "@/lib/http/error-handler";
 import { createAnalyticsEvent } from "@/lib/services/analytics-events.service";
 import { AnalyticsEventCreateSchema } from "@/lib/validation/analytics";
 import { z } from "zod";
@@ -16,6 +17,10 @@ export const prerender = false;
 export async function POST(ctx: APIContext) {
   const supabase = ctx.locals.supabase;
   if (!supabase) {
+    logApiError(new Error("Supabase client not available"), {
+      endpoint: "POST /api/analytics/events",
+      method: "POST",
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -23,6 +28,10 @@ export async function POST(ctx: APIContext) {
   const { data: userData } = await supabase.auth.getUser();
   const user = userData?.user;
   if (!user) {
+    logApiError(new Error("User not found in session"), {
+      endpoint: "POST /api/analytics/events",
+      method: "POST",
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -30,6 +39,11 @@ export async function POST(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const idParse = idSchema.safeParse(user.id);
   if (!idParse.success) {
+    logApiError(new Error("Invalid user id format"), {
+      endpoint: "POST /api/analytics/events",
+      method: "POST",
+      user_id: user.id,
+    });
     return jsonResponse(errorResponse("UnprocessableEntity", "Invalid user id."), 422);
   }
 
@@ -37,7 +51,12 @@ export async function POST(ctx: APIContext) {
   let requestBody: unknown;
   try {
     requestBody = await ctx.request.json();
-  } catch {
+  } catch (error) {
+    logApiError(error instanceof Error ? error : new Error("Invalid JSON body"), {
+      endpoint: "POST /api/analytics/events",
+      method: "POST",
+      user_id: user.id,
+    });
     return jsonResponse(errorResponse("ValidationError", "Invalid JSON body."), 400);
   }
 
@@ -52,6 +71,12 @@ export async function POST(ctx: APIContext) {
 
     // Główny komunikat błędu
     const message = bodyParse.error.issues[0]?.message || "Invalid input data.";
+
+    logApiError(new ValidationError(message), {
+      endpoint: "POST /api/analytics/events",
+      method: "POST",
+      user_id: user.id,
+    });
 
     return jsonResponse(errorResponse("ValidationError", message, { field_errors: fieldErrors }), 400);
   }
@@ -83,9 +108,21 @@ export async function POST(ctx: APIContext) {
 
       // Plan nie istnieje lub nie należy do użytkownika
       if (!plan) {
+        logApiError(new Error("Plan not found"), {
+          endpoint: "POST /api/analytics/events",
+          method: "POST",
+          user_id: user.id,
+          params: { plan_id: command.plan_id },
+        });
         return jsonResponse(errorResponse("NotFound", "Plan not found."), 404);
       }
-    } catch {
+    } catch (error) {
+      logApiError(error instanceof Error ? error : new Error("Failed to verify plan"), {
+        endpoint: "POST /api/analytics/events",
+        method: "POST",
+        user_id: user.id,
+        params: { plan_id: command.plan_id },
+      });
       return jsonResponse(errorResponse("InternalError", "Failed to verify plan."), 500);
     }
   }
@@ -97,6 +134,14 @@ export async function POST(ctx: APIContext) {
     const body: ApiItemResponse<AnalyticsEventDto> = { data: event };
     return jsonResponse(body, 201);
   } catch (e: unknown) {
+    // Logowanie błędu PRZED zwróceniem odpowiedzi
+    logApiError(e, {
+      endpoint: "POST /api/analytics/events",
+      method: "POST",
+      user_id: user.id,
+      params: { plan_id: command.plan_id },
+    });
+
     // Sprawdź typ błędu
     const error = e as { code?: string; message?: string };
     const msg = String(error?.message ?? "").toLowerCase();

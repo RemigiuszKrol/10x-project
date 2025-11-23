@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { PlanDto, ApiListResponse, ApiErrorResponse } from "@/types";
 import { planDtoToViewModel, type PlanViewModel } from "@/lib/viewmodels/plan.viewmodel";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Stan ładowania listy planów
@@ -93,9 +94,14 @@ export function usePlansApi() {
         nextCursor: data.pagination.next_cursor,
       });
       setNextCursor(data.pagination.next_cursor);
-    } catch {
+    } catch (error) {
       // Błąd podczas ładowania więcej - można pokazać toast
       // Ale nie zmieniamy głównego stanu na error
+      if (error instanceof Error) {
+        logger.error("Błąd podczas ładowania więcej planów", { error: error.message });
+      } else {
+        logger.error("Nieoczekiwany błąd podczas ładowania więcej planów", { error: String(error) });
+      }
     }
   };
 
@@ -122,7 +128,12 @@ export function usePlansApi() {
       // Refetch planów po usunięciu
       await fetchPlans();
       return true;
-    } catch {
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error("Błąd podczas usuwania planu", { error: error.message });
+      } else {
+        logger.error("Nieoczekiwany błąd podczas usuwania planu", { error: String(error) });
+      }
       return false;
     }
   };

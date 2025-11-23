@@ -4,6 +4,7 @@ import { DEFAULT_FORM_DATA, DRAFT_VERSION, STEP_CONFIGS } from "@/types";
 import { PlanCreateSchema } from "@/lib/validation/plans";
 import type { PlanDto, PlanCreateCommand, ApiItemResponse, ApiErrorResponse } from "@/types";
 import { z } from "zod";
+import { logger } from "@/lib/utils/logger";
 
 const DRAFT_STORAGE_KEY = "plantsplaner_plan_draft";
 
@@ -66,7 +67,12 @@ export function usePlanCreator(): UsePlanCreatorReturn {
       try {
         const stored = localStorage.getItem(DRAFT_STORAGE_KEY);
         setHasDraft(stored !== null);
-      } catch {
+      } catch (error) {
+        if (error instanceof Error) {
+          logger.error("Błąd podczas sprawdzania szkicu w localStorage", { error: error.message });
+        } else {
+          logger.error("Nieoczekiwany błąd podczas sprawdzania szkicu", { error: String(error) });
+        }
         setHasDraft(false);
       }
     };
@@ -77,9 +83,9 @@ export function usePlanCreator(): UsePlanCreatorReturn {
    * Oblicza wymiary siatki na podstawie danych formularza
    */
   const gridDimensions = useMemo((): GridDimensions => {
-    const { width_cm, height_cm, cell_size_cm } = state.formData;
+    const { width_m, height_m, cell_size_cm } = state.formData;
 
-    if (!width_cm || !height_cm || !cell_size_cm) {
+    if (!width_m || !height_m || !cell_size_cm) {
       return {
         gridWidth: 0,
         gridHeight: 0,
@@ -88,8 +94,12 @@ export function usePlanCreator(): UsePlanCreatorReturn {
       };
     }
 
+    // Konwersja metrów na centymetry
+    const widthCm = width_m * 100;
+    const heightCm = height_m * 100;
+
     // Sprawdź podzielność
-    if (width_cm % cell_size_cm !== 0) {
+    if (widthCm % cell_size_cm !== 0) {
       return {
         gridWidth: 0,
         gridHeight: 0,
@@ -98,7 +108,7 @@ export function usePlanCreator(): UsePlanCreatorReturn {
       };
     }
 
-    if (height_cm % cell_size_cm !== 0) {
+    if (heightCm % cell_size_cm !== 0) {
       return {
         gridWidth: 0,
         gridHeight: 0,
@@ -107,8 +117,8 @@ export function usePlanCreator(): UsePlanCreatorReturn {
       };
     }
 
-    const gridWidth = width_cm / cell_size_cm;
-    const gridHeight = height_cm / cell_size_cm;
+    const gridWidth = widthCm / cell_size_cm;
+    const gridHeight = heightCm / cell_size_cm;
 
     // Sprawdź limit 200 × 200
     if (gridWidth < 1 || gridWidth > 200 || gridHeight < 1 || gridHeight > 200) {
@@ -118,6 +128,18 @@ export function usePlanCreator(): UsePlanCreatorReturn {
         isValid: false,
         errorMessage:
           "Siatka musi być w zakresie 1-200 pól w każdym wymiarze (aktualnie: " + gridWidth + " × " + gridHeight + ")",
+      };
+    }
+
+    // Sprawdź maksymalną wartość: 200m * skala
+    const scaleInMeters = cell_size_cm / 100;
+    const maxDimension = 200 * scaleInMeters;
+    if (width_m > maxDimension || height_m > maxDimension) {
+      return {
+        gridWidth,
+        gridHeight,
+        isValid: false,
+        errorMessage: `Maksymalna wartość dla skali ${cell_size_cm}cm to ${maxDimension.toFixed(1)}m`,
       };
     }
 
@@ -160,11 +182,11 @@ export function usePlanCreator(): UsePlanCreatorReturn {
         break;
 
       case "dimensions":
-        if (!formData.width_cm || formData.width_cm <= 0) {
-          newErrors.width_cm = "Szerokość musi być liczbą dodatnią";
+        if (!formData.width_m || formData.width_m <= 0) {
+          newErrors.width_m = "Szerokość musi być liczbą dodatnią";
         }
-        if (!formData.height_cm || formData.height_cm <= 0) {
-          newErrors.height_cm = "Wysokość musi być liczbą dodatnią";
+        if (!formData.height_m || formData.height_m <= 0) {
+          newErrors.height_m = "Wysokość musi być liczbą dodatnią";
         }
         if (!formData.cell_size_cm) {
           newErrors.cell_size_cm = "Rozmiar kratki jest wymagany";
@@ -175,7 +197,7 @@ export function usePlanCreator(): UsePlanCreatorReturn {
 
         // Sprawdź wymiary siatki
         if (!gridDimensions.isValid && gridDimensions.errorMessage) {
-          newErrors.width_cm = gridDimensions.errorMessage;
+          newErrors.width_m = gridDimensions.errorMessage;
         }
         break;
 
@@ -196,8 +218,8 @@ export function usePlanCreator(): UsePlanCreatorReturn {
     try {
       PlanCreateSchema.parse({
         name: state.formData.name,
-        width_cm: state.formData.width_cm,
-        height_cm: state.formData.height_cm,
+        width_m: state.formData.width_m,
+        height_m: state.formData.height_m,
         cell_size_cm: state.formData.cell_size_cm,
         orientation: state.formData.orientation,
         latitude: state.formData.latitude,
@@ -280,12 +302,58 @@ export function usePlanCreator(): UsePlanCreatorReturn {
 
   /**
    * Aktualizuje dane formularza
+   * Obsługuje przeskalowanie wymiarów przy zmianie skali
    */
   const updateFormData = useCallback((data: Partial<PlanCreateFormData>) => {
-    setState((prev) => ({
-      ...prev,
-      formData: { ...prev.formData, ...data },
-    }));
+    setState((prev) => {
+      const newFormData = { ...prev.formData, ...data };
+
+      // Jeśli zmienia się cell_size_cm, przeskaluj wymiary
+      if (data.cell_size_cm !== undefined && data.cell_size_cm !== prev.formData.cell_size_cm) {
+        const oldCellSize = prev.formData.cell_size_cm;
+        const newCellSize = data.cell_size_cm;
+
+        if (oldCellSize && newFormData.width_m && newFormData.height_m) {
+          // Oblicz aktualną liczbę pól siatki
+          const oldWidthCm = newFormData.width_m * 100;
+          const oldHeightCm = newFormData.height_m * 100;
+          const gridWidth = oldWidthCm / oldCellSize;
+          const gridHeight = oldHeightCm / oldCellSize;
+
+          // Przeskaluj wymiary zachowując liczbę pól (jeśli to możliwe)
+          // Nowe wymiary w metrach = (gridWidth * newCellSize) / 100
+          const newWidthCm = gridWidth * newCellSize;
+          const newHeightCm = gridHeight * newCellSize;
+
+          // Użyj let zamiast const, aby móc modyfikować wartości
+          let newWidthM = newWidthCm / 100;
+          let newHeightM = newHeightCm / 100;
+
+          // Sprawdź czy nowe wymiary nie przekraczają maksimum
+          const scaleInMeters = newCellSize / 100;
+          const maxDimension = 200 * scaleInMeters;
+
+          // Zaokrąglij do najbliższej wielokrotności skali
+          newWidthM = Math.round(newWidthM / scaleInMeters) * scaleInMeters;
+          newHeightM = Math.round(newHeightM / scaleInMeters) * scaleInMeters;
+
+          // Jeśli przekraczają maksimum, ogranicz do maksimum (zachowując proporcje)
+          if (newWidthM > maxDimension || newHeightM > maxDimension) {
+            const ratio = Math.min(maxDimension / newWidthM, maxDimension / newHeightM);
+            newWidthM = Math.floor((newWidthM * ratio) / scaleInMeters) * scaleInMeters;
+            newHeightM = Math.floor((newHeightM * ratio) / scaleInMeters) * scaleInMeters;
+          }
+
+          newFormData.width_m = newWidthM;
+          newFormData.height_m = newHeightM;
+        }
+      }
+
+      return {
+        ...prev,
+        formData: newFormData,
+      };
+    });
   }, []);
 
   /**
@@ -300,7 +368,12 @@ export function usePlanCreator(): UsePlanCreatorReturn {
       };
       localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
       setHasDraft(true);
-    } catch {
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error("Błąd podczas zapisywania szkicu do localStorage", { error: error.message });
+      } else {
+        logger.error("Nieoczekiwany błąd podczas zapisywania szkicu", { error: String(error) });
+      }
       // Silently fail - user will be notified through UI
     }
   }, [state.formData]);
@@ -321,7 +394,12 @@ export function usePlanCreator(): UsePlanCreatorReturn {
       }
 
       return draft;
-    } catch {
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error("Błąd podczas wczytywania szkicu z localStorage", { error: error.message });
+      } else {
+        logger.error("Nieoczekiwany błąd podczas wczytywania szkicu", { error: String(error) });
+      }
       return null;
     }
   }, []);
@@ -333,7 +411,12 @@ export function usePlanCreator(): UsePlanCreatorReturn {
     try {
       localStorage.removeItem(DRAFT_STORAGE_KEY);
       setHasDraft(false);
-    } catch {
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error("Błąd podczas usuwania szkicu z localStorage", { error: error.message });
+      } else {
+        logger.error("Nieoczekiwany błąd podczas usuwania szkicu", { error: String(error) });
+      }
       // Silently fail
     }
   }, []);
@@ -352,9 +435,9 @@ export function usePlanCreator(): UsePlanCreatorReturn {
     }
 
     // Guards - po validateAllSteps() te wartości muszą być zdefiniowane
-    const { name, width_cm, height_cm, cell_size_cm, orientation, latitude, longitude, hemisphere } = state.formData;
+    const { name, width_m, height_m, cell_size_cm, orientation, latitude, longitude, hemisphere } = state.formData;
 
-    if (!name || !width_cm || !height_cm || !cell_size_cm || orientation === undefined) {
+    if (!name || !width_m || !height_m || !cell_size_cm || orientation === undefined) {
       setState((prev) => ({
         ...prev,
         apiError: "Brak wymaganych danych",
@@ -365,13 +448,17 @@ export function usePlanCreator(): UsePlanCreatorReturn {
     setState((prev) => ({ ...prev, isSubmitting: true, apiError: null }));
 
     try {
+      // Konwersja metrów na centymetry przed wysłaniem do API
+      const widthCm = width_m * 100;
+      const heightCm = height_m * 100;
+
       // Mapowanie FormData → Command (DTO dla API)
       const command: PlanCreateCommand = {
         name: name.trim(),
         latitude: latitude,
         longitude: longitude,
-        width_cm: width_cm,
-        height_cm: height_cm,
+        width_cm: widthCm,
+        height_cm: heightCm,
         cell_size_cm: cell_size_cm,
         orientation: orientation,
         hemisphere: hemisphere,
@@ -403,7 +490,7 @@ export function usePlanCreator(): UsePlanCreatorReturn {
           let stepWithError: PlanCreatorStep = "basics";
           if (["name"].includes(firstErrorField)) stepWithError = "basics";
           else if (["latitude", "longitude"].includes(firstErrorField)) stepWithError = "location";
-          else if (["width_cm", "height_cm", "cell_size_cm", "orientation", "hemisphere"].includes(firstErrorField))
+          else if (["width_m", "height_m", "cell_size_cm", "orientation", "hemisphere"].includes(firstErrorField))
             stepWithError = "dimensions";
 
           setState((prev) => ({ ...prev, currentStep: stepWithError }));
@@ -429,11 +516,18 @@ export function usePlanCreator(): UsePlanCreatorReturn {
       }));
 
       return result.data;
-    } catch {
+    } catch (error) {
+      let errorMessage = "Nie udało się połączyć z serwerem. Spróbuj ponownie.";
+      if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+        logger.error("Błąd podczas tworzenia planu", { error: error.message });
+      } else {
+        logger.error("Nieoczekiwany błąd podczas tworzenia planu", { error: String(error) });
+      }
       setState((prev) => ({
         ...prev,
         isSubmitting: false,
-        apiError: "Nie udało się połączyć z serwerem. Spróbuj ponownie.",
+        apiError: errorMessage,
       }));
       return null;
     }

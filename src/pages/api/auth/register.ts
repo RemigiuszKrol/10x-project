@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 
 import type { AuthResponse, RegisterDto } from "../../../types.ts";
 import { registerSchema } from "../../../lib/validation/auth.ts";
+import { logError } from "../../../lib/utils/logger.ts";
 
 export const prerender = false;
 
@@ -123,7 +124,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
         "Content-Type": "application/json",
       },
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error) {
+      logError("Błąd podczas rejestracji", {
+        endpoint: "POST /api/auth/register",
+        method: "POST",
+        error: error.message,
+        stack: error.stack,
+      });
+    } else {
+      logError("Nieoczekiwany błąd podczas rejestracji", {
+        endpoint: "POST /api/auth/register",
+        method: "POST",
+        error: String(error),
+      });
+    }
     const response: AuthResponse = {
       success: false,
       error: {

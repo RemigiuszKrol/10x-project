@@ -58,7 +58,7 @@ export function PlanCreator() {
       creator.updateFormData(draftToLoad.formData);
 
       // Znajdź ostatni ukończony krok i przejdź do następnego
-      if (draftToLoad.formData.width_cm && draftToLoad.formData.height_cm) {
+      if (draftToLoad.formData.width_m && draftToLoad.formData.height_m) {
         creator.goToStep("summary");
       } else if (draftToLoad.formData.latitude || draftToLoad.formData.longitude) {
         creator.goToStep("dimensions");
@@ -128,16 +128,16 @@ export function PlanCreator() {
         return (
           <PlanCreatorStepDimensions
             data={{
-              width_cm: creator.state.formData.width_cm || 1000,
-              height_cm: creator.state.formData.height_cm || 1000,
+              width_m: creator.state.formData.width_m || 10,
+              height_m: creator.state.formData.height_m || 10,
               cell_size_cm: creator.state.formData.cell_size_cm || 25,
               orientation: creator.state.formData.orientation || 0,
               hemisphere: creator.state.formData.hemisphere || "northern",
             }}
             onChange={(data) => creator.updateFormData(data)}
             errors={{
-              width_cm: creator.state.errors.width_cm,
-              height_cm: creator.state.errors.height_cm,
+              width_m: creator.state.errors.width_m,
+              height_m: creator.state.errors.height_m,
               cell_size_cm: creator.state.errors.cell_size_cm,
               orientation: creator.state.errors.orientation,
               hemisphere: creator.state.errors.hemisphere,
@@ -154,8 +154,8 @@ export function PlanCreator() {
               latitude: creator.state.formData.latitude,
               longitude: creator.state.formData.longitude,
               address: creator.state.formData.address,
-              width_cm: creator.state.formData.width_cm || 1000,
-              height_cm: creator.state.formData.height_cm || 1000,
+              width_m: creator.state.formData.width_m || 10,
+              height_m: creator.state.formData.height_m || 10,
               cell_size_cm: creator.state.formData.cell_size_cm || 25,
               orientation: creator.state.formData.orientation || 0,
               hemisphere: creator.state.formData.hemisphere || "northern",

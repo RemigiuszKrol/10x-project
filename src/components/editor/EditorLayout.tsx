@@ -22,6 +22,7 @@ import { AreaTypePanel } from "./AreaTypePanel";
 import { GridRegenerationConfirmDialog } from "./modals/GridRegenerationConfirmDialog";
 import { AreaTypeConfirmDialog } from "./modals/AreaTypeConfirmDialog";
 import { toast } from "sonner";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Props dla głównego komponentu EditorLayout
@@ -70,9 +71,6 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
   // Centralny hook zarządzający stanem edytora
   const editor = useGridEditor(initialPlan.id, initialPlan, initialGridMetadata);
 
-  // Stan dla save operation
-  const [isSaving, setIsSaving] = useState(false);
-
   // Stan aktywnej zakładki w SideDrawer
   const [activeTab, setActiveTab] = useState<DrawerTab>("parameters");
 
@@ -113,8 +111,13 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
             removed_plants: result.removed_plants,
           })
         );
-      } catch {
+      } catch (error) {
         // Graceful failure - nie przerywaj głównego flow
+        if (error instanceof Error) {
+          logger.warn("Błąd podczas wysyłania analytics event dla zmiany typu obszaru", { error: error.message });
+        } else {
+          logger.warn("Nieoczekiwany błąd podczas wysyłania analytics event", { error: String(error) });
+        }
       }
 
       // Wyczyść zaznaczenie
@@ -171,19 +174,6 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
       </div>
     );
   }
-
-  // Handler zapisu zmian (TODO: implementacja rzeczywistego zapisu)
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      // TODO: Implementacja zapisu komórek siatki
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Mock delay
-      // eslint-disable-next-line no-console
-      console.log("Zapisywanie zmian...");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   // Handler aktualizacji planu
   const handleUpdatePlan = async (updates: Partial<PlanDto>, confirmRegenerate = false) => {
@@ -256,9 +246,6 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
         cellSizeCm={(editor.gridMetadata?.cell_size_cm ?? initialGridMetadata.cell_size_cm) || 0}
         currentTool={editor.state.currentTool}
         onToolChange={editor.actions.setTool}
-        onSave={handleSave}
-        isSaving={isSaving}
-        hasUnsavedChanges={editor.state.hasUnsavedChanges}
         isLoading={editor.isLoading}
       />
 

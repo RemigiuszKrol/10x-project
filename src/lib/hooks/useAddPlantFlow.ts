@@ -13,6 +13,7 @@ import { useState, useCallback } from "react";
 import { useAddPlant } from "@/lib/hooks/mutations/usePlantMutations";
 import { useAIService } from "@/lib/hooks/useAIService";
 import { useAnalytics } from "@/lib/hooks/useAnalytics";
+import { logger } from "@/lib/utils/logger";
 import type {
   AddPlantDialogState,
   PlantSearchCandidateDto,
@@ -153,8 +154,13 @@ export function useAddPlantFlow({ planId, cell, onSuccess }: UseAddPlantFlowPara
           searchResults: results.candidates,
           step: "search",
         }));
-      } catch {
+      } catch (error) {
         // Error już obsłużony przez onSearchError callback
+        if (error instanceof Error) {
+          logger.error("Błąd podczas wyszukiwania roślin", { error: error.message });
+        } else {
+          logger.error("Nieoczekiwany błąd podczas wyszukiwania roślin", { error: String(error) });
+        }
       }
     },
     [aiService]
@@ -190,8 +196,13 @@ export function useAddPlantFlow({ planId, cell, onSuccess }: UseAddPlantFlowPara
           fitResult,
           step: "fit_ready",
         }));
-      } catch {
+      } catch (error) {
         // Error już obsłużony przez onFitError callback
+        if (error instanceof Error) {
+          logger.error("Błąd podczas sprawdzania dopasowania rośliny", { error: error.message });
+        } else {
+          logger.error("Nieoczekiwany błąd podczas sprawdzania dopasowania", { error: String(error) });
+        }
         setState((prev) => ({
           ...prev,
           step: "fit_loading",
@@ -237,8 +248,13 @@ export function useAddPlantFlow({ planId, cell, onSuccess }: UseAddPlantFlowPara
           fitResult,
           step: "fit_ready",
         }));
-      } catch {
+      } catch (error) {
         // Error już obsłużony przez onFitError callback
+        if (error instanceof Error) {
+          logger.error("Błąd podczas sprawdzania dopasowania rośliny", { error: error.message });
+        } else {
+          logger.error("Nieoczekiwany błąd podczas sprawdzania dopasowania", { error: String(error) });
+        }
       }
     },
     [planId, cell, aiService]
@@ -348,8 +364,13 @@ export function useAddPlantFlow({ planId, cell, onSuccess }: UseAddPlantFlowPara
       // Reset stanu i callback sukcesu
       setState(initialState);
       onSuccess();
-    } catch {
+    } catch (error) {
       // Error obsłużony przez mutację - nie trzeba nic robić
+      if (error instanceof Error) {
+        logger.error("Błąd podczas dodawania rośliny", { error: error.message });
+      } else {
+        logger.error("Nieoczekiwany błąd podczas dodawania rośliny", { error: String(error) });
+      }
       setState((prev) => ({ ...prev, isSubmitting: false }));
     }
   }, [state, planId, cell, addPlantMutation, sendEvent, onSuccess]);

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Schemat walidacji dla tworzenia nowego planu działki
@@ -7,8 +8,8 @@ import { z } from "zod";
 export const PlanCreateSchema = z
   .object({
     name: z.string().trim().min(1, "Plan name is required"),
-    width_cm: z.number().int().positive("Width must be a positive integer"),
-    height_cm: z.number().int().positive("Height must be a positive integer"),
+    width_m: z.number().positive("Width must be a positive number"),
+    height_m: z.number().positive("Height must be a positive number"),
     cell_size_cm: z.union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)], {
       errorMap: () => ({ message: "Cell size must be 10, 25, 50, or 100 cm" }),
     }),
@@ -22,23 +23,62 @@ export const PlanCreateSchema = z
       .optional(),
   })
   .strict()
-  .refine((data) => data.width_cm % data.cell_size_cm === 0, {
-    message: "Width must be divisible by cell size",
-    path: ["width_cm"],
-  })
-  .refine((data) => data.height_cm % data.cell_size_cm === 0, {
-    message: "Height must be divisible by cell size",
-    path: ["height_cm"],
-  })
   .refine(
     (data) => {
-      const gridWidth = data.width_cm / data.cell_size_cm;
-      const gridHeight = data.height_cm / data.cell_size_cm;
+      // Konwersja metrów na centymetry i sprawdzenie podzielności
+      const widthCm = data.width_m * 100;
+      return widthCm % data.cell_size_cm === 0;
+    },
+    {
+      message: "Width must be divisible by cell size (after conversion to cm)",
+      path: ["width_m"],
+    }
+  )
+  .refine(
+    (data) => {
+      // Konwersja metrów na centymetry i sprawdzenie podzielności
+      const heightCm = data.height_m * 100;
+      return heightCm % data.cell_size_cm === 0;
+    },
+    {
+      message: "Height must be divisible by cell size (after conversion to cm)",
+      path: ["height_m"],
+    }
+  )
+  .refine(
+    (data) => {
+      // Maksymalna wartość: 200m * skala (w metrach)
+      // Skala w metrach = cell_size_cm / 100
+      const scaleInMeters = data.cell_size_cm / 100;
+      const maxDimension = 200 * scaleInMeters;
+      return data.width_m > 0 && data.width_m <= maxDimension;
+    },
+    {
+      message: "Width exceeds maximum allowed dimension",
+      path: ["width_m"],
+    }
+  )
+  .refine(
+    (data) => {
+      // Maksymalna wartość: 200m * skala (w metrach)
+      const scaleInMeters = data.cell_size_cm / 100;
+      const maxDimension = 200 * scaleInMeters;
+      return data.height_m > 0 && data.height_m <= maxDimension;
+    },
+    {
+      message: "Height exceeds maximum allowed dimension",
+      path: ["height_m"],
+    }
+  )
+  .refine(
+    (data) => {
+      const gridWidth = (data.width_m * 100) / data.cell_size_cm;
+      const gridHeight = (data.height_m * 100) / data.cell_size_cm;
       return gridWidth >= 1 && gridWidth <= 200 && gridHeight >= 1 && gridHeight <= 200;
     },
     {
       message: "Calculated grid dimensions must be between 1 and 200",
-      path: ["width_cm"],
+      path: ["width_m"],
     }
   );
 
@@ -184,8 +224,11 @@ export function decodePlanCursor(cursor: string): PlanCursorKey | null {
     try {
       // Spróbuj zdekodować URL - jeśli nie jest URL-encoded, decodeURIComponent zwróci oryginalny string
       decodedCursor = decodeURIComponent(cursor);
-    } catch {
+    } catch (error) {
       // Jeśli dekodowanie URL się nie powiodło, użyj oryginalnego stringa
+      if (error instanceof Error) {
+        logger.warn("Nie udało się zdekodować URL cursor, używam oryginalnego", { error: error.message });
+      }
       decodedCursor = cursor;
     }
 
@@ -204,7 +247,12 @@ export function decodePlanCursor(cursor: string): PlanCursorKey | null {
     }
 
     return null;
-  } catch {
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error("Błąd podczas dekodowania cursor planu", { error: error.message });
+    } else {
+      logger.error("Nieoczekiwany błąd podczas dekodowania cursor planu", { error: String(error) });
+    }
     return null;
   }
 }

@@ -1,6 +1,7 @@
 import type { APIContext } from "astro";
 import type { ApiItemResponse, ApiListResponse, PlanDto } from "@/types";
-import { errorResponse, jsonResponse } from "@/lib/http/errors";
+import { errorResponse, jsonResponse, ValidationError } from "@/lib/http/errors";
+import { logApiError } from "@/lib/http/error-handler";
 import { createPlan, listPlans } from "@/lib/services/plans.service";
 import { PlanCreateSchema, PlanListQuerySchema } from "@/lib/validation/plans";
 import { z } from "zod";
@@ -13,6 +14,10 @@ export const prerender = false;
 export async function POST(ctx: APIContext) {
   const supabase = ctx.locals.supabase;
   if (!supabase) {
+    logApiError(new Error("Supabase client not available"), {
+      endpoint: "POST /api/plans",
+      method: "POST",
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -20,6 +25,10 @@ export async function POST(ctx: APIContext) {
   const { data: userData } = await supabase.auth.getUser();
   const user = userData?.user;
   if (!user) {
+    logApiError(new Error("User not found in session"), {
+      endpoint: "POST /api/plans",
+      method: "POST",
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -27,6 +36,11 @@ export async function POST(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const idParse = idSchema.safeParse(user.id);
   if (!idParse.success) {
+    logApiError(new Error("Invalid user id format"), {
+      endpoint: "POST /api/plans",
+      method: "POST",
+      user_id: user.id,
+    });
     return jsonResponse(errorResponse("UnprocessableEntity", "Invalid user id."), 400);
   }
 
@@ -34,7 +48,12 @@ export async function POST(ctx: APIContext) {
   let requestBody: unknown;
   try {
     requestBody = await ctx.request.json();
-  } catch {
+  } catch (error) {
+    logApiError(error instanceof Error ? error : new Error("Invalid JSON body"), {
+      endpoint: "POST /api/plans",
+      method: "POST",
+      user_id: user.id,
+    });
     return jsonResponse(errorResponse("ValidationError", "Invalid JSON body."), 400);
   }
 
@@ -50,6 +69,12 @@ export async function POST(ctx: APIContext) {
     // Główny komunikat błędu
     const message = bodyParse.error.issues[0]?.message || "Invalid input data.";
 
+    logApiError(new ValidationError(message), {
+      endpoint: "POST /api/plans",
+      method: "POST",
+      user_id: user.id,
+    });
+
     return jsonResponse(errorResponse("ValidationError", message, { field_errors: fieldErrors }), 400);
   }
 
@@ -57,11 +82,26 @@ export async function POST(ctx: APIContext) {
 
   // 4. Utwórz plan
   try {
-    const plan = await createPlan(supabase, user.id, command);
+    // Ensure command has width_cm and height_cm for PlanCreateCommand
+    const { width_m, height_m, ...rest } = command;
+    const planCreateCommand = {
+      ...rest,
+      width_cm: Math.round(width_m * 100),
+      height_cm: Math.round(height_m * 100),
+    };
+
+    const plan = await createPlan(supabase, user.id, planCreateCommand);
 
     const body: ApiItemResponse<PlanDto> = { data: plan };
     return jsonResponse(body, 201);
   } catch (e: unknown) {
+    // Logowanie błędu PRZED zwróceniem odpowiedzi
+    logApiError(e, {
+      endpoint: "POST /api/plans",
+      method: "POST",
+      user_id: user.id,
+    });
+
     // Sprawdź typ błędu
     const error = e as { code?: string; message?: string };
     const msg = String(error?.message ?? "");
@@ -91,6 +131,10 @@ export async function POST(ctx: APIContext) {
 export async function GET(ctx: APIContext) {
   const supabase = ctx.locals.supabase;
   if (!supabase) {
+    logApiError(new Error("Supabase client not available"), {
+      endpoint: "GET /api/plans",
+      method: "GET",
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -98,6 +142,10 @@ export async function GET(ctx: APIContext) {
   const { data: userData } = await supabase.auth.getUser();
   const user = userData?.user;
   if (!user) {
+    logApiError(new Error("User not found in session"), {
+      endpoint: "GET /api/plans",
+      method: "GET",
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -105,6 +153,11 @@ export async function GET(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const idParse = idSchema.safeParse(user.id);
   if (!idParse.success) {
+    logApiError(new Error("Invalid user id format"), {
+      endpoint: "GET /api/plans",
+      method: "GET",
+      user_id: user.id,
+    });
     return jsonResponse(errorResponse("UnprocessableEntity", "Invalid user id."), 400);
   }
 
@@ -126,6 +179,12 @@ export async function GET(ctx: APIContext) {
     // Główny komunikat błędu
     const message = queryParse.error.issues[0]?.message || "Invalid query parameters.";
 
+    logApiError(new ValidationError(message), {
+      endpoint: "GET /api/plans",
+      method: "GET",
+      user_id: user.id,
+    });
+
     return jsonResponse(errorResponse("ValidationError", message, { field_errors: fieldErrors }), 400);
   }
 
@@ -142,6 +201,13 @@ export async function GET(ctx: APIContext) {
 
     return jsonResponse(body, 200);
   } catch (e: unknown) {
+    // Logowanie błędu PRZED zwróceniem odpowiedzi
+    logApiError(e, {
+      endpoint: "GET /api/plans",
+      method: "GET",
+      user_id: user.id,
+    });
+
     // Sprawdź typ błędu
     const error = e as { code?: string; message?: string };
     const msg = String(error?.message ?? "");

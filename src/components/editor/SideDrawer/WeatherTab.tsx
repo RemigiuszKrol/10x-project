@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, RefreshCw, AlertCircle, Cloud } from "lucide-react";
 import { toast } from "sonner";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Props dla WeatherTab
@@ -44,6 +45,7 @@ export function WeatherTab({ planId }: WeatherTabProps): ReactNode {
         command: { force },
       });
 
+      // Sukces - pokaż odpowiedni komunikat
       if (result.refreshed) {
         toast.success("Dane pogodowe zaktualizowane", {
           description: `Pobrano dane dla ${result.months} miesięcy`,
@@ -53,12 +55,13 @@ export function WeatherTab({ planId }: WeatherTabProps): ReactNode {
           description: "Nie było potrzeby pobierania nowych danych",
         });
       }
-    } catch (err) {
-      // Error handled by mutation
-      if (err instanceof Error) {
-        toast.error("Nie udało się odświeżyć danych pogodowych", {
-          description: err.message,
-        });
+    } catch (error) {
+      // Błąd jest automatycznie obsłużony przez handleApiError w mutation onError
+      // Nie trzeba tutaj nic robić
+      if (error instanceof Error) {
+        logger.error("Błąd podczas odświeżania danych pogodowych", { error: error.message, planId });
+      } else {
+        logger.error("Nieoczekiwany błąd podczas odświeżania danych pogodowych", { error: String(error), planId });
       }
     }
   };

@@ -1,3 +1,5 @@
+import { logger } from "@/lib/utils/logger";
+
 export interface PreferenceSummaryProps {
   createdAt: string;
   updatedAt: string;
@@ -15,7 +17,12 @@ export function PreferenceSummary({ createdAt, updatedAt }: PreferenceSummaryPro
         dateStyle: "long",
         timeStyle: "short",
       }).format(date);
-    } catch {
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.warn("Błąd podczas formatowania daty", { error: error.message, isoDate });
+      } else {
+        logger.warn("Nieoczekiwany błąd podczas formatowania daty", { error: String(error), isoDate });
+      }
       return isoDate;
     }
   };

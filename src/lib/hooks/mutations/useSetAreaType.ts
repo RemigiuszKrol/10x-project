@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
 import type { GridAreaTypeCommand, GridAreaTypeResultDto, ApiItemResponse, ApiErrorResponse } from "@/types";
+import { handleApiError, parseHttpError } from "@/lib/utils/toast-error-handler";
 
 /**
  * Parametry mutacji zmiany typu obszaru
@@ -35,22 +36,16 @@ export function useSetAreaType(): UseMutationResult<GridAreaTypeResultDto, Error
         body: JSON.stringify(command),
       });
 
-      // Obsługa błędów HTTP
+      // Obsługa Unauthorized - redirect przed parsowaniem błędu
       if (response.status === 401) {
         window.location.assign("/auth/login");
+        const error = await parseHttpError(response);
+        if (error) throw error;
         throw new Error("Unauthorized");
       }
 
-      if (response.status === 403) {
-        throw new Error("Brak uprawnień do tego planu");
-      }
-
-      if (response.status === 404) {
-        throw new Error("Plan nie został znaleziony");
-      }
-
+      // Specjalna obsługa 409 - wymaga potwierdzenia usunięcia roślin (nie pokazuj toastu)
       if (response.status === 409) {
-        // Konflikt - rośliny w obszarze, wymaga potwierdzenia
         const errorData: ApiErrorResponse = await response.json();
         const error = new Error(
           errorData.error.message || "W zaznaczonym obszarze znajdują się rośliny. Potwierdź ich usunięcie."
@@ -61,18 +56,25 @@ export function useSetAreaType(): UseMutationResult<GridAreaTypeResultDto, Error
         throw error;
       }
 
-      if (response.status === 400 || response.status === 422) {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(errorData.error.message || "Nieprawidłowe parametry obszaru");
+      // Parsuj błąd HTTP (jeśli występuje)
+      const error = await parseHttpError(response);
+      if (error) {
+        throw error;
       }
 
-      if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(errorData.error.message || "Nie udało się zmienić typu obszaru");
-      }
-
+      // Sukces - parsuj odpowiedź
       const result: ApiItemResponse<GridAreaTypeResultDto> = await response.json();
       return result.data;
+    },
+    onError: (error) => {
+      // Sprawdź czy to błąd 409 (wymaga potwierdzenia) - nie pokazuj toastu
+      if (error instanceof Error && (error as Error & { requiresConfirmation?: boolean }).requiresConfirmation) {
+        // Nie pokazuj toastu dla 409 - obsługa w komponencie
+        return;
+      }
+
+      // Automatyczne wyświetlanie toastu dla innych błędów
+      handleApiError(error);
     },
     onSuccess: (data, { planId }) => {
       // Invalidacja cache komórek siatki

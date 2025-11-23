@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 
 import type { AuthResponse, ResetPasswordDto } from "../../../types.ts";
 import { resetPasswordSchema } from "../../../lib/validation/auth.ts";
+import { logError } from "../../../lib/utils/logger.ts";
 
 export const prerender = false;
 
@@ -94,7 +95,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
         "Content-Type": "application/json",
       },
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error) {
+      logError("Błąd podczas resetowania hasła", {
+        endpoint: "POST /api/auth/reset-password",
+        method: "POST",
+        error: error.message,
+        stack: error.stack,
+      });
+    } else {
+      logError("Nieoczekiwany błąd podczas resetowania hasła", {
+        endpoint: "POST /api/auth/reset-password",
+        method: "POST",
+        error: String(error),
+      });
+    }
     const response: AuthResponse = {
       success: false,
       error: {

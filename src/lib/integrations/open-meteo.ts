@@ -35,6 +35,7 @@ export interface OpenMeteoRawResponse {
     sunshine_duration: string;
     relative_humidity_2m_mean: string;
     precipitation_sum: string;
+    temperature_2m_mean: string;
   };
   daily: {
     time: string[]; // ISO dates ["2024-01-01", "2024-01-02", ...]
@@ -42,6 +43,7 @@ export interface OpenMeteoRawResponse {
     sunshine_duration: number[]; // seconds
     relative_humidity_2m_mean: number[]; // %
     precipitation_sum: number[]; // mm
+    temperature_2m_mean: number[]; // °C
   };
 }
 
@@ -75,7 +77,7 @@ export function getLast12MonthsRange(): [string, string] {
  * @throws {UpstreamError} - błąd HTTP lub nieprawidłowa odpowiedź
  * @throws {UpstreamTimeoutError} - timeout podczas zapytania
  */
-export async function fetchWeatherArchive(params: OpenMeteoParams, timeoutMs = 30000): Promise<OpenMeteoRawResponse> {
+export async function fetchWeatherArchive(params: OpenMeteoParams, timeoutMs = 1200): Promise<OpenMeteoRawResponse> {
   const baseUrl = import.meta.env.OPEN_METEO_API_URL || "https://archive-api.open-meteo.com/v1/archive";
   const url = new URL(baseUrl);
 
@@ -86,7 +88,7 @@ export async function fetchWeatherArchive(params: OpenMeteoParams, timeoutMs = 3
   url.searchParams.set("end_date", params.endDate);
   url.searchParams.set(
     "daily",
-    "shortwave_radiation_sum,sunshine_duration,relative_humidity_2m_mean,precipitation_sum"
+    "shortwave_radiation_sum,sunshine_duration,relative_humidity_2m_mean,precipitation_sum,temperature_2m_mean"
   );
   url.searchParams.set("timezone", "auto");
 
@@ -120,6 +122,7 @@ export async function fetchWeatherArchive(params: OpenMeteoParams, timeoutMs = 3
       "sunshine_duration",
       "relative_humidity_2m_mean",
       "precipitation_sum",
+      "temperature_2m_mean",
     ];
     for (const field of requiredFields) {
       if (

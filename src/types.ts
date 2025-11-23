@@ -179,7 +179,7 @@ export interface PlantPlacementUpsertCommand {
  */
 export type WeatherMonthlyDto = Pick<
   DbWeatherMonthly,
-  "year" | "month" | "sunlight" | "humidity" | "precip" | "last_refreshed_at"
+  "year" | "month" | "sunlight" | "humidity" | "precip" | "temperature" | "last_refreshed_at"
 >;
 
 export interface WeatherRefreshCommand {
@@ -314,8 +314,8 @@ export interface PlanLocationFormData {
  * Dane z kroku "Wymiary"
  */
 export interface PlanDimensionsFormData {
-  width_cm: number;
-  height_cm: number;
+  width_m: number;
+  height_m: number;
   cell_size_cm: 10 | 25 | 50 | 100;
   orientation: number; // 0..359
   hemisphere: "northern" | "southern";
@@ -406,8 +406,8 @@ export const DEFAULT_FORM_DATA: Partial<PlanCreateFormData> = {
   latitude: undefined,
   longitude: undefined,
   address: undefined,
-  width_cm: 1000,
-  height_cm: 1000,
+  width_m: 10,
+  height_m: 10,
   cell_size_cm: 25,
   orientation: 0,
   hemisphere: "northern",
@@ -426,7 +426,7 @@ export const DRAFT_VERSION = 1;
 /**
  * Narzędzie edytora
  */
-export type EditorTool = "select" | "add_plant" | "change_type";
+export type EditorTool = "select" | "add_plant";
 
 /**
  * Pozycja komórki

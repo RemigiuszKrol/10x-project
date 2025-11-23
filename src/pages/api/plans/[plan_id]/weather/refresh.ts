@@ -18,7 +18,8 @@
 
 import type { APIContext } from "astro";
 import type { ApiItemResponse, WeatherRefreshResultDto } from "@/types";
-import { errorResponse, jsonResponse } from "@/lib/http/errors";
+import { errorResponse, jsonResponse, ValidationError } from "@/lib/http/errors";
+import { logApiError } from "@/lib/http/error-handler";
 import {
   PlanNotFoundError,
   PlanMissingLocationError,
@@ -41,6 +42,11 @@ export async function POST(ctx: APIContext) {
 
   // 1. Sprawdź dostępność klienta Supabase
   if (!supabase) {
+    logApiError(new Error("Supabase client not available"), {
+      endpoint: "POST /api/plans/:plan_id/weather/refresh",
+      method: "POST",
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("InternalError", "Configuration error."), 500);
   }
 
@@ -48,11 +54,21 @@ export async function POST(ctx: APIContext) {
   const { data: userData, error: authError } = await supabase.auth.getUser();
 
   if (authError) {
+    logApiError(authError, {
+      endpoint: "POST /api/plans/:plan_id/weather/refresh",
+      method: "POST",
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
   const user = userData?.user;
   if (!user) {
+    logApiError(new Error("User not found in session"), {
+      endpoint: "POST /api/plans/:plan_id/weather/refresh",
+      method: "POST",
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("Unauthorized", "Authentication required."), 401);
   }
 
@@ -60,6 +76,12 @@ export async function POST(ctx: APIContext) {
   const idSchema = z.string().uuid();
   const idParse = idSchema.safeParse(user.id);
   if (!idParse.success) {
+    logApiError(new Error("Invalid user id format"), {
+      endpoint: "POST /api/plans/:plan_id/weather/refresh",
+      method: "POST",
+      user_id: user.id,
+      params: { plan_id: ctx.params.plan_id },
+    });
     return jsonResponse(errorResponse("InternalError", "Invalid user id."), 500);
   }
 
@@ -70,6 +92,13 @@ export async function POST(ctx: APIContext) {
       plan_id: paramsParse.error.issues[0]?.message || "Invalid plan_id format",
     };
 
+    logApiError(new ValidationError("Invalid plan_id format", "plan_id"), {
+      endpoint: "POST /api/plans/:plan_id/weather/refresh",
+      method: "POST",
+      user_id: user.id,
+      params: { plan_id: ctx.params.plan_id },
+    });
+
     return jsonResponse(errorResponse("ValidationError", "Invalid plan_id format", { field_errors: fieldErrors }), 400);
   }
 
@@ -78,8 +107,16 @@ export async function POST(ctx: APIContext) {
   // 5. Check rate limit PRZED parsowaniem body (optymalizacja)
   const rateLimitCheck = weatherRefreshLimiter.check(planId);
   if (!rateLimitCheck.allowed) {
-    const retryAfter = rateLimitCheck.retryAfter ?? 900; // default 15 min
+    const retryAfter = rateLimitCheck.retryAfter ?? 120; // default 2 min
     const retryMinutes = Math.ceil(retryAfter / 60);
+
+    logApiError(new Error("Rate limit exceeded"), {
+      endpoint: "POST /api/plans/:plan_id/weather/refresh",
+      method: "POST",
+      user_id: user.id,
+      params: { plan_id: planId },
+    });
+
     return new Response(
       JSON.stringify(
         errorResponse(
@@ -101,7 +138,13 @@ export async function POST(ctx: APIContext) {
   let requestBody: unknown;
   try {
     requestBody = await ctx.request.json();
-  } catch {
+  } catch (error) {
+    logApiError(error instanceof Error ? error : new Error("Invalid JSON in request body"), {
+      endpoint: "POST /api/plans/:plan_id/weather/refresh",
+      method: "POST",
+      user_id: user.id,
+      params: { plan_id: planId },
+    });
     return jsonResponse(errorResponse("ValidationError", "Invalid JSON in request body."), 400);
   }
 
@@ -114,6 +157,14 @@ export async function POST(ctx: APIContext) {
     }
 
     const message = bodyParse.error.issues[0]?.message || "Invalid request data.";
+
+    logApiError(new ValidationError(message), {
+      endpoint: "POST /api/plans/:plan_id/weather/refresh",
+      method: "POST",
+      user_id: user.id,
+      params: { plan_id: planId },
+    });
+
     return jsonResponse(errorResponse("ValidationError", message, { field_errors: fieldErrors }), 400);
   }
 
@@ -128,6 +179,14 @@ export async function POST(ctx: APIContext) {
     const body: ApiItemResponse<WeatherRefreshResultDto> = { data: result };
     return jsonResponse(body, 200);
   } catch (error) {
+    // Logowanie błędu PRZED zwróceniem odpowiedzi
+    logApiError(error, {
+      endpoint: "POST /api/plans/:plan_id/weather/refresh",
+      method: "POST",
+      user_id: user.id,
+      params: { plan_id: planId },
+    });
+
     return handleWeatherServiceError(error);
   }
 }

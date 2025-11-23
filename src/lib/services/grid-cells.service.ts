@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@/db/supabase.client";
 import type { GridCellDto, ApiListResponse, GridCellType, GridCellUpdateCommand } from "@/types";
 import { ValidationError } from "@/lib/http/errors";
-import { parseGridCursor, encodeGridCursor, type GridCellCursorPayload } from "@/lib/validation/grid";
+import { parseGridCursor, type GridCellCursorPayload } from "@/lib/validation/grid";
 
 /**
  * Parametry dla funkcji listGridCells
@@ -12,7 +12,6 @@ export interface ListGridCellsParams {
   x?: number;
   y?: number;
   bbox?: [number, number, number, number];
-  limit: number;
   cursor?: string;
   sort: "updated_at" | "x";
   order: "asc" | "desc";
@@ -39,7 +38,7 @@ export async function listGridCells(
   userId: string,
   params: ListGridCellsParams
 ): Promise<ApiListResponse<GridCellDto>> {
-  const { planId, type, x, y, bbox, limit, cursor, sort, order } = params;
+  const { planId, type, x, y, bbox, cursor, sort, order } = params;
 
   // 1. Pobierz plan i zweryfikuj wymiary siatki (potrzebne do walidacji zakresów)
   const { data: planData, error: planError } = await supabase
@@ -146,9 +145,6 @@ export async function listGridCells(
     query = query.order("updated_at", { ascending: false });
   }
 
-  // 7. Pobierz limit+1 rekordów dla detekcji następnej strony
-  query = query.limit(limit + 1);
-
   // 8. Wykonaj zapytanie
   const { data: cells, error: cellsError } = await query;
 
@@ -170,20 +166,10 @@ export async function listGridCells(
   const typedCells = cells as CellRow[];
 
   // 9. Wykryj czy jest następna strona
-  const hasNextPage = typedCells.length > limit;
-  const dataToReturn = hasNextPage ? typedCells.slice(0, limit) : typedCells;
+  const dataToReturn = typedCells;
 
   // 10. Wygeneruj kursor dla następnej strony
-  let nextCursor: string | null = null;
-  if (hasNextPage) {
-    const lastItem = dataToReturn[dataToReturn.length - 1];
-    const cursorPayload: GridCellCursorPayload = {
-      updated_at: lastItem.updated_at,
-      x: lastItem.x,
-      y: lastItem.y,
-    };
-    nextCursor = encodeGridCursor(cursorPayload);
-  }
+  const nextCursor: string | null = null;
 
   // 11. Mapuj dane do DTO (już są w odpowiednim formacie)
   const dtoData: GridCellDto[] = dataToReturn.map((cell) => ({

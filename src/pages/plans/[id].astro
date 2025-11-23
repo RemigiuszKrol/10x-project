@@ -73,8 +73,7 @@ try {
   gridMetadata = gridData.data;
 
   // 3. GET /api/plans/:id/grid/cells - początkowa partia komórek
-  // Pobieramy pierwszą "stronę" komórek (bez filtrów, limit 100)
-  const cellsResponse = await fetch(`${Astro.url.origin}/api/plans/${planId}/grid/cells?limit=100`, {
+  const cellsResponse = await fetch(`${Astro.url.origin}/api/plans/${planId}/grid/cells`, {
     headers: {
       Cookie: Astro.request.headers.get("Cookie") || "",
     },

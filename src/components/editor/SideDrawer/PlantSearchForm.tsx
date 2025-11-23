@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Search, Sprout, AlertCircle, Info } from "lucide-react";
 import { toast } from "sonner";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Props dla PlantSearchForm
@@ -60,8 +61,13 @@ export function PlantSearchForm({ planId, selectedCell, cellType, onPlantAdded }
 
     try {
       await searchPlants.mutateAsync({ query: query.trim() });
-    } catch {
+    } catch (error) {
       // Error handled by mutation
+      if (error instanceof Error) {
+        logger.error("Błąd podczas wyszukiwania roślin", { error: error.message, query: query.trim() });
+      } else {
+        logger.error("Nieoczekiwany błąd podczas wyszukiwania roślin", { error: String(error), query: query.trim() });
+      }
     }
   };
 
@@ -84,8 +90,25 @@ export function PlantSearchForm({ planId, selectedCell, cellType, onPlantAdded }
         y: selectedCell.y,
         plant_name: candidate.name,
       });
-    } catch {
+    } catch (error) {
       // Error handled by mutation
+      if (error instanceof Error) {
+        logger.error("Błąd podczas sprawdzania dopasowania rośliny", {
+          error: error.message,
+          planId,
+          x: selectedCell.x,
+          y: selectedCell.y,
+          plantName: candidate.name,
+        });
+      } else {
+        logger.error("Nieoczekiwany błąd podczas sprawdzania dopasowania rośliny", {
+          error: String(error),
+          planId,
+          x: selectedCell.x,
+          y: selectedCell.y,
+          plantName: candidate.name,
+        });
+      }
     }
   };
 

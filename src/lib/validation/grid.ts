@@ -38,7 +38,7 @@ export const gridCellsQuerySchema = z
       }),
 
     // Paginacja
-    limit: z.coerce.number().int().min(1).max(100).default(50),
+    limit: z.coerce.number().int().optional(),
     cursor: z.string().optional(),
 
     // Sortowanie

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,7 +19,7 @@ export interface PlanCreatorStepDimensionsProps {
  * Krok 3: Wymiary - rozmiar, orientacja i półkula
  *
  * Funkcje:
- * - Inputy dla wymiarów (width_cm, height_cm)
+ * - Inputy dla wymiarów (width_m, height_m) w metrach
  * - Select dla jednostki kratki (cell_size_cm)
  * - OrientationCompass - wizualizacja orientacji
  * - Select dla półkuli
@@ -28,13 +29,30 @@ export interface PlanCreatorStepDimensionsProps {
  */
 export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensions }: PlanCreatorStepDimensionsProps) {
   /**
+   * Oblicza maksymalną wartość dla danej skali (200m * skala)
+   */
+  const maxDimension = useMemo(() => {
+    if (!data.cell_size_cm) return 200;
+    const scaleInMeters = data.cell_size_cm / 100;
+    return 200 * scaleInMeters;
+  }, [data.cell_size_cm]);
+
+  /**
+   * Oblicza krok dla inputu (musi być podzielny przez skale)
+   */
+  const stepValue = useMemo(() => {
+    if (!data.cell_size_cm) return 0.1;
+    return data.cell_size_cm / 100;
+  }, [data.cell_size_cm]);
+
+  /**
    * Obsługa zmiany szerokości
    */
   const handleWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
+    const value = parseFloat(e.target.value);
     onChange({
       ...data,
-      width_cm: isNaN(value) ? 0 : value,
+      width_m: isNaN(value) ? 0 : value,
     });
   };
 
@@ -42,10 +60,10 @@ export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensio
    * Obsługa zmiany wysokości
    */
   const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
+    const value = parseFloat(e.target.value);
     onChange({
       ...data,
-      height_cm: isNaN(value) ? 0 : value,
+      height_m: isNaN(value) ? 0 : value,
     });
   };
 
@@ -99,66 +117,66 @@ export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensio
 
             {/* Szerokość */}
             <div className="space-y-2">
-              <Label htmlFor="width-cm">
-                Szerokość (cm)
+              <Label htmlFor="width-m">
+                Szerokość (m)
                 <span className="text-red-500 ml-1" aria-label="wymagane">
                   *
                 </span>
               </Label>
               <Input
-                id="width-cm"
+                id="width-m"
                 type="number"
-                min={10}
-                max={20000}
-                step={data.cell_size_cm}
-                value={data.width_cm || ""}
+                min={stepValue}
+                max={maxDimension}
+                step={stepValue}
+                value={data.width_m || ""}
                 onChange={handleWidthChange}
-                placeholder="np. 1000"
-                aria-describedby={errors.width_cm ? "width-error" : "width-help"}
-                aria-invalid={!!errors.width_cm}
-                className={errors.width_cm ? "border-red-500" : ""}
+                placeholder={`np. ${maxDimension.toFixed(1)}`}
+                aria-describedby={errors.width_m ? "width-error" : "width-help"}
+                aria-invalid={!!errors.width_m}
+                className={errors.width_m ? "border-red-500" : ""}
               />
-              {errors.width_cm && (
+              {errors.width_m && (
                 <p id="width-error" className="text-sm text-red-600 dark:text-red-400" role="alert">
-                  {errors.width_cm}
+                  {errors.width_m}
                 </p>
               )}
-              {!errors.width_cm && (
+              {!errors.width_m && (
                 <p id="width-help" className="text-sm text-muted-foreground">
-                  Szerokość działki w centymetrach
+                  Szerokość działki w metrach (max: {maxDimension.toFixed(1)}m dla skali {data.cell_size_cm}cm)
                 </p>
               )}
             </div>
 
             {/* Wysokość */}
             <div className="space-y-2">
-              <Label htmlFor="height-cm">
-                Wysokość (cm)
+              <Label htmlFor="height-m">
+                Wysokość (m)
                 <span className="text-red-500 ml-1" aria-label="wymagane">
                   *
                 </span>
               </Label>
               <Input
-                id="height-cm"
+                id="height-m"
                 type="number"
-                min={10}
-                max={20000}
-                step={data.cell_size_cm}
-                value={data.height_cm || ""}
+                min={stepValue}
+                max={maxDimension}
+                step={stepValue}
+                value={data.height_m || ""}
                 onChange={handleHeightChange}
-                placeholder="np. 1500"
-                aria-describedby={errors.height_cm ? "height-error" : "height-help"}
-                aria-invalid={!!errors.height_cm}
-                className={errors.height_cm ? "border-red-500" : ""}
+                placeholder={`np. ${maxDimension.toFixed(1)}`}
+                aria-describedby={errors.height_m ? "height-error" : "height-help"}
+                aria-invalid={!!errors.height_m}
+                className={errors.height_m ? "border-red-500" : ""}
               />
-              {errors.height_cm && (
+              {errors.height_m && (
                 <p id="height-error" className="text-sm text-red-600 dark:text-red-400" role="alert">
-                  {errors.height_cm}
+                  {errors.height_m}
                 </p>
               )}
-              {!errors.height_cm && (
+              {!errors.height_m && (
                 <p id="height-help" className="text-sm text-muted-foreground">
-                  Wysokość działki w centymetrach
+                  Wysokość działki w metrach (max: {maxDimension.toFixed(1)}m dla skali {data.cell_size_cm}cm)
                 </p>
               )}
             </div>
@@ -221,8 +239,8 @@ export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensio
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Podgląd siatki</h3>
 
-          {/* GridPreview */}
-          {data.width_cm > 0 && data.height_cm > 0 && (
+          {/* GridPreview - renderuj tylko gdy wymiary są prawidłowe */}
+          {data.width_m > 0 && data.height_m > 0 && gridDimensions.isValid && (
             <GridPreview
               gridWidth={gridDimensions.gridWidth}
               gridHeight={gridDimensions.gridHeight}
@@ -232,7 +250,7 @@ export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensio
           )}
 
           {/* Ostrzeżenie o wymiarach */}
-          {data.width_cm === 0 || data.height_cm === 0 ? (
+          {data.width_m === 0 || data.height_m === 0 ? (
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>Wprowadź wymiary działki aby zobaczyć podgląd siatki</AlertDescription>
@@ -255,10 +273,15 @@ export function PlanCreatorStepDimensions({ data, onChange, errors, gridDimensio
       <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
         <h3 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">💡 Wskazówka</h3>
         <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1 list-disc list-inside">
-          <li>Wymiary muszą być podzielne przez rozmiar kratki</li>
+          <li>Wymiary wprowadzasz w metrach (m)</li>
+          <li>
+            Maksymalna wartość: {maxDimension.toFixed(1)}m dla skali {data.cell_size_cm}cm (200m × skala)
+          </li>
+          <li>Wymiary muszą być podzielne przez rozmiar kratki (krok: {stepValue.toFixed(2)}m)</li>
           <li>Siatka nie może przekroczyć 200 × 200 pól (ograniczenie techniczne)</li>
           <li>Mniejszy rozmiar kratki = większa precyzja, ale większa liczba pól</li>
           <li>Orientacja 0° oznacza, że górna krawędź działki skierowana jest na północ</li>
+          <li>Zmiana skali automatycznie przeskaluje wymiary działki</li>
         </ul>
       </div>
     </div>

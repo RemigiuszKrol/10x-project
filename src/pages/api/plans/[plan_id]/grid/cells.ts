@@ -117,7 +117,6 @@ export async function GET(ctx: APIContext): Promise<Response> {
       x: query.x,
       y: query.y,
       bbox: query.bbox,
-      limit: query.limit,
       cursor: query.cursor,
       sort: query.sort,
       order: query.order,

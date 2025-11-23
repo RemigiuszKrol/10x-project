@@ -9,6 +9,36 @@ import type {
 } from "@/types";
 
 /**
+ * Bezpiecznie parsuje odpowiedź jako JSON
+ * Obsługuje przypadki, gdy odpowiedź nie jest w formacie JSON
+ */
+async function safeParseJson<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get("content-type");
+  const isJson = contentType?.includes("application/json");
+
+  const text = await response.text();
+
+  if (!isJson) {
+    throw new Error(
+      `Oczekiwano odpowiedzi JSON, otrzymano: ${contentType || "unknown"}. Treść: ${text.substring(0, 100)}`
+    );
+  }
+
+  if (!text.trim()) {
+    throw new Error("Odpowiedź jest pusta");
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(`Błąd parsowania JSON: ${error.message}. Treść odpowiedzi: ${text.substring(0, 200)}`);
+    }
+    throw error;
+  }
+}
+
+/**
  * React Query mutation do wyszukiwania roślin przez AI
  *
  * Endpoint: POST /api/ai/plants/search
@@ -45,8 +75,15 @@ export function useSearchPlants(): UseMutationResult<PlantSearchResultDto, Error
         }
 
         if (response.status === 429) {
-          const errorData: ApiErrorResponse = await response.json();
-          throw new Error(errorData.error.message || "Zbyt wiele żądań. Spróbuj ponownie za chwilę.");
+          try {
+            const errorData: ApiErrorResponse = await safeParseJson<ApiErrorResponse>(response);
+            throw new Error(errorData.error.message || "Zbyt wiele żądań. Spróbuj ponownie za chwilę.");
+          } catch (error) {
+            if (error instanceof Error && error.message.includes("Błąd parsowania JSON")) {
+              throw new Error("Zbyt wiele żądań. Spróbuj ponownie za chwilę.");
+            }
+            throw error;
+          }
         }
 
         if (response.status === 504) {
@@ -54,16 +91,31 @@ export function useSearchPlants(): UseMutationResult<PlantSearchResultDto, Error
         }
 
         if (response.status === 400) {
-          const errorData: ApiErrorResponse = await response.json();
-          throw new Error(errorData.error.message || "Nieprawidłowe zapytanie");
+          try {
+            const errorData: ApiErrorResponse = await safeParseJson<ApiErrorResponse>(response);
+            throw new Error(errorData.error.message || "Nieprawidłowe zapytanie");
+          } catch (error) {
+            if (error instanceof Error && error.message.includes("Błąd parsowania JSON")) {
+              throw new Error("Nieprawidłowe zapytanie");
+            }
+            throw error;
+          }
         }
 
         if (!response.ok) {
-          const errorData: ApiErrorResponse = await response.json();
-          throw new Error(errorData.error.message || "Nie udało się wyszukać roślin");
+          try {
+            const errorData: ApiErrorResponse = await safeParseJson<ApiErrorResponse>(response);
+            throw new Error(errorData.error.message || "Nie udało się wyszukać roślin");
+          } catch (error) {
+            if (error instanceof Error && error.message.includes("Błąd parsowania JSON")) {
+              throw new Error(`Nie udało się wyszukać roślin (HTTP ${response.status})`);
+            }
+            throw error;
+          }
         }
 
-        const result: ApiItemResponse<PlantSearchResultDto> = await response.json();
+        const result: ApiItemResponse<PlantSearchResultDto> =
+          await safeParseJson<ApiItemResponse<PlantSearchResultDto>>(response);
         return result.data;
       } catch (error) {
         clearTimeout(timeoutId);
@@ -120,13 +172,27 @@ export function useCheckPlantFit(): UseMutationResult<PlantFitResultDto, Error, 
         }
 
         if (response.status === 422) {
-          const errorData: ApiErrorResponse = await response.json();
-          throw new Error(errorData.error.message || "Nieprawidłowe współrzędne");
+          try {
+            const errorData: ApiErrorResponse = await safeParseJson<ApiErrorResponse>(response);
+            throw new Error(errorData.error.message || "Nieprawidłowe współrzędne");
+          } catch (error) {
+            if (error instanceof Error && error.message.includes("Błąd parsowania JSON")) {
+              throw new Error("Nieprawidłowe współrzędne");
+            }
+            throw error;
+          }
         }
 
         if (response.status === 429) {
-          const errorData: ApiErrorResponse = await response.json();
-          throw new Error(errorData.error.message || "Zbyt wiele żądań. Spróbuj ponownie za chwilę.");
+          try {
+            const errorData: ApiErrorResponse = await safeParseJson<ApiErrorResponse>(response);
+            throw new Error(errorData.error.message || "Zbyt wiele żądań. Spróbuj ponownie za chwilę.");
+          } catch (error) {
+            if (error instanceof Error && error.message.includes("Błąd parsowania JSON")) {
+              throw new Error("Zbyt wiele żądań. Spróbuj ponownie za chwilę.");
+            }
+            throw error;
+          }
         }
 
         if (response.status === 504) {
@@ -134,16 +200,31 @@ export function useCheckPlantFit(): UseMutationResult<PlantFitResultDto, Error, 
         }
 
         if (response.status === 400) {
-          const errorData: ApiErrorResponse = await response.json();
-          throw new Error(errorData.error.message || "Nieprawidłowe dane zapytania");
+          try {
+            const errorData: ApiErrorResponse = await safeParseJson<ApiErrorResponse>(response);
+            throw new Error(errorData.error.message || "Nieprawidłowe dane zapytania");
+          } catch (error) {
+            if (error instanceof Error && error.message.includes("Błąd parsowania JSON")) {
+              throw new Error("Nieprawidłowe dane zapytania");
+            }
+            throw error;
+          }
         }
 
         if (!response.ok) {
-          const errorData: ApiErrorResponse = await response.json();
-          throw new Error(errorData.error.message || "Nie udało się sprawdzić dopasowania rośliny");
+          try {
+            const errorData: ApiErrorResponse = await safeParseJson<ApiErrorResponse>(response);
+            throw new Error(errorData.error.message || "Nie udało się sprawdzić dopasowania rośliny");
+          } catch (error) {
+            if (error instanceof Error && error.message.includes("Błąd parsowania JSON")) {
+              throw new Error(`Nie udało się sprawdzić dopasowania rośliny (HTTP ${response.status})`);
+            }
+            throw error;
+          }
         }
 
-        const result: ApiItemResponse<PlantFitResultDto> = await response.json();
+        const result: ApiItemResponse<PlantFitResultDto> =
+          await safeParseJson<ApiItemResponse<PlantFitResultDto>>(response);
         return result.data;
       } catch (error) {
         clearTimeout(timeoutId);

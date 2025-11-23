@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
-import type { WeatherRefreshCommand, WeatherRefreshResultDto, ApiItemResponse, ApiErrorResponse } from "@/types";
+import type { WeatherRefreshCommand, WeatherRefreshResultDto, ApiItemResponse } from "@/types";
+import { handleApiError, parseHttpError } from "@/lib/utils/toast-error-handler";
 
 /**
  * Parametry mutacji odświeżenia pogody
@@ -32,38 +33,27 @@ export function useRefreshWeather(): UseMutationResult<WeatherRefreshResultDto, 
         body: JSON.stringify(command),
       });
 
-      // Obsługa błędów HTTP
+      // Obsługa Unauthorized - redirect przed parsowaniem błędu
       if (response.status === 401) {
         window.location.assign("/auth/login");
+        const error = await parseHttpError(response);
+        if (error) throw error;
         throw new Error("Unauthorized");
       }
 
-      if (response.status === 403) {
-        throw new Error("Brak uprawnień do tego planu");
+      // Parsuj błąd HTTP (jeśli występuje)
+      const error = await parseHttpError(response);
+      if (error) {
+        throw error;
       }
 
-      if (response.status === 404) {
-        throw new Error("Plan nie został znaleziony");
-      }
-
-      if (response.status === 429) {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(
-          errorData.error.message || "Zbyt częste odświeżanie danych pogodowych. Spróbuj ponownie później."
-        );
-      }
-
-      if (response.status === 502 || response.status === 504) {
-        throw new Error("Serwis pogodowy nie odpowiada. Spróbuj ponownie za chwilę.");
-      }
-
-      if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(errorData.error.message || "Nie udało się odświeżyć danych pogodowych");
-      }
-
+      // Sukces - parsuj odpowiedź
       const result: ApiItemResponse<WeatherRefreshResultDto> = await response.json();
       return result.data;
+    },
+    onError: (error) => {
+      // Automatyczne wyświetlanie toastu dla błędów
+      handleApiError(error);
     },
     onSuccess: (data, { planId }) => {
       // Invalidacja cache pogody - dane zostały odświeżone

@@ -62,7 +62,19 @@ export class InMemoryRateLimiter {
  */
 export const weatherRefreshLimiter = new InMemoryRateLimiter(15 * 60 * 1000);
 
+/**
+ * Singleton instance dla AI endpoints rate limiting
+ * Limit: 10 requestów na minutę per user
+ */
+export const aiEndpointsLimiter = new InMemoryRateLimiter(60 * 1000); // 1 minuta
+
 // Periodic cleanup co godzinę
 if (typeof setInterval !== "undefined") {
-  setInterval(() => weatherRefreshLimiter.cleanup(), 60 * 60 * 1000);
+  setInterval(
+    () => {
+      weatherRefreshLimiter.cleanup();
+      aiEndpointsLimiter.cleanup();
+    },
+    60 * 60 * 1000
+  );
 }

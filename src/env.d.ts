@@ -19,6 +19,7 @@ interface ImportMetaEnv {
   readonly SUPABASE_KEY: string;
   readonly OPENROUTER_API_KEY: string;
   readonly OPEN_METEO_API_URL?: string;
+  readonly ENABLE_ERROR_LOGGING?: string; // "true" | "false" | undefined (domyślnie "true")
   // more env variables...
 }
 

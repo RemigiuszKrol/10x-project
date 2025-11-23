@@ -14,9 +14,6 @@ export interface EditorTopbarProps {
   cellSizeCm: number;
   currentTool: EditorTool;
   onToolChange: (tool: EditorTool) => void;
-  onSave: () => Promise<void>;
-  isSaving: boolean;
-  hasUnsavedChanges: boolean;
   isLoading?: boolean;
 }
 
@@ -38,9 +35,6 @@ export function EditorTopbar({
   cellSizeCm,
   currentTool,
   onToolChange,
-  onSave,
-  isSaving,
-  hasUnsavedChanges,
   isLoading,
 }: EditorTopbarProps): ReactNode {
   return (
@@ -66,13 +60,7 @@ export function EditorTopbar({
 
         {/* Center: Toolbar */}
         <div className="flex-shrink-0">
-          <EditorToolbar
-            currentTool={currentTool}
-            onToolChange={onToolChange}
-            onSave={onSave}
-            isSaving={isSaving}
-            hasUnsavedChanges={hasUnsavedChanges}
-          />
+          <EditorToolbar currentTool={currentTool} onToolChange={onToolChange} />
         </div>
 
         {/* Right: Status indicators - TODO */}

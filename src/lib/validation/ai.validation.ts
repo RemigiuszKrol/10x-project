@@ -2,12 +2,31 @@
  * Moduł AI - Validation Layer
  *
  * Zod schemas dla walidacji request/response AI:
+ * - PlantSearchCommand
+ * - PlantFitCommand
  * - PlantSearchResult
  * - PlantFitResult
  * - Sanity-check odpowiedzi
  */
 
 import { z } from "zod";
+
+/**
+ * Schema dla request body wyszukiwania roślin
+ */
+export const PlantSearchCommandSchema = z.object({
+  query: z.string().trim().min(1, "Query nie może być pusty").max(200, "Query jest zbyt długi"),
+});
+
+/**
+ * Schema dla request body oceny dopasowania rośliny
+ */
+export const PlantFitCommandSchema = z.object({
+  plan_id: z.string().uuid("plan_id musi być prawidłowym UUID"),
+  x: z.number().int().min(0, "x musi być nieujemną liczbą całkowitą"),
+  y: z.number().int().min(0, "y musi być nieujemną liczbą całkowitą"),
+  plant_name: z.string().trim().min(1, "plant_name nie może być pusty").max(200, "plant_name jest zbyt długi"),
+});
 
 /**
  * Schema dla pojedynczego kandydata z wyszukiwania

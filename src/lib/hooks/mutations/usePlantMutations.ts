@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
-import type { PlantPlacementDto, PlantPlacementUpsertCommand, ApiItemResponse, ApiErrorResponse } from "@/types";
+import type { PlantPlacementDto, PlantPlacementUpsertCommand, ApiItemResponse } from "@/types";
+import { handleApiError, parseHttpError } from "@/lib/utils/toast-error-handler";
 
 /**
  * Parametry mutacji dodania/aktualizacji rośliny
@@ -41,37 +42,27 @@ export function useAddPlant(): UseMutationResult<PlantPlacementDto, Error, AddPl
         body: JSON.stringify(command),
       });
 
-      // Obsługa błędów HTTP
+      // Obsługa Unauthorized - redirect przed parsowaniem błędu
       if (response.status === 401) {
         window.location.assign("/auth/login");
+        const error = await parseHttpError(response);
+        if (error) throw error;
         throw new Error("Unauthorized");
       }
 
-      if (response.status === 403) {
-        throw new Error("Brak uprawnień do tego planu");
+      // Parsuj błąd HTTP (jeśli występuje)
+      const error = await parseHttpError(response);
+      if (error) {
+        throw error;
       }
 
-      if (response.status === 404) {
-        throw new Error("Plan nie został znaleziony");
-      }
-
-      if (response.status === 422) {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(errorData.error.message || "Rośliny można dodawać tylko na pola typu 'ziemia'");
-      }
-
-      if (response.status === 400) {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(errorData.error.message || "Nieprawidłowe dane rośliny");
-      }
-
-      if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(errorData.error.message || "Nie udało się dodać rośliny");
-      }
-
+      // Sukces - parsuj odpowiedź
       const result: ApiItemResponse<PlantPlacementDto> = await response.json();
       return result.data;
+    },
+    onError: (error) => {
+      // Automatyczne wyświetlanie toastu dla błędów
+      handleApiError(error);
     },
     onSuccess: (data, { planId }) => {
       // Invalidacja cache roślin
@@ -100,26 +91,25 @@ export function useRemovePlant(): UseMutationResult<void, Error, RemovePlantPara
         credentials: "include",
       });
 
-      // Obsługa błędów HTTP
+      // Obsługa Unauthorized - redirect przed parsowaniem błędu
       if (response.status === 401) {
         window.location.assign("/auth/login");
+        const error = await parseHttpError(response);
+        if (error) throw error;
         throw new Error("Unauthorized");
       }
 
-      if (response.status === 403) {
-        throw new Error("Brak uprawnień do tego planu");
-      }
-
-      if (response.status === 404) {
-        throw new Error("Plan lub roślina nie została znaleziona");
-      }
-
-      if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(errorData.error.message || "Nie udało się usunąć rośliny");
+      // Parsuj błąd HTTP (jeśli występuje)
+      const error = await parseHttpError(response);
+      if (error) {
+        throw error;
       }
 
       // 204 No Content - brak zwracanej treści
+    },
+    onError: (error) => {
+      // Automatyczne wyświetlanie toastu dla błędów
+      handleApiError(error);
     },
     onSuccess: (data, { planId }) => {
       // Invalidacja cache roślin

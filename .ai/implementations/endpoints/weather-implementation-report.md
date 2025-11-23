@@ -79,6 +79,7 @@ Funkcjonalności:
 - `sunshine_duration` - czas nasłonecznienia (sekundy)
 - `relative_humidity_2m_mean` - średnia wilgotność względna (%)
 - `precipitation_sum` - suma opadów (mm)
+- `temperature_2m_mean` - średnia temperatura dzienna (°C)
 
 ### 2.6 Weather Service
 
@@ -101,6 +102,7 @@ Główna logika biznesowa:
   - **Sunlight:** weighted average - radiation (60%) + sunshine (40%)
   - **Humidity:** już w skali 0-100
   - **Precipitation:** normalizacja 0-300mm/miesiąc → 0-100
+  - **Temperature:** normalizacja -30°C do +50°C → 0-100
 - `saveWeatherData()` - batch upsert z `ON CONFLICT UPDATE`
 
 **Eksportowana funkcja pomocnicza:**
@@ -432,5 +434,31 @@ Endpoint jest zgodny z istniejącym wzorcem API w projekcie:
 ---
 
 **Implementacja zakończona:** 2025-11-21  
+**Rozszerzenie o temperaturę:** 2025-01-21  
 **Implementowane przez:** AI Assistant (Claude Sonnet 4.5)  
 **Zgodność z planem:** 100%
+
+## 16. Rozszerzenie: Średnia temperatura miesięczna (2025-01-21)
+
+### 16.1 Zmiany
+
+Dodano obsługę średniej temperatury miesięcznej:
+- Migracja bazy danych: kolumna `temperature` (smallint, 0-100, NOT NULL DEFAULT 0)
+- Integracja Open-Meteo: parametr `temperature_2m_mean` (°C)
+- Normalizacja: -30°C do +50°C → 0-100
+- Frontend: wyświetlanie w tabeli i wykresie (oba warianty: znormalizowany i °C)
+
+### 16.2 Decyzje projektowe
+
+- **Zakres normalizacji:** -30°C do +50°C (szerszy zakres dla lepszego pokrycia ekstremów)
+- **Strategia dla istniejących rekordów:** Wartość domyślna 0
+- **Format wyświetlania:** Oba warianty - znormalizowany (0-100) i rzeczywisty (°C)
+
+### 16.3 Zmodyfikowane pliki
+
+1. `supabase/migrations/20250121120000_add_temperature_to_weather_monthly.sql` - migracja
+2. `src/lib/integrations/open-meteo.ts` - dodano `temperature_2m_mean`
+3. `src/lib/services/weather.service.ts` - normalizacja i zapis temperatury
+4. `src/types.ts` - rozszerzono `WeatherMonthlyDto`
+5. `src/components/editor/SideDrawer/WeatherMetricsTable.tsx` - kolumna temperatury
+6. `src/components/editor/SideDrawer/WeatherMonthlyChart.tsx` - linia temperatury

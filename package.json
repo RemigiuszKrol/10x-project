@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "dev:debug": "cross-env NODE_OPTIONS='--inspect' astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
@@ -62,6 +63,7 @@
     "eslint-plugin-react": "7.37.4",
     "eslint-plugin-react-compiler": "19.0.0-beta-aeaed83-20250323",
     "eslint-plugin-react-hooks": "5.2.0",
+    "cross-env": "^7.0.3",
     "husky": "9.1.7",
     "lint-staged": "15.5.0",
     "prettier-plugin-astro": "0.14.1",

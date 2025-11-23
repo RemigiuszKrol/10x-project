@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 
 import type { AuthResponse } from "../../../types.ts";
+import { logError } from "../../../lib/utils/logger.ts";
 
 export const prerender = false;
 
@@ -32,7 +33,21 @@ const handleLogout = async ({ locals, redirect }: Parameters<APIRoute>[0]) => {
 
     // Sukces - przekieruj do strony logowania
     return redirect("/auth/login");
-  } catch {
+  } catch (error) {
+    if (error instanceof Error) {
+      logError("Błąd podczas wylogowania", {
+        endpoint: "GET/POST /api/auth/logout",
+        method: "GET/POST",
+        error: error.message,
+        stack: error.stack,
+      });
+    } else {
+      logError("Nieoczekiwany błąd podczas wylogowania", {
+        endpoint: "GET/POST /api/auth/logout",
+        method: "GET/POST",
+        error: String(error),
+      });
+    }
     const response: AuthResponse = {
       success: false,
       error: {

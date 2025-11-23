@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
 import type { PlanDto, PlanUpdateCommand, PlanUpdateQuery, ApiItemResponse, ApiErrorResponse } from "@/types";
+import { handleApiError, parseHttpError } from "@/lib/utils/toast-error-handler";
 
 /**
  * Parametry mutacji aktualizacji planu
@@ -45,22 +46,16 @@ export function useUpdatePlan(): UseMutationResult<PlanDto, Error, UpdatePlanPar
         body: JSON.stringify(command),
       });
 
-      // Obsługa błędów HTTP
+      // Obsługa Unauthorized - redirect przed parsowaniem błędu
       if (response.status === 401) {
         window.location.assign("/auth/login");
+        const error = await parseHttpError(response);
+        if (error) throw error;
         throw new Error("Unauthorized");
       }
 
-      if (response.status === 403) {
-        throw new Error("Brak uprawnień do tego planu");
-      }
-
-      if (response.status === 404) {
-        throw new Error("Plan nie został znaleziony");
-      }
-
+      // Specjalna obsługa 409 - wymaga potwierdzenia regeneracji (nie pokazuj toastu)
       if (response.status === 409) {
-        // Konflikt - wymaga potwierdzenia regeneracji
         const errorData: ApiErrorResponse = await response.json();
         const error = new Error(errorData.error.message || "Wymagane potwierdzenie regeneracji siatki");
         // Dodaj informację o required confirmation do obiektu błędu
@@ -68,18 +63,25 @@ export function useUpdatePlan(): UseMutationResult<PlanDto, Error, UpdatePlanPar
         throw error;
       }
 
-      if (response.status === 400) {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(errorData.error.message || "Nieprawidłowe dane wejściowe");
+      // Parsuj błąd HTTP (jeśli występuje)
+      const error = await parseHttpError(response);
+      if (error) {
+        throw error;
       }
 
-      if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(errorData.error.message || "Nie udało się zaktualizować planu");
-      }
-
+      // Sukces - parsuj odpowiedź
       const result: ApiItemResponse<PlanDto> = await response.json();
       return result.data;
+    },
+    onError: (error) => {
+      // Sprawdź czy to błąd 409 (wymaga potwierdzenia) - nie pokazuj toastu
+      if (error instanceof Error && (error as Error & { requiresConfirmation?: boolean }).requiresConfirmation) {
+        // Nie pokazuj toastu dla 409 - obsługa w komponencie
+        return;
+      }
+
+      // Automatyczne wyświetlanie toastu dla innych błędów
+      handleApiError(error);
     },
     onSuccess: (updatedPlan, { planId }) => {
       // Invalidacja cache planu
