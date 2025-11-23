@@ -111,6 +111,9 @@ export async function GET(ctx: APIContext): Promise<Response> {
 
   // Execute: Wywołanie serwisu
   try {
+    // Jeśli limit nie jest podany, ustaw bardzo duży limit aby pobrać wszystkie komórki
+    const limit = query.limit ?? 40000;
+
     const result = await listGridCells(supabase, user.id, {
       planId: plan_id,
       type: query.type,
@@ -118,6 +121,7 @@ export async function GET(ctx: APIContext): Promise<Response> {
       y: query.y,
       bbox: query.bbox,
       cursor: query.cursor,
+      limit,
       sort: query.sort,
       order: query.order,
     });

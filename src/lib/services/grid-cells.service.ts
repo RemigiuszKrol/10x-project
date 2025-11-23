@@ -31,7 +31,7 @@ export async function listGridCells(
   userId: string,
   params: ListGridCellsParams
 ): Promise<ApiListResponse<GridCellDto>> {
-  const { planId, type, x, y, bbox, cursor, sort, order } = params;
+  const { planId, type, x, y, bbox, cursor, limit, sort, order } = params;
 
   // 1. Pobierz plan i zweryfikuj wymiary siatki (potrzebne do walidacji zakresów)
   const { data: planData, error: planError } = await supabase
@@ -136,6 +136,11 @@ export async function listGridCells(
     // Sortowanie wtórne
     query = query.order("y", { ascending: true });
     query = query.order("updated_at", { ascending: false });
+  }
+
+  // 7. Zastosuj limit jeśli jest podany
+  if (limit !== undefined) {
+    query = query.limit(limit);
   }
 
   // 8. Wykonaj zapytanie

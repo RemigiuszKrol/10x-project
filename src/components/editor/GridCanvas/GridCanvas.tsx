@@ -1,4 +1,4 @@
-import { type ReactNode, useRef, memo } from "react";
+import { type ReactNode, useRef, memo, useState, useEffect } from "react";
 import type { GridMetadataDto, GridCellDto, CellSelection, CellPosition, EditorTool, PlantPlacementDto } from "@/types";
 import { useGridSelection } from "@/lib/hooks/useGridSelection";
 import { SelectionOverlay } from "./SelectionOverlay";
@@ -32,6 +32,7 @@ interface GridCellProps {
   isFocused: boolean;
   currentTool: EditorTool;
   isDragging: boolean;
+  cellSize: number; // Rozmiar komórki w pikselach (dla responsywnego skalowania ikon)
   onCellClick: (x: number, y: number) => void;
   startSelection: (x: number, y: number) => void;
   updateSelection: (x: number, y: number) => void;
@@ -50,6 +51,7 @@ const GridCell = memo(
     isFocused,
     currentTool,
     isDragging,
+    cellSize,
     onCellClick,
     startSelection,
     updateSelection,
@@ -113,7 +115,7 @@ const GridCell = memo(
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <PlantTooltip plant={plant}>
               <div className="pointer-events-auto">
-                <PlantIcon plantName={plant.plant_name} size="xs" />
+                <PlantIcon plantName={plant.plant_name} cellSize={cellSize} />
               </div>
             </PlantTooltip>
           </div>
@@ -132,7 +134,8 @@ const GridCell = memo(
       prevProps.isSelected === nextProps.isSelected &&
       prevProps.isFocused === nextProps.isFocused &&
       prevProps.currentTool === nextProps.currentTool &&
-      prevProps.isDragging === nextProps.isDragging
+      prevProps.isDragging === nextProps.isDragging &&
+      prevProps.cellSize === nextProps.cellSize
     );
   }
 );
@@ -163,8 +166,55 @@ export function GridCanvas({
   onSelectionComplete,
 }: GridCanvasProps): ReactNode {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollableContainerRef = useRef<HTMLDivElement>(null);
 
   const { grid_width, grid_height } = gridMetadata;
+
+  // Minimalna wielkość komórki
+  const minCellSize = 24; // px
+  const gap = 1; // px
+  const containerPadding = 16; // px (p-4 = 4 * 4px)
+
+  // Stan dla responsywnego rozmiaru komórki
+  const [cellSize, setCellSize] = useState(minCellSize);
+
+  // Obliczanie responsywnego rozmiaru komórki na podstawie dostępnej szerokości
+  useEffect(() => {
+    if (!scrollableContainerRef.current || !grid_width || grid_width === 0) {
+      setCellSize(minCellSize);
+      return;
+    }
+
+    const updateCellSize = () => {
+      const container = scrollableContainerRef.current;
+      if (!container) return;
+
+      // Dostępna szerokość = szerokość kontenera - padding (16px z każdej strony = 32px)
+      const availableWidth = container.clientWidth - containerPadding * 2;
+
+      // Oblicz optymalny rozmiar komórki
+      // Szerokość potrzebna na grid = grid_width * cellSize + (grid_width - 1) * gap
+      // Rozwiązujemy: availableWidth = grid_width * cellSize + (grid_width - 1) * gap
+      // cellSize = (availableWidth - (grid_width - 1) * gap) / grid_width
+      const calculatedSize = (availableWidth - (grid_width - 1) * gap) / grid_width;
+
+      // Użyj większej wartości: obliczona lub minimalna
+      const finalSize = Math.max(calculatedSize, minCellSize);
+
+      setCellSize(Math.floor(finalSize));
+    };
+
+    // Oblicz początkowy rozmiar
+    updateCellSize();
+
+    // Obserwuj zmiany rozmiaru kontenera
+    const resizeObserver = new ResizeObserver(updateCellSize);
+    resizeObserver.observe(scrollableContainerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [grid_width, minCellSize, gap, containerPadding]);
 
   // Hook dla drag-to-select
   const { isDragging, startSelection, updateSelection, endSelection, cancelSelection } = useGridSelection({
@@ -192,11 +242,6 @@ export function GridCanvas({
     return focusedCell?.x === x && focusedCell?.y === y;
   };
 
-  // Obliczanie rozmiaru komórki (responsive)
-  const cellSize = 24; // px - base size (zmniejszone o 50% z 48px)
-  const gap = 1; // px
-  const containerPadding = 32; // px (p-8 = 8 * 4px)
-
   // Handler dla onMouseUp i onMouseLeave - zakończenie zaznaczania
   const handleMouseUp = () => {
     if (isDragging) {
@@ -221,12 +266,12 @@ export function GridCanvas({
   return (
     <div
       ref={containerRef}
-      className={`relative h-full w-full overflow-auto ${cursorStyle}`}
+      className={`relative flex h-full w-full flex-col ${cursorStyle}`}
       role="application"
       aria-label="Siatka planu działki, naciśnij Spację aby zaznaczyć obszar"
     >
-      {/* Info header */}
-      <div className="mb-4 rounded-lg border bg-card p-3">
+      {/* Info header - zawsze widoczny */}
+      <div className="rounded-lg border bg-card p-3">
         <div className="flex items-center justify-between text-sm">
           <div>
             <span className="font-medium">Siatka:</span> {grid_width} × {grid_height}
@@ -240,60 +285,64 @@ export function GridCanvas({
         </div>
       </div>
 
-      {/* Grid container */}
-      <div className="relative inline-block bg-muted/50 p-8">
-        <div
-          className="inline-grid"
-          style={{
-            gridTemplateColumns: `repeat(${grid_width ?? 0}, ${cellSize}px)`,
-            gridTemplateRows: `repeat(${grid_height ?? 0}, ${cellSize}px)`,
-            gap: `${gap}px`,
-          }}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
-          role="grid"
-          aria-label="Siatka planu"
-          tabIndex={-1}
-        >
-          {/* Renderowanie komórek */}
-          {Array.from({ length: grid_height ?? 0 }, (_, y) =>
-            Array.from({ length: grid_width ?? 0 }, (_, x) => {
-              const cellKey = `${x},${y}`;
-              const cell = cellsMap.get(cellKey);
-              const plant = plantsMap.get(cellKey);
-              const isSelected = isCellSelected(x, y);
-              const isFocused = isCellFocused(x, y);
+      {/* Scrollable grid container */}
+      <div ref={scrollableContainerRef} className="relative flex-1 overflow-auto">
+        {/* Grid container */}
+        <div className="relative inline-block bg-muted/50 p-4">
+          <div
+            className="inline-grid"
+            style={{
+              gridTemplateColumns: `repeat(${grid_width ?? 0}, ${cellSize}px)`,
+              gridTemplateRows: `repeat(${grid_height ?? 0}, ${cellSize}px)`,
+              gap: `${gap}px`,
+            }}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+            role="grid"
+            aria-label="Siatka planu"
+            tabIndex={-1}
+          >
+            {/* Renderowanie komórek */}
+            {Array.from({ length: grid_height ?? 0 }, (_, y) =>
+              Array.from({ length: grid_width ?? 0 }, (_, x) => {
+                const cellKey = `${x},${y}`;
+                const cell = cellsMap.get(cellKey);
+                const plant = plantsMap.get(cellKey);
+                const isSelected = isCellSelected(x, y);
+                const isFocused = isCellFocused(x, y);
 
-              return (
-                <GridCell
-                  key={cellKey}
-                  x={x}
-                  y={y}
-                  cell={cell}
-                  plant={plant}
-                  isSelected={isSelected}
-                  isFocused={isFocused}
-                  currentTool={currentTool}
-                  isDragging={isDragging}
-                  onCellClick={onCellClick}
-                  startSelection={startSelection}
-                  updateSelection={updateSelection}
-                />
-              );
-            })
+                return (
+                  <GridCell
+                    key={cellKey}
+                    x={x}
+                    y={y}
+                    cell={cell}
+                    plant={plant}
+                    isSelected={isSelected}
+                    isFocused={isFocused}
+                    currentTool={currentTool}
+                    isDragging={isDragging}
+                    cellSize={cellSize}
+                    onCellClick={onCellClick}
+                    startSelection={startSelection}
+                    updateSelection={updateSelection}
+                  />
+                );
+              })
+            )}
+          </div>
+
+          {/* Selection overlay */}
+          {selectedArea && (
+            <SelectionOverlay
+              selection={selectedArea}
+              cellSizePx={cellSize}
+              gapPx={gap}
+              gridOffsetX={containerPadding}
+              gridOffsetY={containerPadding}
+            />
           )}
         </div>
-
-        {/* Selection overlay */}
-        {selectedArea && (
-          <SelectionOverlay
-            selection={selectedArea}
-            cellSizePx={cellSize}
-            gapPx={gap}
-            gridOffsetX={containerPadding}
-            gridOffsetY={containerPadding}
-          />
-        )}
       </div>
     </div>
   );

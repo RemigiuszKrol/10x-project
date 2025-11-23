@@ -58,7 +58,7 @@ export function AreaTypePanel({ selection, cellCount, onApply, onCancel, isApply
 
   return (
     <div
-      className="absolute top-4 right-4 z-10 bg-background border rounded-lg shadow-lg p-4 w-80 animate-in slide-in-from-right-5 duration-200"
+      className="fixed top-20 right-14 z-50 bg-background border rounded-lg shadow-lg p-4 w-80 animate-in slide-in-from-right-5 duration-200"
       role="dialog"
       aria-label="Panel wyboru typu obszaru"
     >

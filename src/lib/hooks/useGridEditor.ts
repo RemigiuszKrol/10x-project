@@ -92,7 +92,8 @@ export function useGridEditor(
   // React Query - pobieranie danych
   const planQuery = usePlan(planId);
   const gridMetadataQuery = useGridMetadata(planId);
-  const cellsQuery = useGridCells(planId, { limit: 100 }); // Początkowa partia
+  // Pobierz wszystkie komórki (limit nie jest podany, więc endpoint użyje domyślnego 40000)
+  const cellsQuery = useGridCells(planId);
   const plantsQuery = usePlantPlacements(planId);
 
   // React Query - mutacje

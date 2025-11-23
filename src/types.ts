@@ -199,6 +199,7 @@ export interface ListGridCellsParams {
   y?: number;
   bbox?: [number, number, number, number];
   cursor?: string;
+  limit?: number;
   sort: "updated_at" | "x";
   order: "asc" | "desc";
 }
