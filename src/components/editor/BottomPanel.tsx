@@ -143,6 +143,8 @@ function getWeatherStatusText(status: string): string {
       return "Błąd";
     case "stale":
       return "Nieaktualne";
+    case "missing":
+      return "Brak";
     default:
       return "Aktualna";
   }

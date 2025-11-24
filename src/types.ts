@@ -588,7 +588,7 @@ export const DEFAULT_FORM_DATA: Partial<PlanCreateFormData> = {
   address: undefined,
   width_m: 10,
   height_m: 10,
-  cell_size_cm: 25,
+  cell_size_cm: 50,
   orientation: 0,
   hemisphere: "northern",
 };

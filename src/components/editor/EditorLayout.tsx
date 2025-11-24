@@ -7,6 +7,7 @@ import { useKeyboardNavigation } from "@/lib/hooks/useKeyboardNavigation";
 import { useAreaTypeWithConfirmation } from "@/lib/hooks/useAreaTypeWithConfirmation";
 import { useAnalytics, createAreaTypedEvent } from "@/lib/hooks/useAnalytics";
 import { useOperationLog } from "@/lib/hooks/useOperationLog";
+import { useEditorStatus } from "@/lib/hooks/useEditorStatus";
 import { GridCanvas } from "./GridCanvas/GridCanvas";
 import { EditorTopbar } from "./EditorTopbar";
 import { BottomPanel } from "./BottomPanel";
@@ -85,6 +86,9 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
   // Hook do zarządzania logiem operacji
   const operationLog = useOperationLog();
   const { logSuccess } = operationLog;
+
+  // Hook do śledzenia statusów AI i pogody
+  const { aiStatus, weatherStatus } = useEditorStatus(initialPlan.id);
 
   // Inicjalizacja logu - dodaj wpis o załadowaniu edytora
   // logSuccess jest stabilną funkcją z useCallback, więc możemy bezpiecznie użyć jej w zależnościach
@@ -326,8 +330,8 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
         operations={operationLog.operations}
         plantsCount={editor.plants.data?.data.length || 0}
         selectedCellsCount={editor.derived.selectedCellsCount}
-        aiStatus="idle"
-        weatherStatus="idle"
+        aiStatus={aiStatus}
+        weatherStatus={weatherStatus}
       />
 
       {/* Modals */}
