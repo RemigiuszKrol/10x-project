@@ -28,19 +28,19 @@ export function PreferenceSummary({ createdAt, updatedAt }: PreferenceSummaryPro
   };
 
   return (
-    <aside className="rounded-2xl border border-green-100 bg-white shadow-lg p-6">
-      <h3 className="mb-3 text-sm font-medium text-gray-900">Informacje o profilu</h3>
+    <aside className="rounded-2xl border border-green-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg p-6">
+      <h3 className="mb-3 text-sm font-medium text-gray-900 dark:text-gray-100">Informacje o profilu</h3>
       <dl className="space-y-2 text-sm">
         <div>
-          <dt className="inline font-medium text-gray-700">Utworzono:</dt>
-          <dd className="inline ml-2 text-gray-600">{formatDate(createdAt)}</dd>
+          <dt className="inline font-medium text-gray-700 dark:text-gray-300">Utworzono:</dt>
+          <dd className="inline ml-2 text-gray-600 dark:text-gray-400">{formatDate(createdAt)}</dd>
         </div>
         <div>
-          <dt className="inline font-medium text-gray-700">Ostatnia aktualizacja:</dt>
-          <dd className="inline ml-2 text-gray-600">{formatDate(updatedAt)}</dd>
+          <dt className="inline font-medium text-gray-700 dark:text-gray-300">Ostatnia aktualizacja:</dt>
+          <dd className="inline ml-2 text-gray-600 dark:text-gray-400">{formatDate(updatedAt)}</dd>
         </div>
       </dl>
-      <p className="mt-3 text-xs text-gray-500">
+      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
         Twoje preferencje językowe i motywu są zapisywane automatycznie i synchronizowane na wszystkich urządzeniach.
       </p>
     </aside>

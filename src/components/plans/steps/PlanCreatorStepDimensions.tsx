@@ -259,12 +259,7 @@ export function PlanCreatorStepDimensions({
 
             {/* Półkula - automatycznie określana na podstawie współrzędnych */}
             <div className="space-y-2">
-              <Label htmlFor="hemisphere">
-                Półkula
-                <span className="text-red-500 ml-1" aria-label="wymagane">
-                  *
-                </span>
-              </Label>
+              <Label htmlFor="hemisphere">Półkula</Label>
               <div className="relative">
                 <Select value={determinedHemisphere} disabled>
                   <SelectTrigger id="hemisphere" className="bg-muted cursor-not-allowed">

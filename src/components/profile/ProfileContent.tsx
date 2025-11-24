@@ -47,7 +47,7 @@ export function ProfileContent({
     <div className="space-y-6">
       {/* Nagłówek */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900">Preferencje profilu</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Preferencje profilu</h1>
       </div>
 
       {/* Formularz edycji */}
@@ -60,12 +60,12 @@ export function ProfileContent({
       />
 
       {/* Sekcja bezpieczeństwa */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Bezpieczeństwo</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Bezpieczeństwo</h2>
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-gray-900">Hasło</h3>
-            <p className="text-sm text-gray-600">Zmień hasło do swojego konta</p>
+            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Hasło</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Zmień hasło do swojego konta</p>
           </div>
           <a
             href="/auth/reset-password"

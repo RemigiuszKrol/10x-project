@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,22 @@ export interface OrientationCompassProps {
  */
 export function OrientationCompass({ value, onChange, className = "" }: OrientationCompassProps) {
   const [inputValue, setInputValue] = useState(value.toString());
+  const [isDark, setIsDark] = useState(false);
+
+  // Sprawdź motyw bezpośrednio z HTML (działa nawet bez ThemeProvider)
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+    checkTheme();
+    // Obserwuj zmiany klasy na html
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   /**
    * Normalizuje wartość orientacji do zakresu 0..359
@@ -92,10 +108,18 @@ export function OrientationCompass({ value, onChange, className = "" }: Orientat
           aria-label={`Orientacja: ${value} stopni`}
         >
           {/* Tło okręgu */}
-          <circle cx="80" cy="80" r="75" fill="white" stroke="currentColor" strokeWidth="2" className="text-gray-300" />
+          <circle
+            cx="80"
+            cy="80"
+            r="75"
+            fill={isDark ? "#1f2937" : "white"}
+            stroke="currentColor"
+            strokeWidth="2"
+            style={{ color: "rgb(209 213 219)" }}
+          />
 
           {/* Kierunki świata */}
-          <g className="text-gray-600 font-semibold text-sm">
+          <g className="text-gray-600 dark:text-gray-400 font-semibold text-sm">
             {/* N - Północ */}
             <text x="80" y="20" textAnchor="middle" fontSize="16" fontWeight="bold" fill="currentColor">
               N
@@ -131,7 +155,7 @@ export function OrientationCompass({ value, onChange, className = "" }: Orientat
                 y2={y2}
                 stroke="currentColor"
                 strokeWidth="2"
-                className="text-gray-300"
+                className="text-gray-300 dark:text-gray-600"
               />
             );
           })}
@@ -150,7 +174,7 @@ export function OrientationCompass({ value, onChange, className = "" }: Orientat
 
       {/* Kontrolki */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="orientation-input" className="text-sm font-medium">
+        <Label htmlFor="orientation-input" className="text-sm font-medium text-gray-700 dark:text-gray-300">
           Orientacja (stopnie)
         </Label>
         <div className="flex items-center gap-2">

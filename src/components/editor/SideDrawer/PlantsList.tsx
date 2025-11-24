@@ -53,7 +53,7 @@ export function PlantsList({ planId, onJumpToCell, onPlantRemoved }: PlantsListP
     const plant = plants.find((p) => p.x === x && p.y === y);
     if (!plant) return;
 
-    if (!confirm(`Czy na pewno chcesz usunąć roślinę "${plant.plant_name}"?\n\nPozycja: (x: ${x}, y: ${y})`)) {
+    if (!confirm(`Czy na pewno chcesz usunąć roślinę "${plant.plant_name}"?\n\nPozycja: (x: ${x + 1}, y: ${y + 1})`)) {
       return;
     }
 
@@ -90,7 +90,7 @@ export function PlantsList({ planId, onJumpToCell, onPlantRemoved }: PlantsListP
   const handleJumpToCell = (x: number, y: number) => {
     onJumpToCell?.(x, y);
     toast.info("Przejście do komórki", {
-      description: `Pozycja: (x: ${x}, y: ${y})`,
+      description: `Pozycja: (x: ${x + 1}, y: ${y + 1})`,
     });
   };
 

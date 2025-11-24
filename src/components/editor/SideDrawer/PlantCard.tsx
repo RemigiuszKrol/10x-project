@@ -103,7 +103,7 @@ export function PlantCard({ plant, onJumpTo, onDelete, isDeleting = false }: Pla
               <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                 <MapPin className="h-3 w-3" />
                 <span>
-                  x: {plant.x}, y: {plant.y}
+                  x: {plant.x + 1}, y: {plant.y + 1}
                 </span>
               </div>
             </div>

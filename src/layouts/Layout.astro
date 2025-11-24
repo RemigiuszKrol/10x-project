@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import Navbar from "../components/Navbar.astro";
+import ThemeWrapper from "../components/ThemeWrapper";
 
 interface Props {
   title?: string;
@@ -23,8 +24,32 @@ const currentPath = Astro.url.pathname;
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <script
+      set:html={`
+      // Inicjalizacja motywu przed hydratacją React - zapobiega miganiu
+      (function () {
+        try {
+          const storageKey = "plantsplaner-theme";
+          const stored = localStorage.getItem(storageKey);
+          if (stored === "light" || stored === "dark") {
+            document.documentElement.classList.remove("light", "dark");
+            document.documentElement.classList.add(stored);
+          } else {
+            // Domyślnie light jeśli nie ma zapisanego motywu
+            document.documentElement.classList.remove("dark");
+            document.documentElement.classList.add("light");
+          }
+        } catch {
+          // W przypadku błędu localStorage, ustaw domyślny motyw
+          document.documentElement.classList.remove("dark");
+          document.documentElement.classList.add("light");
+        }
+      })();
+      `}
+    />
   </head>
-  <body>
+  <body class="bg-background text-foreground">
+    <ThemeWrapper client:only="react" />
     {showNavbar && <Navbar userEmail={userEmail} currentPath={currentPath} />}
     <slot />
   </body>

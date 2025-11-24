@@ -309,13 +309,13 @@ function EditorContent({ initialPlan, initialGridMetadata, initialCells }: Edito
           }
           onPlantAdded={(plantName, x, y) => {
             // Loguj dodanie rośliny
-            operationLog.logSuccess(`Dodano roślinę "${plantName}" na pozycji (${x}, ${y})`);
+            operationLog.logSuccess(`Dodano roślinę "${plantName}" na pozycji (${x + 1}, ${y + 1})`);
             // Opcjonalnie: switch to plants list tab po dodaniu
             // setActiveTab("plants");
           }}
           onPlantRemoved={(plantName, x, y) => {
             // Loguj usunięcie rośliny
-            operationLog.logInfo(`Usunięto roślinę "${plantName}" z pozycji (${x}, ${y})`);
+            operationLog.logInfo(`Usunięto roślinę "${plantName}" z pozycji (${x + 1}, ${y + 1})`);
           }}
           onJumpToCell={editor.actions.jumpToCell} // NOWE: Przekazanie jumpToCell
         />

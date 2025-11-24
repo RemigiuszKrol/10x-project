@@ -36,9 +36,9 @@ export function FormField({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={id} className="text-gray-700">
+      <Label htmlFor={id} className="text-gray-700 dark:text-gray-300">
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className="text-red-500 dark:text-red-400 ml-1">*</span>}
       </Label>
       <Input
         id={id}
@@ -55,7 +55,7 @@ export function FormField({
         className={cn(hasError && "border-red-500 focus-visible:ring-red-500/20")}
       />
       {hasError && (
-        <p id={errorId} className="text-sm text-red-600" role="alert" aria-live="polite">
+        <p id={errorId} className="text-sm text-red-600 dark:text-red-400" role="alert" aria-live="polite">
           {error}
         </p>
       )}

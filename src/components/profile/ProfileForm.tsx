@@ -61,9 +61,16 @@ export function ProfileForm({ initialValues, isSubmitting, onSubmit, languages, 
     languages.find((lang) => lang.code === values.languageCode)?.label || values.languageCode;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl shadow-xl border border-green-100 bg-white p-8">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 rounded-2xl shadow-xl border border-green-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-8"
+    >
       {/* Global error message */}
-      {fieldErrors?.global && <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{fieldErrors.global}</div>}
+      {fieldErrors?.global && (
+        <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-800 dark:text-red-400">
+          {fieldErrors.global}
+        </div>
+      )}
 
       {/* Language selector */}
       <LanguageSelector

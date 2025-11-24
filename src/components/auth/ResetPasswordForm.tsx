@@ -113,14 +113,17 @@ export function ResetPasswordForm() {
         autoComplete="new-password"
       />
 
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-gray-500 dark:text-gray-400">
         Hasło musi zawierać co najmniej 8 znaków, w tym co najmniej jedną literę i jedną cyfrę.
       </div>
 
       <SubmitButton isLoading={isLoading}>Ustaw nowe hasło</SubmitButton>
 
-      <div className="text-center text-sm text-gray-600">
-        <a href="/profile" className="text-green-600 hover:text-green-700 hover:underline">
+      <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+        <a
+          href="/profile"
+          className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-500 hover:underline"
+        >
           ← Wróć do profilu
         </a>
       </div>

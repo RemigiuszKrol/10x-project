@@ -2,6 +2,7 @@ import { type ReactNode, useState } from "react";
 import type { CellPosition, GridCellType, PlantSearchCandidateDto } from "@/types";
 import { useSearchPlants, useCheckPlantFit } from "@/lib/hooks/mutations/useAIMutations";
 import { useAddPlant } from "@/lib/hooks/mutations/usePlantMutations";
+import { useWeatherData } from "@/lib/hooks/queries/useWeatherData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +50,10 @@ export function PlantSearchForm({ planId, selectedCell, cellType, onPlantAdded }
   const checkPlantFit = useCheckPlantFit();
   const addPlant = useAddPlant();
 
+  // Sprawdź czy plan ma dane pogodowe
+  const weatherData = useWeatherData(planId);
+  const hasWeatherData = weatherData.data && weatherData.data.length > 0;
+
   /**
    * Handler wyszukiwania roślin
    */
@@ -79,6 +84,15 @@ export function PlantSearchForm({ planId, selectedCell, cellType, onPlantAdded }
 
     // Jeśli nie ma zaznaczonej komórki, tylko wyświetl kandydata
     if (!selectedCell) {
+      return;
+    }
+
+    // Sprawdź czy są dane pogodowe przed próbą sprawdzenia dopasowania
+    if (!hasWeatherData) {
+      toast.warning("Brak danych pogodowych", {
+        description:
+          "Nie można porównać rośliny, ponieważ brak danych pogodowych dla tego planu. Możesz dodać roślinę ręcznie bez oceny AI.",
+      });
       return;
     }
 
@@ -141,7 +155,7 @@ export function PlantSearchForm({ planId, selectedCell, cellType, onPlantAdded }
 
       // Toast success
       toast.success("Roślina dodana!", {
-        description: `"${selectedCandidate.name}" została dodana na pozycji (${selectedCell.x}, ${selectedCell.y})`,
+        description: `"${selectedCandidate.name}" została dodana na pozycji (${selectedCell.x + 1}, ${selectedCell.y + 1})`,
       });
 
       // Callback
@@ -178,7 +192,7 @@ export function PlantSearchForm({ planId, selectedCell, cellType, onPlantAdded }
 
       // Toast success
       toast.success("Roślina dodana!", {
-        description: `"${query.trim()}" została dodana na pozycji (${selectedCell.x}, ${selectedCell.y}) bez oceny AI`,
+        description: `"${query.trim()}" została dodana na pozycji (${selectedCell.x + 1}, ${selectedCell.y + 1}) bez oceny AI`,
       });
 
       // Callback
@@ -209,11 +223,19 @@ export function PlantSearchForm({ planId, selectedCell, cellType, onPlantAdded }
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>Rośliny można dodawać tylko na pola typu &quot;ziemia&quot;</AlertDescription>
         </Alert>
+      ) : !hasWeatherData ? (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Brak danych pogodowych dla tego planu. Nie można porównać rośliny z warunkami klimatycznymi. Możesz dodać
+            roślinę ręcznie bez oceny AI.
+          </AlertDescription>
+        </Alert>
       ) : (
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Wybrana komórka: ({selectedCell.x}, {selectedCell.y}) - typ: ziemia ✓
+            Wybrana komórka: ({selectedCell.x + 1}, {selectedCell.y + 1}) - typ: ziemia ✓
           </AlertDescription>
         </Alert>
       )}

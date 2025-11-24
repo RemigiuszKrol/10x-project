@@ -63,7 +63,7 @@ export function DeletePlantConfirmDialog({
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <MapPin className="h-3 w-3" />
                     <span>
-                      Pozycja: x: {plant.x}, y: {plant.y}
+                      Pozycja: x: {plant.x + 1}, y: {plant.y + 1}
                     </span>
                   </div>
                   {plant.overall_score !== null && (

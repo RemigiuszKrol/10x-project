@@ -144,13 +144,13 @@ export function RegisterForm() {
         autoComplete="new-password"
       />
 
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-gray-500 dark:text-gray-400">
         Hasło musi zawierać co najmniej 8 znaków, w tym co najmniej jedną literę i jedną cyfrę.
       </div>
 
       <SubmitButton isLoading={isLoading}>Zarejestruj się</SubmitButton>
 
-      <div className="text-center text-sm text-gray-600">
+      <div className="text-center text-sm text-gray-600 dark:text-gray-400">
         Masz już konto?{" "}
         <a href="/auth/login" className="text-green-600 hover:text-green-700 font-medium hover:underline">
           Zaloguj się

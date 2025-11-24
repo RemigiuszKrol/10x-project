@@ -410,7 +410,7 @@ KLIMAT ROCZNY:
 - Opady roczne: ${context.climate.annual_precip}mm${context.climate.frost_free_days ? `\n- Dni bez przymrozków: ${context.climate.frost_free_days}` : ""}
 
 POZYCJA NA DZIAŁCE:
-- Komórka: (${context.cell.x}, ${context.cell.y})${context.cell.sunlight_hours ? `\n- Szacowane nasłonecznienie: ${context.cell.sunlight_hours}h/dzień` : ""}
+- Komórka: (${context.cell.x + 1}, ${context.cell.y + 1})${context.cell.sunlight_hours ? `\n- Szacowane nasłonecznienie: ${context.cell.sunlight_hours}h/dzień` : ""}
 
 DANE MIESIĘCZNE (średnie):
 ${weatherMonthlyText}

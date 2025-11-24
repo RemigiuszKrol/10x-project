@@ -129,9 +129,12 @@ export function LoginForm() {
 
       <SubmitButton isLoading={isLoading}>Zaloguj się</SubmitButton>
 
-      <div className="text-center text-sm text-gray-600">
+      <div className="text-center text-sm text-gray-600 dark:text-gray-400">
         Nie masz konta?{" "}
-        <a href="/auth/register" className="text-green-600 hover:text-green-700 font-medium hover:underline">
+        <a
+          href="/auth/register"
+          className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-500 font-medium hover:underline"
+        >
           Zarejestruj się
         </a>
       </div>

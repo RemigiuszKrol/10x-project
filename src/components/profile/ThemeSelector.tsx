@@ -22,7 +22,7 @@ export interface ThemeSelectorProps {
 export function ThemeSelector({ options, value, disabled, onChange }: ThemeSelectorProps) {
   return (
     <div className="space-y-3">
-      <Label className="text-base font-medium text-gray-900">Motyw kolorystyczny</Label>
+      <Label className="text-base font-medium text-gray-900 dark:text-gray-100">Motyw kolorystyczny</Label>
 
       <div className="flex gap-2">
         {options.map((option) => (

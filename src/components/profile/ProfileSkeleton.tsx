@@ -12,7 +12,7 @@ export function ProfileSkeleton() {
       </div>
 
       {/* Form skeleton */}
-      <div className="space-y-6 rounded-2xl shadow-xl border border-green-100 bg-white p-8">
+      <div className="space-y-6 rounded-2xl shadow-xl border border-green-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-8">
         {/* Language selector skeleton */}
         <div className="space-y-3">
           <Skeleton className="h-5 w-32" />
@@ -46,7 +46,7 @@ export function ProfileSkeleton() {
       </div>
 
       {/* Summary skeleton */}
-      <div className="space-y-3 rounded-2xl shadow-lg border border-green-100 bg-white p-6">
+      <div className="space-y-3 rounded-2xl shadow-lg border border-green-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
         <Skeleton className="h-5 w-48" />
         <div className="space-y-2">
           <Skeleton className="h-4 w-full" />

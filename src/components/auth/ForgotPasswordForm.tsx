@@ -97,23 +97,26 @@ export function ForgotPasswordForm() {
             <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">Sprawdź swoją skrzynkę email</h2>
-        <p className="text-gray-600">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Sprawdź swoją skrzynkę email</h2>
+        <p className="text-gray-600 dark:text-gray-400">
           Jeśli konto z podanym adresem email istnieje, wysłaliśmy na nie link do resetowania hasła. Kliknij w link w
           wiadomości email, aby przejść do strony resetowania hasła.
         </p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Link jest ważny przez ograniczony czas. Nie otrzymałeś wiadomości? Sprawdź folder spam lub
         </p>
         <button
           type="button"
           onClick={() => setIsSuccess(false)}
-          className="text-green-600 hover:text-green-700 text-sm font-medium hover:underline"
+          className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-500 text-sm font-medium hover:underline"
         >
           spróbuj ponownie
         </button>
-        <div className="pt-4 border-t border-gray-200">
-          <a href="/auth/login" className="text-sm text-gray-600 hover:text-gray-900 hover:underline">
+        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+          <a
+            href="/auth/login"
+            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:underline"
+          >
             ← Wróć do logowania
           </a>
         </div>
@@ -145,7 +148,7 @@ export function ForgotPasswordForm() {
 
       <SubmitButton isLoading={isLoading}>Wyślij link resetujący</SubmitButton>
 
-      <div className="text-center text-sm text-gray-600">
+      <div className="text-center text-sm text-gray-600 dark:text-gray-400">
         <a href="/auth/login" className="text-green-600 hover:text-green-700 hover:underline">
           ← Wróć do logowania
         </a>

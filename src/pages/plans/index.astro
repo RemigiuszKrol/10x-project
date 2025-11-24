@@ -17,7 +17,10 @@ if (!user) {
 ---
 
 <Layout title="Moje plany - PlantsPlaner" showNavbar={true}>
-  <main role="main" class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50">
+  <main
+    role="main"
+    class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
+  >
     <div class="container mx-auto px-4 py-8 max-w-7xl">
       <PlansList client:load />
     </div>

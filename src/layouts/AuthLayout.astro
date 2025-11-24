@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import ThemeWrapper from "../components/ThemeWrapper";
 
 interface Props {
   title?: string;
@@ -18,8 +19,34 @@ const { title = "PlantsPlaner", description = "Planowanie rozmieszczenia roślin
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
     <title>{title}</title>
+    <script
+      set:html={`
+      // Inicjalizacja motywu przed hydratacją React - zapobiega miganiu
+      (function () {
+        try {
+          const storageKey = "plantsplaner-theme";
+          const stored = localStorage.getItem(storageKey);
+          if (stored === "light" || stored === "dark") {
+            document.documentElement.classList.remove("light", "dark");
+            document.documentElement.classList.add(stored);
+          } else {
+            // Domyślnie light jeśli nie ma zapisanego motywu
+            document.documentElement.classList.remove("dark");
+            document.documentElement.classList.add("light");
+          }
+        } catch {
+          // W przypadku błędu localStorage, ustaw domyślny motyw
+          document.documentElement.classList.remove("dark");
+          document.documentElement.classList.add("light");
+        }
+      })();
+      `}
+    />
   </head>
-  <body class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50">
+  <body
+    class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
+  >
+    <ThemeWrapper client:only="react" />
     <div class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
       <!-- Logo i nagłówek -->
       <div class="w-full max-w-md mb-8 text-center">
@@ -41,23 +68,23 @@ const { title = "PlantsPlaner", description = "Planowanie rozmieszczenia roślin
             <path d="M8 12a3 3 0 0 0 0 6h8a3 3 0 0 0 0-6"></path>
           </svg>
         </div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
           {title}
         </h1>
-        <p class="text-sm text-gray-600">
+        <p class="text-sm text-gray-600 dark:text-gray-400">
           {description}
         </p>
       </div>
 
       <!-- Panel z formularzem -->
       <div class="w-full max-w-md">
-        <div class="bg-white rounded-2xl shadow-xl border border-green-100 p-8">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-green-100 dark:border-gray-700 p-8">
           <slot />
         </div>
       </div>
 
       <!-- Stopka -->
-      <div class="mt-8 text-center text-sm text-gray-500">
+      <div class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
         <p>&copy; {new Date().getFullYear()} PlantsPlaner. Wszystkie prawa zastrzeżone.</p>
       </div>
     </div>

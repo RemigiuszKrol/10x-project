@@ -116,7 +116,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
     : undefined;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50">
+    <main className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto max-w-3xl px-4 py-8">
         <ProfileContent
           state={state}
