@@ -1,27 +1,44 @@
-# build output
-dist/
-
-# generated types
-.astro/
-
 # dependencies
 node_modules/
 
-# logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# build outputs
+dist/
+.astro/
 
 # environment variables
 .env
+.env.local
 .env.production
+.env.*.local
 
 # macOS-specific files
 .DS_Store
 
-# jetbrains setting folder
-.idea/
+# test coverage
+coverage/
+test-results/
+playwright-report/
+*.lcov
 
-# plik TODO.md
-.ai/TODO.md
+# vitest
+.vitest/
+
+# logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Supabase
+.supabase/
+
+# MSW
+public/mockServiceWorker.js

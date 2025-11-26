@@ -21,6 +21,31 @@
 - **Walidacja**: Zod (walidacja wejść/DTO w API i komponentach)
 - **Obsługa błędów**: guard clauses, wczesne zwroty, przyjazne komunikaty (wg reguł)
 
+### Testowanie
+
+#### Testy jednostkowe (Unit Tests)
+
+- **Test runner**: Vitest – szybki runner testowy dla Vite, kompatybilny z API Jest
+- **Środowisko DOM**: Happy-DOM – lekka i szybka implementacja DOM dla testów
+- **Testy komponentów React**: React Testing Library (+ `@testing-library/jest-dom`, `@testing-library/user-event`)
+- **Mockowanie API**: MSW (Mock Service Worker) – przechwytywanie i mockowanie żądań HTTP
+- **Code coverage**: `@vitest/coverage-v8` – raportowanie pokrycia kodu testami
+- **Cel pokrycia**: minimum 80% dla statements, branches, functions, lines
+
+#### Testy End-to-End (E2E)
+
+- **Framework E2E**: Playwright – testy w rzeczywistych przeglądarkach (Chrome, Firefox, WebKit)
+- **Środowisko testowe**: Local Supabase (Docker) + Inbucket (przechwytywanie emaili testowych)
+- **Mockowanie zewnętrzne**: MSW (opcjonalnie) – stabilizacja testów przez mockowanie API zewnętrznych
+- **Podejście**: Page Object Model, stable selectors (data-testid, aria-label, role)
+
+#### Konfiguracja i CI/CD
+
+- **Config**: `vitest.config.ts` (testy jednostkowe), `playwright.config.ts` (testy E2E)
+- **Uruchamianie**: GitHub Actions – automatyczne testy przy każdym commit/PR
+- **Retry logic**: maksymalnie 2× retry dla testów E2E w CI
+- **Parallel execution**: testy mogą być uruchamiane równolegle dla szybszych rezultatów
+
 ### Narzędzia developerskie i jakość
 
 - **Linting**: ESLint 9 (+ `@typescript-eslint`, `eslint-plugin-astro`, `eslint-plugin-react`, `eslint-plugin-react-compiler`)
