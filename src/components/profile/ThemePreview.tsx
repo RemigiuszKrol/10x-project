@@ -3,14 +3,13 @@ import type { UiTheme } from "@/types";
 
 export interface ThemePreviewProps {
   theme: UiTheme;
-  languageLabel: string;
 }
 
 /**
  * Podgląd motywu z przykładowymi elementami UI
  * Używa rzeczywistych klas Tailwind używanych w aplikacji
  */
-export function ThemePreview({ theme, languageLabel }: ThemePreviewProps) {
+export function ThemePreview({ theme }: ThemePreviewProps) {
   const isDark = theme === "dark";
 
   // Klasy Tailwind używane w aplikacji dla motywu jasnego
@@ -71,7 +70,7 @@ export function ThemePreview({ theme, languageLabel }: ThemePreviewProps) {
             {/* Header preview */}
             <div className={classes.card}>
               <h4 className="text-sm font-semibold">PlantsPlaner</h4>
-              <p className={classes.mutedText}>Język: {languageLabel}</p>
+              <p className={classes.mutedText}>Przykładowy nagłówek</p>
             </div>
 
             {/* Content preview */}

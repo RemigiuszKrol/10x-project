@@ -1,17 +1,14 @@
 import { useState, useEffect, type FormEvent } from "react";
 import type { UiTheme } from "@/types";
-import { LanguageSelector, type LanguageOption } from "./LanguageSelector";
 import { ThemeSelector, DEFAULT_THEME_OPTIONS } from "./ThemeSelector";
 import { ThemePreview } from "./ThemePreview";
 import { FormActions } from "./FormActions";
 
 export interface ProfileFormValues {
-  languageCode: string;
   theme: UiTheme;
 }
 
 export interface ProfileFormErrors {
-  languageCode?: string;
   theme?: string;
   global?: string;
 }
@@ -20,14 +17,13 @@ export interface ProfileFormProps {
   initialValues: ProfileFormValues;
   isSubmitting: boolean;
   onSubmit: (values: ProfileFormValues) => void;
-  languages: LanguageOption[];
   fieldErrors?: ProfileFormErrors;
 }
 
 /**
  * Formularz edycji preferencji profilu
  */
-export function ProfileForm({ initialValues, isSubmitting, onSubmit, languages, fieldErrors }: ProfileFormProps) {
+export function ProfileForm({ initialValues, isSubmitting, onSubmit, fieldErrors }: ProfileFormProps) {
   const [values, setValues] = useState<ProfileFormValues>(initialValues);
 
   // Aktualizuj wartości gdy initialValues się zmienią (np. po sukcesie)
@@ -36,11 +32,7 @@ export function ProfileForm({ initialValues, isSubmitting, onSubmit, languages, 
   }, [initialValues]);
 
   // Sprawdź czy formularz jest "dirty" (zmieniony)
-  const isDirty = values.languageCode !== initialValues.languageCode || values.theme !== initialValues.theme;
-
-  const handleLanguageChange = (languageCode: string) => {
-    setValues((prev) => ({ ...prev, languageCode }));
-  };
+  const isDirty = values.theme !== initialValues.theme;
 
   const handleThemeChange = (theme: UiTheme) => {
     setValues((prev) => ({ ...prev, theme }));
@@ -56,10 +48,6 @@ export function ProfileForm({ initialValues, isSubmitting, onSubmit, languages, 
     onSubmit(values);
   };
 
-  // Znajdź label dla wybranego języka
-  const selectedLanguageLabel =
-    languages.find((lang) => lang.code === values.languageCode)?.label || values.languageCode;
-
   return (
     <form
       onSubmit={handleSubmit}
@@ -72,15 +60,6 @@ export function ProfileForm({ initialValues, isSubmitting, onSubmit, languages, 
         </div>
       )}
 
-      {/* Language selector */}
-      <LanguageSelector
-        options={languages}
-        value={values.languageCode}
-        onChange={handleLanguageChange}
-        disabled={isSubmitting}
-        error={fieldErrors?.languageCode}
-      />
-
       {/* Theme selector */}
       <ThemeSelector
         options={DEFAULT_THEME_OPTIONS}
@@ -90,7 +69,7 @@ export function ProfileForm({ initialValues, isSubmitting, onSubmit, languages, 
       />
 
       {/* Theme preview */}
-      <ThemePreview theme={values.theme} languageLabel={selectedLanguageLabel} />
+      <ThemePreview theme={values.theme} />
 
       {/* Form actions */}
       <FormActions isDirty={isDirty} isSubmitting={isSubmitting} onReset={handleReset} />

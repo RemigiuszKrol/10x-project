@@ -1,6 +1,5 @@
 import type { ProfileState } from "@/lib/hooks/useProfilePreferences";
 import type { ProfileFormValues, ProfileFormErrors } from "./ProfileForm";
-import type { LanguageOption } from "./LanguageSelector";
 import { ProfileSkeleton } from "./ProfileSkeleton";
 import { ProfileErrorFallback } from "./ProfileErrorFallback";
 import { ProfileForm } from "./ProfileForm";
@@ -10,7 +9,6 @@ export interface ProfileContentProps {
   state: ProfileState;
   onSubmit: (values: ProfileFormValues) => void;
   onRetry: () => void;
-  languages: LanguageOption[];
   isSubmitting: boolean;
   fieldErrors?: ProfileFormErrors;
 }
@@ -18,14 +16,7 @@ export interface ProfileContentProps {
 /**
  * Renderuje główną sekcję profilu w zależności od stanu
  */
-export function ProfileContent({
-  state,
-  onSubmit,
-  onRetry,
-  languages,
-  isSubmitting,
-  fieldErrors,
-}: ProfileContentProps) {
+export function ProfileContent({ state, onSubmit, onRetry, isSubmitting, fieldErrors }: ProfileContentProps) {
   // Stan ładowania
   if (state.status === "loading") {
     return <ProfileSkeleton />;
@@ -39,7 +30,6 @@ export function ProfileContent({
   // Stan gotowy - renderuj formularz i podsumowanie
   const { data } = state;
   const initialValues: ProfileFormValues = {
-    languageCode: data.languageCode,
     theme: data.theme,
   };
 
@@ -55,7 +45,6 @@ export function ProfileContent({
         initialValues={initialValues}
         isSubmitting={isSubmitting}
         onSubmit={onSubmit}
-        languages={languages}
         fieldErrors={fieldErrors}
       />
 

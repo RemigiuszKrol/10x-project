@@ -2,30 +2,12 @@ import { useRef } from "react";
 import { useProfilePreferences } from "@/lib/hooks/useProfilePreferences";
 import { useUpdateProfile } from "@/lib/hooks/useUpdateProfile";
 import { useTheme } from "@/lib/contexts/ThemeContext";
-import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { ProfileContent } from "./ProfileContent";
 import type { ProfileFormValues, ProfileFormErrors } from "./ProfileForm";
-import type { LanguageOption } from "./LanguageSelector";
 
 export interface ProfilePageProps {
   userId: string;
 }
-
-/**
- * Domyślne opcje języków
- */
-const DEFAULT_LANGUAGE_OPTIONS: LanguageOption[] = [
-  {
-    code: "pl",
-    label: "Polski",
-    nativeLabel: "Polish",
-  },
-  {
-    code: "en",
-    label: "Angielski",
-    nativeLabel: "English",
-  },
-];
 
 /**
  * Główny komponent strony profilu użytkownika
@@ -34,12 +16,10 @@ const DEFAULT_LANGUAGE_OPTIONS: LanguageOption[] = [
 export default function ProfilePage({ userId }: ProfilePageProps) {
   const { state, refetch } = useProfilePreferences();
   const { theme, setTheme } = useTheme();
-  const { languageCode, setLanguageCode } = useLanguage();
 
   // Przechowuj poprzednie wartości dla rollback
-  const previousValuesRef = useRef<{ theme: string; languageCode: string }>({
+  const previousValuesRef = useRef<{ theme: string }>({
     theme,
-    languageCode,
   });
 
   const {
@@ -50,26 +30,21 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
     // Optimistic update - natychmiast aktualizuj konteksty
     onOptimisticUpdate: (payload) => {
       // Zapisz poprzednie wartości przed zmianą
-      previousValuesRef.current = { theme, languageCode };
+      previousValuesRef.current = { theme };
 
       // Natychmiast zastosuj zmiany w UI
       if (payload.theme) {
         setTheme(payload.theme);
-      }
-      if (payload.language_code) {
-        setLanguageCode(payload.language_code);
       }
     },
     // Rollback w przypadku błędu
     onRollback: () => {
       // Przywróć poprzednie wartości
       setTheme(previousValuesRef.current.theme as "light" | "dark");
-      setLanguageCode(previousValuesRef.current.languageCode);
     },
     // Success - zaktualizuj konteksty z odpowiedzi API
     onSuccess: (data) => {
       setTheme(data.theme);
-      setLanguageCode(data.languageCode);
     },
   });
 
@@ -81,12 +56,9 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
   // Obsługa zapisu formularza
   const handleSubmit = async (values: ProfileFormValues) => {
     // Przygotuj payload - wysyłaj tylko zmienione wartości
-    const payload: { language_code?: string; theme?: "light" | "dark" } = {};
+    const payload: { theme?: "light" | "dark" } = {};
 
     if (state.status === "ready") {
-      if (values.languageCode !== state.data.languageCode) {
-        payload.language_code = values.languageCode;
-      }
       if (values.theme !== state.data.theme) {
         payload.theme = values.theme;
       }
@@ -109,7 +81,6 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
   // Mapuj błędy field_errors na kontrolki
   const fieldErrors: ProfileFormErrors | undefined = updateError?.fieldErrors
     ? {
-        languageCode: updateError.fieldErrors.language_code,
         theme: updateError.fieldErrors.theme,
         global: updateError.message,
       }
@@ -122,7 +93,6 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
           state={state}
           onSubmit={handleSubmit}
           onRetry={handleRetry}
-          languages={DEFAULT_LANGUAGE_OPTIONS}
           isSubmitting={isSubmitting}
           fieldErrors={fieldErrors}
         />
