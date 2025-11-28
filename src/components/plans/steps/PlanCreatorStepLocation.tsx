@@ -30,10 +30,16 @@ export function PlanCreatorStepLocation({ data, onChange, errors }: PlanCreatorS
   const [showNoLocationWarning, setShowNoLocationWarning] = useState(false);
 
   // Centrum mapy - lokalizacja użytkownika lub domyślne
-  const mapCenter = data.latitude && data.longitude ? { lat: data.latitude, lng: data.longitude } : DEFAULT_CENTER;
+  const mapCenter =
+    data.latitude !== undefined && data.longitude !== undefined
+      ? { lat: data.latitude, lng: data.longitude }
+      : DEFAULT_CENTER;
 
   // Pozycja markera - tylko jeśli ustawiona
-  const markerPosition = data.latitude && data.longitude ? { lat: data.latitude, lng: data.longitude } : undefined;
+  const markerPosition =
+    data.latitude !== undefined && data.longitude !== undefined
+      ? { lat: data.latitude, lng: data.longitude }
+      : undefined;
 
   /**
    * Obsługa wyszukiwania

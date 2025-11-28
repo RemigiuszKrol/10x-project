@@ -443,6 +443,7 @@ Endpoint jest zgodny z istniejącym wzorcem API w projekcie:
 ### 16.1 Zmiany
 
 Dodano obsługę średniej temperatury miesięcznej:
+
 - Migracja bazy danych: kolumna `temperature` (smallint, 0-100, NOT NULL DEFAULT 0)
 - Integracja Open-Meteo: parametr `temperature_2m_mean` (°C)
 - Normalizacja: -30°C do +50°C → 0-100

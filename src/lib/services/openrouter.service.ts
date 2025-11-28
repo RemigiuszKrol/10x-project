@@ -166,8 +166,6 @@ interface ResponseFormat {
  */
 export class OpenRouterService {
   private readonly config: Required<OpenRouterConfig>;
-  private requestCount = 0;
-  private lastRequestTime = 0;
 
   constructor(config: OpenRouterConfig) {
     this.config = this.normalizeConfig(config);
@@ -514,13 +512,23 @@ Oceń dopasowanie rośliny do tych warunków.`;
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw await this.handleHttpError(response);
+        const httpError = await this.handleHttpError(response);
+        throw httpError;
       }
 
       const data = await response.json();
       return JSON.parse(data.choices[0].message.content);
     } catch (error) {
       clearTimeout(timeoutId);
+      // Jeśli błąd jest już OpenRouterError, nie przekształcaj go
+      if (error instanceof OpenRouterError) {
+        throw error;
+      }
+      // Jeśli błąd jest zwykłym Error z handleHttpError (zawiera "OpenRouter API"), nie przekształcaj go
+      if (error instanceof Error && error.message.includes("OpenRouter API")) {
+        throw error;
+      }
+      // W przeciwnym razie przekształć błąd
       throw this.transformError(error);
     }
   }
@@ -538,8 +546,14 @@ Oceń dopasowanie rośliny do tych warunków.`;
 
     // 429: Rate limit
     if (status === 429) {
-      const retryAfter = parseInt(response.headers.get("Retry-After") || "60", 10);
-      return new RateLimitError(retryAfter);
+      try {
+        const retryAfterHeader = response.headers.get("Retry-After");
+        const retryAfter = parseInt(retryAfterHeader || "60", 10);
+        return new RateLimitError(retryAfter);
+      } catch {
+        // Jeśli headers.get() rzuca błąd, użyj domyślnej wartości
+        return new RateLimitError(60);
+      }
     }
 
     // 402: Brak środków
@@ -549,24 +563,45 @@ Oceń dopasowanie rośliny do tych warunków.`;
 
     // 500+: Błąd serwera OpenRouter
     if (status >= 500) {
-      return new Error("OpenRouter API jest niedostępne. Spróbuj później.");
+      return new Error("OpenRouter API jest niedostępne");
     }
 
     // Inne błędy
-    const errorBody = await response.text();
-    return new Error(`OpenRouter API error (${status}): ${errorBody}`);
+    try {
+      const errorBody = await response.text();
+      // Jeśli errorBody jest pusty, nie dodawaj go do komunikatu
+      if (errorBody) {
+        return new Error(`OpenRouter API error (${status}): ${errorBody}`);
+      }
+      return new Error(`OpenRouter API error (${status})`);
+    } catch {
+      // Jeśli response.text() rzuca błąd, zwróć błąd bez body
+      return new Error(`OpenRouter API error (${status})`);
+    }
   }
 
   /**
    * Przekształca błędy fetch/timeout
    */
   private transformError(error: unknown): Error {
-    // Timeout (AbortError)
-    if (error instanceof Error && error.name === "AbortError") {
-      return new TimeoutError();
+    // Timeout (AbortError) - sprawdzamy zarówno Error jak i DOMException
+    // DOMException może nie być instancją Error w niektórych środowiskach
+    if (error && typeof error === "object") {
+      const errorObj = error as { name?: string; constructor?: { name?: string } };
+      const errorName = errorObj.name || errorObj.constructor?.name;
+
+      // Sprawdź czy to AbortError (może być DOMException lub Error)
+      if (errorName === "AbortError") {
+        return new TimeoutError();
+      }
+
+      // Sprawdź czy to DOMException z name === "AbortError"
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return new TimeoutError();
+      }
     }
 
-    // Network error
+    // Network error (TypeError zwykle oznacza problem z fetch)
     if (error instanceof TypeError) {
       return new NetworkError();
     }

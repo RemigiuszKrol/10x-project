@@ -56,15 +56,27 @@ export const gridCellsQuerySchema = z
     message: "Cannot use both x/y and bbox filters together",
     path: ["x"],
   })
-  // Walidacja: bbox musi mieć x1 <= x2 i y1 <= y2
+  // Walidacja: bbox musi mieć x1 <= x2
   .refine(
     (data) => {
       if (!data.bbox) return true;
-      const [x1, y1, x2, y2] = data.bbox;
-      return x1 <= x2 && y1 <= y2;
+      const [x1, , x2] = data.bbox;
+      return x1 <= x2;
     },
     {
-      message: "bbox must have x1 <= x2 and y1 <= y2",
+      message: "bbox must have x1 <= x2",
+      path: ["bbox"],
+    }
+  )
+  // Walidacja: bbox musi mieć y1 <= y2
+  .refine(
+    (data) => {
+      if (!data.bbox) return true;
+      const [, y1, , y2] = data.bbox;
+      return y1 <= y2;
+    },
+    {
+      message: "bbox must have y1 <= y2",
       path: ["bbox"],
     }
   );

@@ -30,25 +30,64 @@ export type PlantPlacementPathParams = z.infer<typeof PlantPlacementPathSchema>;
  * Waliduje nazwę rośliny i opcjonalne score'y (1-5 lub null)
  */
 export const PlantPlacementUpsertSchema = z.object({
-  plant_name: z.string().trim().min(1, "Plant name is required").max(100, "Plant name must be at most 100 characters"),
+  plant_name: z
+    .string({ required_error: "Plant name is required" })
+    .trim()
+    .min(1, "Plant name is required")
+    .max(100, "Plant name must be at most 100 characters"),
   sunlight_score: z
-    .union([z.null(), z.number().int().min(1, "Sunlight score must be between 1 and 5").max(5)])
+    .union([
+      z.null(),
+      z
+        .number({ invalid_type_error: "Sunlight score must be between 1 and 5" })
+        .int("Sunlight score must be between 1 and 5")
+        .min(1, "Sunlight score must be between 1 and 5")
+        .max(5, "Sunlight score must be between 1 and 5"),
+    ])
     .optional()
     .transform((val) => (val === undefined ? null : val)),
   humidity_score: z
-    .union([z.null(), z.number().int().min(1, "Humidity score must be between 1 and 5").max(5)])
+    .union([
+      z.null(),
+      z
+        .number({ invalid_type_error: "Humidity score must be between 1 and 5" })
+        .int("Humidity score must be between 1 and 5")
+        .min(1, "Humidity score must be between 1 and 5")
+        .max(5, "Humidity score must be between 1 and 5"),
+    ])
     .optional()
     .transform((val) => (val === undefined ? null : val)),
   precip_score: z
-    .union([z.null(), z.number().int().min(1, "Precipitation score must be between 1 and 5").max(5)])
+    .union([
+      z.null(),
+      z
+        .number({ invalid_type_error: "Precipitation score must be between 1 and 5" })
+        .int("Precipitation score must be between 1 and 5")
+        .min(1, "Precipitation score must be between 1 and 5")
+        .max(5, "Precipitation score must be between 1 and 5"),
+    ])
     .optional()
     .transform((val) => (val === undefined ? null : val)),
   temperature_score: z
-    .union([z.null(), z.number().int().min(1, "Temperature score must be between 1 and 5").max(5)])
+    .union([
+      z.null(),
+      z
+        .number({ invalid_type_error: "Temperature score must be between 1 and 5" })
+        .int("Temperature score must be between 1 and 5")
+        .min(1, "Temperature score must be between 1 and 5")
+        .max(5, "Temperature score must be between 1 and 5"),
+    ])
     .optional()
     .transform((val) => (val === undefined ? null : val)),
   overall_score: z
-    .union([z.null(), z.number().int().min(1, "Overall score must be between 1 and 5").max(5)])
+    .union([
+      z.null(),
+      z
+        .number({ invalid_type_error: "Overall score must be between 1 and 5" })
+        .int("Overall score must be between 1 and 5")
+        .min(1, "Overall score must be between 1 and 5")
+        .max(5, "Overall score must be between 1 and 5"),
+    ])
     .optional()
     .transform((val) => (val === undefined ? null : val)),
 });
@@ -92,9 +131,8 @@ export const PlantPlacementsQuerySchema = z
       .max(100, "Name filter must be at most 100 characters")
       .optional(),
   })
-  .transform((data) => {
-    // Dekoduj cursor jeśli obecny
-    let cursorKey: PlantPlacementCursorKey | null = null;
+  .superRefine((data, ctx) => {
+    // Waliduj i dekoduj cursor jeśli obecny
     if (data.cursor) {
       try {
         // Najpierw zdekoduj URL-encoding (jeśli występuje)
@@ -121,34 +159,66 @@ export const PlantPlacementsQuerySchema = z
           typeof parsed.x === "number" &&
           typeof parsed.y === "number"
         ) {
-          cursorKey = parsed as PlantPlacementCursorKey;
+          // Struktura jest poprawna - nie dodawaj błędu
         } else {
-          throw new z.ZodError([
-            {
-              code: "custom",
-              message: "Invalid cursor structure",
-              path: ["cursor"],
-            },
-          ]);
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Invalid cursor structure",
+            path: ["cursor"],
+          });
         }
       } catch (error) {
-        if (error instanceof z.ZodError) {
-          // Jeśli to już ZodError, przekaż dalej
-          throw error;
-        }
-        // Inny błąd - loguj i rzuć ogólny błąd walidacji
+        // Błąd dekodowania Base64 lub parsowania JSON
         if (error instanceof Error) {
           logger.error("Błąd podczas dekodowania cursor", { error: error.message });
         } else {
           logger.error("Nieoczekiwany błąd podczas dekodowania cursor", { error: String(error) });
         }
-        throw new z.ZodError([
-          {
-            code: "custom",
-            message: "Invalid cursor format",
-            path: ["cursor"],
-          },
-        ]);
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid cursor format",
+          path: ["cursor"],
+        });
+      }
+    }
+  })
+  .transform((data) => {
+    // Dekoduj cursor jeśli obecny i poprawny
+    let cursorKey: PlantPlacementCursorKey | null = null;
+    if (data.cursor) {
+      try {
+        // Najpierw zdekoduj URL-encoding (jeśli występuje)
+        let decodedCursor = data.cursor;
+        try {
+          decodedCursor = decodeURIComponent(data.cursor);
+        } catch (error) {
+          // Jeśli dekodowanie URL się nie powiodło, użyj oryginalnego stringa
+          if (error instanceof Error) {
+            logger.warn("Nie udało się zdekodować URL cursor, używam oryginalnego", { error: error.message });
+          }
+          decodedCursor = data.cursor;
+        }
+
+        // Teraz zdekoduj Base64
+        const json = Buffer.from(decodedCursor, "base64").toString("utf-8");
+        const parsed = JSON.parse(json);
+
+        // Walidacja struktury (już zwalidowane w superRefine, ale sprawdzamy ponownie dla bezpieczeństwa)
+        if (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          typeof parsed.plant_name === "string" &&
+          typeof parsed.x === "number" &&
+          typeof parsed.y === "number"
+        ) {
+          cursorKey = parsed as PlantPlacementCursorKey;
+        }
+      } catch (error) {
+        // Błąd nie powinien wystąpić tutaj, bo już zwalidowaliśmy w superRefine
+        // Ale na wszelki wypadek logujemy
+        if (error instanceof Error) {
+          logger.error("Nieoczekiwany błąd podczas dekodowania cursor w transform", { error: error.message });
+        }
       }
     }
 

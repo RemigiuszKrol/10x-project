@@ -3,6 +3,7 @@
 ## 1. Przegląd
 
 Plan implementacji systemu obsługi błędów dla aplikacji PlantsPlanner, obejmujący:
+
 - **Toast notifications na froncie** - centralny system wyświetlania błędów API jako toastów dla użytkownika
 - **Logger na backendzie** - system rejestrowania błędów w konsoli z możliwością wyłączenia
 
@@ -32,17 +33,20 @@ Plan implementacji systemu obsługi błędów dla aplikacji PlantsPlanner, obejm
 ### 3.1 Frontend
 
 **Istniejące komponenty:**
+
 - `src/components/ui/sonner.tsx` - komponent Toaster z Sonner
 - `src/components/editor/ToastProvider.tsx` - provider dla toastów
 - Toast używany lokalnie w komponentach (`toast.success()`, `toast.error()`)
 
 **Problemy:**
+
 - Brak centralnego systemu obsługi błędów z API
 - Każdy hook mutation obsługuje błędy ręcznie
 - Brak spójności w komunikatach błędów
 - Duplikacja kodu obsługi błędów
 
 **Przykłady użycia toast:**
+
 - `src/components/editor/EditorLayout.tsx` - toast.success/error
 - `src/components/editor/SideDrawer/WeatherTab.tsx` - toast.success/info/error
 - `src/components/editor/SideDrawer/PlantsList.tsx` - toast.success/error
@@ -51,16 +55,19 @@ Plan implementacji systemu obsługi błędów dla aplikacji PlantsPlanner, obejm
 ### 3.2 Backend
 
 **Istniejące komponenty:**
+
 - `src/lib/http/errors.ts` - helpery `errorResponse()` i `jsonResponse()`
 - `src/lib/http/weather.errors.ts` - custom error classes dla Weather Service
 - Endpointy zwracają `ApiErrorResponse` z kodami błędów
 
 **Problemy:**
+
 - Brak logowania błędów w konsoli
 - Brak możliwości debugowania problemów produkcyjnych
 - Brak kontekstu błędów (endpoint, user, request)
 
 **Przykłady endpointów:**
+
 - `src/pages/api/plans/[plan_id]/weather/refresh.ts` - obsługa błędów bez logowania
 - `src/pages/api/plans/[plan_id].ts` - obsługa błędów bez logowania
 - `src/pages/api/plans/[plan_id]/grid/area-type.ts` - obsługa błędów bez logowania
@@ -72,10 +79,12 @@ Plan implementacji systemu obsługi błędów dla aplikacji PlantsPlanner, obejm
 **Katalog:** `src/lib/utils/`
 
 **Pliki do utworzenia:**
+
 1. `src/lib/utils/toast-error-handler.ts` - główna funkcja mapująca błędy API na toasty
 2. `src/lib/utils/api-error-mapper.ts` - mapowanie kodów błędów na komunikaty użytkownika
 
 **Pliki do modyfikacji:**
+
 1. `src/lib/hooks/mutations/useRefreshWeather.ts` - użycie toast error handler
 2. `src/lib/hooks/mutations/useUpdatePlan.ts` - użycie toast error handler
 3. `src/lib/hooks/mutations/useSetAreaType.ts` - użycie toast error handler
@@ -84,6 +93,7 @@ Plan implementacji systemu obsługi błędów dla aplikacji PlantsPlanner, obejm
 6. `src/lib/hooks/usePlansApi.ts` - użycie toast error handler (jeśli istnieje)
 
 **Integracja z React Query:**
+
 - Wykorzystanie `onError` w `useMutation` do automatycznego wyświetlania toastów
 - Opcjonalny parametr do wyłączenia automatycznego toast (dla custom obsługi)
 
@@ -92,10 +102,12 @@ Plan implementacji systemu obsługi błędów dla aplikacji PlantsPlanner, obejm
 **Katalog:** `src/lib/utils/`
 
 **Pliki do utworzenia:**
+
 1. `src/lib/utils/logger.ts` - główny moduł loggera z możliwością wyłączenia
 2. `src/lib/http/error-handler.ts` - wrapper dla obsługi błędów z logowaniem
 
 **Pliki do modyfikacji:**
+
 1. `src/pages/api/plans/[plan_id]/weather/refresh.ts` - dodanie logowania błędów
 2. `src/pages/api/plans/[plan_id].ts` - dodanie logowania błędów
 3. `src/pages/api/plans/[plan_id]/grid/area-type.ts` - dodanie logowania błędów
@@ -107,6 +119,7 @@ Plan implementacji systemu obsługi błędów dla aplikacji PlantsPlanner, obejm
 9. Wszystkie inne endpointy w `src/pages/api/`
 
 **Zmienne środowiskowe:**
+
 - `ENABLE_ERROR_LOGGING` (boolean, domyślnie `true`) - włącza/wyłącza logowanie
 
 ## 5. Szczegółowy Plan Implementacji
@@ -116,12 +129,14 @@ Plan implementacji systemu obsługi błędów dla aplikacji PlantsPlanner, obejm
 #### 5.1.1 Utworzenie `src/lib/utils/api-error-mapper.ts`
 
 **Funkcjonalność:**
+
 - Mapowanie kodów błędów `ApiErrorResponse["error"]["code"]` na komunikaty użytkownika
 - Obsługa różnych typów błędów z odpowiednimi komunikatami
 - Obsługa `field_errors` dla ValidationError
 - Lokalizacja komunikatów (na razie tylko polski)
 
 **Typy błędów do obsługi:**
+
 - `ValidationError` - błędy walidacji z `field_errors`
 - `Unauthorized` - brak autoryzacji (redirect do login)
 - `Forbidden` - brak uprawnień
@@ -135,6 +150,7 @@ Plan implementacji systemu obsługi błędów dla aplikacji PlantsPlanner, obejm
 #### 5.1.2 Utworzenie `src/lib/utils/toast-error-handler.ts`
 
 **Funkcjonalność:**
+
 - Funkcja `handleApiError(error: unknown, options?: ToastErrorOptions)`
 - Parsowanie `ApiErrorResponse` z odpowiedzi HTTP
 - Wywołanie `api-error-mapper` do mapowania na komunikaty
@@ -143,6 +159,7 @@ Plan implementacji systemu obsługi błędów dla aplikacji PlantsPlanner, obejm
 - Obsługa błędów parsowania JSON
 
 **Opcje:**
+
 - `skipToast?: boolean` - wyłącza automatyczny toast
 - `customMessage?: string` - nadpisuje domyślny komunikat
 - `onError?: (error: ApiErrorResponse) => void` - callback dla custom obsługi
@@ -150,6 +167,7 @@ Plan implementacji systemu obsługi błędów dla aplikacji PlantsPlanner, obejm
 #### 5.1.3 Modyfikacja React Query Hooks
 
 **Wzorzec użycia:**
+
 ```typescript
 useMutation({
   mutationFn: async (params) => {
@@ -165,6 +183,7 @@ useMutation({
 ```
 
 **Hooks do modyfikacji:**
+
 1. `src/lib/hooks/mutations/useRefreshWeather.ts`
 2. `src/lib/hooks/mutations/useUpdatePlan.ts`
 3. `src/lib/hooks/mutations/useSetAreaType.ts`
@@ -172,6 +191,7 @@ useMutation({
 5. `src/lib/hooks/mutations/useAIMutations.ts`
 
 **Zachowanie:**
+
 - Usunięcie ręcznej obsługi błędów HTTP z każdego hooka
 - Zastąpienie przez `handleApiError()` w `onError`
 - Zachowanie custom obsługi tam gdzie jest potrzebna (np. 409 confirmation)
@@ -181,6 +201,7 @@ useMutation({
 #### 5.2.1 Utworzenie `src/lib/utils/logger.ts`
 
 **Funkcjonalność:**
+
 - Klasa `Logger` z metodami: `error()`, `warn()`, `info()`, `debug()`
 - Sprawdzanie zmiennej środowiskowej `ENABLE_ERROR_LOGGING`
 - Jeśli wyłączone - logger jest no-op (nic nie robi)
@@ -192,6 +213,7 @@ useMutation({
   - Opcjonalne dodatkowe dane
 
 **Format logów:**
+
 ```typescript
 {
   timestamp: "2025-01-21T10:30:00.000Z",
@@ -208,18 +230,21 @@ useMutation({
 ```
 
 **Eksport:**
+
 - Singleton `logger` - główna instancja loggera
 - Funkcje pomocnicze: `logError()`, `logWarning()`, `logInfo()`
 
 #### 5.2.2 Utworzenie `src/lib/http/error-handler.ts`
 
 **Funkcjonalność:**
+
 - Funkcja `logApiError(error: unknown, context: ErrorContext): void`
 - Parsowanie różnych typów błędów (custom errors, Supabase errors, unknown errors)
 - Wywołanie loggera z odpowiednim kontekstem
 - Nie zmienia istniejącego flow obsługi błędów (tylko dodaje logowanie)
 
 **Kontekst błędów:**
+
 ```typescript
 interface ErrorContext {
   endpoint: string; // "POST /api/plans/:plan_id/weather/refresh"
@@ -233,6 +258,7 @@ interface ErrorContext {
 #### 5.2.3 Modyfikacja Endpointów API
 
 **Wzorzec użycia:**
+
 ```typescript
 export async function POST(ctx: APIContext) {
   try {
@@ -245,7 +271,7 @@ export async function POST(ctx: APIContext) {
       user_id: user?.id,
       params: { plan_id: ctx.params.plan_id },
     });
-    
+
     // Istniejąca obsługa błędów (bez zmian)
     return handleWeatherServiceError(error);
   }
@@ -253,6 +279,7 @@ export async function POST(ctx: APIContext) {
 ```
 
 **Endpointy do modyfikacji:**
+
 1. `src/pages/api/plans/[plan_id]/weather/refresh.ts`
 2. `src/pages/api/plans/[plan_id].ts` (PATCH, DELETE)
 3. `src/pages/api/plans/index.ts` (POST, GET)
@@ -266,6 +293,7 @@ export async function POST(ctx: APIContext) {
 11. Wszystkie endpointy w `src/pages/api/auth/`
 
 **Zasady:**
+
 - Logowanie TYLKO błędów (nie sukcesów)
 - Logowanie PRZED zwróceniem odpowiedzi
 - Nie logowanie wrażliwych danych (hasła, tokeny)
@@ -276,11 +304,13 @@ export async function POST(ctx: APIContext) {
 **Plik:** `src/env.d.ts`
 
 **Dodanie:**
+
 ```typescript
 readonly ENABLE_ERROR_LOGGING?: string; // "true" | "false" | undefined (domyślnie "true")
 ```
 
 **Domyślne zachowanie:**
+
 - Jeśli `ENABLE_ERROR_LOGGING` nie jest ustawione → logowanie włączone
 - Jeśli `ENABLE_ERROR_LOGGING="false"` → logowanie wyłączone
 - Jeśli `ENABLE_ERROR_LOGGING="true"` → logowanie włączone
@@ -290,6 +320,7 @@ readonly ENABLE_ERROR_LOGGING?: string; // "true" | "false" | undefined (domyśl
 ### 6.1 Frontend
 
 **Nowe pliki:**
+
 ```
 src/lib/utils/
   ├── api-error-mapper.ts          # Mapowanie kodów błędów na komunikaty
@@ -297,6 +328,7 @@ src/lib/utils/
 ```
 
 **Modyfikowane pliki:**
+
 ```
 src/lib/hooks/mutations/
   ├── useRefreshWeather.ts         # Dodanie handleApiError w onError
@@ -307,6 +339,7 @@ src/lib/hooks/mutations/
 ```
 
 **Opcjonalne modyfikacje:**
+
 ```
 src/components/editor/
   ├── EditorLayout.tsx             # Możliwe uproszczenie obsługi błędów
@@ -317,6 +350,7 @@ src/components/editor/
 ### 6.2 Backend
 
 **Nowe pliki:**
+
 ```
 src/lib/utils/
   └── logger.ts                    # Główny moduł loggera
@@ -326,6 +360,7 @@ src/lib/http/
 ```
 
 **Modyfikowane pliki:**
+
 ```
 src/env.d.ts                       # Dodanie ENABLE_ERROR_LOGGING
 
@@ -357,6 +392,7 @@ src/pages/api/
 ## 7. Kolejność Implementacji
 
 ### Faza 1: Backend Logger (Podstawa)
+
 1. ✅ Utworzenie `src/lib/utils/logger.ts`
 2. ✅ Dodanie `ENABLE_ERROR_LOGGING` do `src/env.d.ts`
 3. ✅ Utworzenie `src/lib/http/error-handler.ts`
@@ -364,12 +400,14 @@ src/pages/api/
 5. ✅ Testowanie loggera (włączenie/wyłączenie)
 
 ### Faza 2: Frontend Toast Handler (Podstawa)
+
 1. ✅ Utworzenie `src/lib/utils/api-error-mapper.ts`
 2. ✅ Utworzenie `src/lib/utils/toast-error-handler.ts`
 3. ✅ Modyfikacja przykładowego hooka (np. `useRefreshWeather.ts`)
 4. ✅ Testowanie toast handlera
 
 ### Faza 3: Integracja Backend (Wszystkie Endpointy)
+
 1. ✅ Modyfikacja wszystkich endpointów w `src/pages/api/plans/`
 2. ✅ Modyfikacja `src/pages/api/profile.ts`
 3. ✅ Modyfikacja `src/pages/api/analytics/events.ts`
@@ -377,11 +415,13 @@ src/pages/api/
 5. ✅ Testowanie logowania we wszystkich scenariuszach
 
 ### Faza 4: Integracja Frontend (Wszystkie Hooks)
+
 1. ✅ Modyfikacja wszystkich hooks w `src/lib/hooks/mutations/`
 2. ✅ Opcjonalne uproszczenie obsługi błędów w komponentach
 3. ✅ Testowanie toastów we wszystkich scenariuszach
 
 ### Faza 5: Dokumentacja i Refaktoring
+
 1. ✅ Aktualizacja dokumentacji
 2. ✅ Refaktoring duplikacji kodu (jeśli występuje)
 3. ✅ Finalne testy end-to-end
@@ -391,6 +431,7 @@ src/pages/api/
 ### 8.1 Backend Logger
 
 **Scenariusze testowe:**
+
 - ✅ Logger włączony - błędy są logowane w konsoli
 - ✅ Logger wyłączony (`ENABLE_ERROR_LOGGING=false`) - błędy nie są logowane
 - ✅ Różne typy błędów (ValidationError, NotFound, InternalError)
@@ -401,6 +442,7 @@ src/pages/api/
 ### 8.2 Frontend Toast Handler
 
 **Scenariusze testowe:**
+
 - ✅ ValidationError - wyświetla toast z field_errors
 - ✅ Unauthorized - wyświetla toast i redirect do login
 - ✅ NotFound - wyświetla toast z komunikatem
@@ -422,12 +464,12 @@ useMutation({
       method: "PATCH",
       body: JSON.stringify(params),
     });
-    
+
     if (!response.ok) {
       const errorData: ApiErrorResponse = await response.json();
       throw new Error(JSON.stringify(errorData));
     }
-    
+
     return await response.json();
   },
   onError: (error) => {
@@ -446,7 +488,7 @@ export async function POST(ctx: APIContext) {
   const supabase = ctx.locals.supabase;
   const { data: userData } = await supabase.auth.getUser();
   const user = userData?.user;
-  
+
   try {
     // ... logika endpointu
     return jsonResponse({ data: result }, 200);
@@ -458,7 +500,7 @@ export async function POST(ctx: APIContext) {
       user_id: user?.id,
       params: { plan_id: ctx.params.plan_id },
     });
-    
+
     // Istniejąca obsługa błędów
     return handleWeatherServiceError(error);
   }
@@ -499,6 +541,7 @@ export async function POST(ctx: APIContext) {
 ## 12. Checklist Implementacji
 
 ### Backend Logger
+
 - [ ] Utworzenie `src/lib/utils/logger.ts`
 - [ ] Dodanie `ENABLE_ERROR_LOGGING` do `src/env.d.ts`
 - [ ] Utworzenie `src/lib/http/error-handler.ts`
@@ -517,6 +560,7 @@ export async function POST(ctx: APIContext) {
 - [ ] Testowanie różnych typów błędów
 
 ### Frontend Toast Handler
+
 - [ ] Utworzenie `src/lib/utils/api-error-mapper.ts`
 - [ ] Utworzenie `src/lib/utils/toast-error-handler.ts`
 - [ ] Modyfikacja `src/lib/hooks/mutations/useRefreshWeather.ts`
@@ -532,4 +576,3 @@ export async function POST(ctx: APIContext) {
 
 **Status:** 📋 Plan gotowy do implementacji  
 **Następny krok:** Rozpoczęcie Fazy 1 - Backend Logger
-

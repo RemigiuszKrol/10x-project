@@ -18,12 +18,13 @@ export interface ProfileFormProps {
   isSubmitting: boolean;
   onSubmit: (values: ProfileFormValues) => void;
   fieldErrors?: ProfileFormErrors;
+  onReset?: () => void;
 }
 
 /**
  * Formularz edycji preferencji profilu
  */
-export function ProfileForm({ initialValues, isSubmitting, onSubmit, fieldErrors }: ProfileFormProps) {
+export function ProfileForm({ initialValues, isSubmitting, onSubmit, fieldErrors, onReset }: ProfileFormProps) {
   const [values, setValues] = useState<ProfileFormValues>(initialValues);
 
   // Aktualizuj wartości gdy initialValues się zmienią (np. po sukcesie)
@@ -40,6 +41,7 @@ export function ProfileForm({ initialValues, isSubmitting, onSubmit, fieldErrors
 
   const handleReset = () => {
     setValues(initialValues);
+    onReset?.();
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {

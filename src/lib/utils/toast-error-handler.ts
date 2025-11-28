@@ -38,9 +38,24 @@ export interface ToastErrorOptions {
  * @param error - Błąd z React Query (może być Error, ApiErrorResponse, string, itp.)
  * @returns ApiErrorResponse lub null jeśli nie można sparsować
  */
+/**
+ * Sprawdza czy obiekt jest prawidłowym ApiErrorResponse
+ */
+function isValidApiErrorResponse(obj: unknown): obj is ApiErrorResponse {
+  return (
+    obj !== null &&
+    typeof obj === "object" &&
+    "error" in obj &&
+    typeof (obj as { error: unknown }).error === "object" &&
+    (obj as { error: { code?: unknown; message?: unknown } }).error !== null &&
+    "code" in (obj as { error: { code?: unknown } }).error &&
+    "message" in (obj as { error: { message?: unknown } }).error
+  );
+}
+
 function parseApiError(error: unknown): ApiErrorResponse | null {
   // Jeśli to już ApiErrorResponse
-  if (error && typeof error === "object" && "error" in error) {
+  if (error && typeof error === "object" && isValidApiErrorResponse(error)) {
     return error as ApiErrorResponse;
   }
 
@@ -48,7 +63,7 @@ function parseApiError(error: unknown): ApiErrorResponse | null {
   if (error instanceof Error) {
     try {
       const parsed = JSON.parse(error.message);
-      if (parsed && typeof parsed === "object" && "error" in parsed) {
+      if (isValidApiErrorResponse(parsed)) {
         return parsed as ApiErrorResponse;
       }
     } catch (parseError) {
@@ -63,7 +78,7 @@ function parseApiError(error: unknown): ApiErrorResponse | null {
   if (typeof error === "string") {
     try {
       const parsed = JSON.parse(error);
-      if (parsed && typeof parsed === "object" && "error" in parsed) {
+      if (isValidApiErrorResponse(parsed)) {
         return parsed as ApiErrorResponse;
       }
     } catch (parseError) {
@@ -93,9 +108,10 @@ export function handleApiError(error: unknown, options: ToastErrorOptions = {}):
   if (!apiError) {
     if (skipToast) return;
 
-    // Sprawdź czy to błąd sieciowy
+    // Sprawdź czy to błąd sieciowy (case-insensitive)
     if (error instanceof Error) {
-      if (error.message.includes("fetch") || error.message.includes("network")) {
+      const lowerMessage = error.message.toLowerCase();
+      if (lowerMessage.includes("fetch") || lowerMessage.includes("network")) {
         toast.error("Brak połączenia z serwerem", {
           description: "Sprawdź połączenie internetowe i spróbuj ponownie.",
         });
@@ -140,9 +156,17 @@ export function handleApiError(error: unknown, options: ToastErrorOptions = {}):
       apiError.error.details?.field_errors
     );
 
-    toast.error(errorMessage.title, {
-      ...(errorMessage.description && { description: errorMessage.description }),
-    });
+    // Walidacja - upewnij się, że errorMessage ma title
+    if (errorMessage && errorMessage.title) {
+      toast.error(errorMessage.title, {
+        ...(errorMessage.description && { description: errorMessage.description }),
+      });
+    } else {
+      // Fallback dla nieoczekiwanych błędów
+      toast.error(customMessage || "Wystąpił nieoczekiwany błąd", {
+        description: apiError.error.message,
+      });
+    }
   }
 }
 

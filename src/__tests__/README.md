@@ -40,16 +40,16 @@ export function myFunction(input: string): string {
 }
 
 // src/__tests__/lib/myFunction.test.ts
-import { describe, it, expect } from 'vitest';
-import { myFunction } from '@/lib/myFunction';
+import { describe, it, expect } from "vitest";
+import { myFunction } from "@/lib/myFunction";
 
-describe('myFunction', () => {
-  it('should transform input to uppercase', () => {
-    expect(myFunction('hello')).toBe('HELLO');
+describe("myFunction", () => {
+  it("should transform input to uppercase", () => {
+    expect(myFunction("hello")).toBe("HELLO");
   });
 
-  it('should handle empty string', () => {
-    expect(myFunction('')).toBe('');
+  it("should handle empty string", () => {
+    expect(myFunction("")).toBe("");
   });
 });
 ```
@@ -72,10 +72,10 @@ describe('MyComponent', () => {
   it('handles user interaction', async () => {
     const handleClick = vi.fn();
     const user = userEvent.setup();
-    
+
     render(<MyComponent onClick={handleClick} />);
     await user.click(screen.getByRole('button'));
-    
+
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 });
@@ -85,25 +85,25 @@ describe('MyComponent', () => {
 
 ```typescript
 // src/__tests__/mocks/handlers.ts
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse } from "msw";
 
 export const handlers = [
-  http.get('/api/data', () => {
-    return HttpResponse.json({ data: 'mocked' });
+  http.get("/api/data", () => {
+    return HttpResponse.json({ data: "mocked" });
   }),
 ];
 
 // W teście
-import { server } from '@/__tests__/mocks/server';
-import { http, HttpResponse } from 'msw';
+import { server } from "@/__tests__/mocks/server";
+import { http, HttpResponse } from "msw";
 
-it('handles API error', async () => {
+it("handles API error", async () => {
   server.use(
-    http.get('/api/data', () => {
-      return HttpResponse.json({ error: 'Failed' }, { status: 500 });
+    http.get("/api/data", () => {
+      return HttpResponse.json({ error: "Failed" }, { status: 500 });
     })
   );
-  
+
   // ... test code
 });
 ```
@@ -119,6 +119,7 @@ it('handles API error', async () => {
 ## Dostępne narzędzia
 
 ### Vitest API
+
 - `describe()` - grupuj powiązane testy
 - `it()` / `test()` - pojedynczy test
 - `expect()` - asercje
@@ -127,12 +128,14 @@ it('handles API error', async () => {
 - `beforeEach()` / `afterEach()` - setup/teardown
 
 ### React Testing Library
+
 - `render()` - renderuj komponent
 - `screen` - zapytania o elementy DOM
 - `userEvent` - symulacja interakcji użytkownika
 - `waitFor()` - czekaj na asynchroniczne operacje
 
 ### Custom matchers (jest-dom)
+
 - `toBeInTheDocument()` - element jest w DOM
 - `toBeVisible()` - element jest widoczny
 - `toBeDisabled()` - element jest wyłączony
@@ -142,16 +145,19 @@ it('handles API error', async () => {
 ## Debugowanie
 
 ### UI Mode (najlepsze)
+
 ```bash
 npm run test:ui
 ```
 
 ### Watch Mode
+
 ```bash
 npm run test:watch
 ```
 
 ### Filtrowanie testów
+
 ```bash
 # Tylko testy pasujące do wzorca
 npm test -- -t "nazwa testu"
@@ -163,4 +169,3 @@ npm test -- src/__tests__/lib/utils.test.ts
 ## Więcej informacji
 
 Zobacz [TESTING.md](../../TESTING.md) w głównym katalogu projektu.
-

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@/db/supabase.client";
-import type { GridAreaTypeResultDto, SetAreaTypeServiceParams } from "@/types";
-import { PlantRemovalRequiresConfirmationError, ValidationError } from "@/lib/http/errors";
+import type { GridAreaTypeResultDto, PlanDto, SetAreaTypeServiceParams } from "@/types";
+import { NotFoundError, PlantRemovalRequiresConfirmationError, ValidationError } from "@/lib/http/errors";
 
 /**
  * Ustawia typ komórek w prostokątnym obszarze siatki
@@ -13,7 +13,8 @@ import { PlantRemovalRequiresConfirmationError, ValidationError } from "@/lib/ht
  * @param userId - UUID użytkownika (z sesji)
  * @param params - Parametry operacji (plan_id, współrzędne, typ, potwierdzenie)
  * @returns Wynik operacji z liczbą zmienionych komórek i usuniętych roślin
- * @throws ValidationError - gdy współrzędne wykraczają poza granice siatki
+ * @throws NotFoundError - gdy plan nie istnieje lub nie należy do użytkownika
+ * @throws ValidationError - gdy współrzędne wykraczają poza granice siatki lub są nieprawidłowe
  * @throws PlantRemovalRequiresConfirmationError - gdy wymagane jest potwierdzenie usunięcia roślin
  */
 export async function setAreaType(
@@ -36,22 +37,34 @@ export async function setAreaType(
   }
 
   if (!planData) {
-    // Plan nie istnieje lub nie należy do użytkownika - endpoint powinien zwrócić 404
-    return { affected_cells: 0, removed_plants: 0 };
+    throw new NotFoundError("Plan not found or access denied");
   }
 
-  // Type assertion dla grid dimensions
-  const plan = planData as { id: string; grid_width: number | null; grid_height: number | null };
+  // 2. Walidacja wymiarów siatki
+  if ((planData as PlanDto).grid_width === null || (planData as PlanDto).grid_height === null) {
+    throw new ValidationError("Grid dimensions are not set for this plan", "grid_dimensions");
+  }
 
-  // 2. Walidacja granic siatki
-  if (x1 < 0 || x2 >= (plan.grid_width ?? 0) || y1 < 0 || y2 >= (plan.grid_height ?? 0)) {
+  const gridWidth = (planData as PlanDto).grid_width;
+  const gridHeight = (planData as PlanDto).grid_height;
+
+  // 3. Walidacja kolejności współrzędnych
+  if (x1 > x2 || y1 > y2) {
     throw new ValidationError(
-      `Coordinates out of bounds. Grid dimensions: ${plan.grid_width}x${plan.grid_height}, provided: x1=${x1}, y1=${y1}, x2=${x2}, y2=${y2}`,
+      `Invalid coordinate order. x1 (${x1}) must be <= x2 (${x2}) and y1 (${y1}) must be <= y2 (${y2})`,
+      "coordinates"
+    );
+  }
+
+  // 4. Walidacja granic siatki
+  if (x1 < 0 || x2 >= (gridWidth ?? 0) || y1 < 0 || y2 >= (gridHeight ?? 0)) {
+    throw new ValidationError(
+      `Coordinates out of bounds. Grid dimensions: ${gridWidth}x${gridHeight}, provided: x1=${x1}, y1=${y1}, x2=${x2}, y2=${y2}`,
       "x1"
     );
   }
 
-  // 3. Jeśli nowy typ ≠ 'soil', sprawdź czy są rośliny w obszarze
+  // 5. Jeśli nowy typ ≠ 'soil', sprawdź czy są rośliny w obszarze
   let plantCount = 0;
   if (type !== "soil") {
     const { count, error: countError } = await supabase
@@ -78,7 +91,7 @@ export async function setAreaType(
     }
   }
 
-  // 4. Wykonaj aktualizację komórek siatki
+  // 6. Wykonaj aktualizację komórek siatki
   const { error: updateError } = await supabase
     .from("grid_cells")
     .update({ type } as never)
@@ -92,10 +105,10 @@ export async function setAreaType(
     throw updateError;
   }
 
-  // 5. Oblicz liczbę zmienionych komórek (geometrycznie)
+  // 7. Oblicz liczbę zmienionych komórek (geometrycznie)
   const affectedCells = (x2 - x1 + 1) * (y2 - y1 + 1);
 
-  // 6. Rośliny są usuwane przez triggery bazy danych gdy typ ≠ 'soil'
+  // 8. Rośliny są usuwane przez triggery bazy danych gdy typ ≠ 'soil'
   // Zwracamy wcześniej policzoną liczbę roślin
   const removedPlants = type !== "soil" ? plantCount : 0;
 

@@ -8,6 +8,7 @@ import type {
   PlanGridMetadata,
 } from "@/types";
 import { ValidationError } from "@/lib/http/errors";
+import { PlanNotFoundError } from "@/lib/http/weather.errors";
 import { parseGridCursor, type GridCellCursorPayload } from "@/lib/validation/grid";
 
 /**
@@ -47,8 +48,7 @@ export async function listGridCells(
 
   if (!planData) {
     // Plan nie istnieje lub nie należy do użytkownika
-    // Zwracamy pustą listę (endpoint powinien obsłużyć jako 404)
-    return { data: [], pagination: { next_cursor: null } };
+    throw new PlanNotFoundError(planId);
   }
 
   // Type assertion dla grid dimensions
@@ -163,14 +163,8 @@ export async function listGridCells(
   }
   const typedCells = cells as CellRow[];
 
-  // 9. Wykryj czy jest następna strona
-  const dataToReturn = typedCells;
-
-  // 10. Wygeneruj kursor dla następnej strony
-  const nextCursor: string | null = null;
-
-  // 11. Mapuj dane do DTO (już są w odpowiednim formacie)
-  const dtoData: GridCellDto[] = dataToReturn.map((cell) => ({
+  // 9. Mapuj dane do DTO (już są w odpowiednim formacie)
+  const dtoData: GridCellDto[] = typedCells.map((cell) => ({
     x: cell.x,
     y: cell.y,
     type: cell.type,
@@ -179,7 +173,7 @@ export async function listGridCells(
 
   return {
     data: dtoData,
-    pagination: { next_cursor: nextCursor },
+    pagination: { next_cursor: null },
   };
 }
 
@@ -222,21 +216,40 @@ export async function getPlanGridMetadata(
  * Używa UPSERT aby zapewnić idempotencję (jeśli komórka nie istnieje, zostanie utworzona)
  *
  * @param supabase - Klient Supabase z kontekstu
+ * @param userId - UUID użytkownika (z sesji)
  * @param planId - UUID planu
  * @param x - Współrzędna X komórki (0-indexed)
  * @param y - Współrzędna Y komórki (0-indexed)
  * @param command - Komenda z nowym typem komórki
  * @returns Zaktualizowana komórka siatki
+ * @throws PlanNotFoundError - gdy plan nie istnieje lub nie należy do użytkownika
+ * @throws ValidationError - gdy współrzędne wykraczają poza granice siatki
  * @throws Błąd jeśli operacja nie powiodła się (np. naruszenie constraintów, błąd RLS)
  */
 export async function updateGridCellType(
   supabase: SupabaseClient,
+  userId: string,
   planId: string,
   x: number,
   y: number,
   command: GridCellUpdateCommand
 ): Promise<GridCellDto> {
-  // Wykonaj UPSERT na grid_cells
+  // 1. Pobierz metadane siatki i zweryfikuj uprawnienia
+  const metadata = await getPlanGridMetadata(supabase, userId, planId);
+
+  if (!metadata) {
+    throw new PlanNotFoundError(planId);
+  }
+
+  // 2. Walidacja zakresów współrzędnych
+  if (x < 0 || x >= metadata.grid_width || y < 0 || y >= metadata.grid_height) {
+    throw new ValidationError(
+      `Coordinates out of bounds. Grid dimensions: ${metadata.grid_width}x${metadata.grid_height}, provided: x=${x}, y=${y}`,
+      "x"
+    );
+  }
+
+  // 3. Wykonaj UPSERT na grid_cells
   // onConflict określa kolumny primary key (plan_id, x, y)
   // ignoreDuplicates: false oznacza, że w przypadku konfliktu rekord zostanie zaktualizowany
   const { data, error } = await supabase

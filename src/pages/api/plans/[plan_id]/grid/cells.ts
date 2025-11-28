@@ -3,6 +3,7 @@ import type { ApiListResponse, GridCellDto } from "@/types";
 import { listGridCells } from "@/lib/services/grid-cells.service";
 import { gridCellsPathSchema, gridCellsQuerySchema } from "@/lib/validation/grid";
 import { jsonResponse, errorResponse, ValidationError } from "@/lib/http/errors";
+import { PlanNotFoundError } from "@/lib/http/weather.errors";
 
 /**
  * Wyłączenie pre-renderingu dla tego endpointu (SSR only)
@@ -126,27 +127,16 @@ export async function GET(ctx: APIContext): Promise<Response> {
       order: query.order,
     });
 
-    // Not Found: Jeśli plan nie istnieje lub brak danych (sprawdzamy czy data jest pusta i to pierwsze zapytanie)
-    if (result.data.length === 0 && !query.cursor) {
-      // Weryfikujemy czy to brak planu czy po prostu brak komórek
-      // Service zwraca pustą listę gdy plan nie istnieje, więc sprawdzamy to osobno
-      const { data: planCheck } = await supabase
-        .from("plans")
-        .select("id")
-        .eq("id", plan_id)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!planCheck) {
-        return jsonResponse(errorResponse("NotFound", "Plan not found."), 404);
-      }
-    }
-
     // Success: Zwróć listę komórek
     const response: ApiListResponse<GridCellDto> = result;
 
     return jsonResponse(response, 200);
   } catch (error) {
+    // Obsługa PlanNotFoundError z serwisu (404)
+    if (error instanceof PlanNotFoundError) {
+      return jsonResponse(errorResponse("NotFound", error.message), 404);
+    }
+
     // Obsługa ValidationError z serwisu
     if (error instanceof ValidationError) {
       const fieldErrors: Record<string, string> = {};

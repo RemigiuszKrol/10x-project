@@ -42,6 +42,7 @@ src/lib/
 #### A. Plant Search Endpoint
 
 **Input:**
+
 ```json
 {
   "query": "pomidor"
@@ -49,6 +50,7 @@ src/lib/
 ```
 
 **Output:**
+
 ```json
 {
   "data": {
@@ -69,6 +71,7 @@ src/lib/
 ```
 
 **Wymagania:**
+
 - Zwraca 1-5 kandydatów najbardziej pasujących do query
 - Każdy kandydat ma `name` (nazwa zwyczajna), `latin_name` (opcjonalna), `source: "ai"`
 - Timeout: 10s
@@ -77,6 +80,7 @@ src/lib/
 #### B. Plant Fit Assessment Endpoint
 
 **Input:**
+
 ```json
 {
   "plan_id": "uuid",
@@ -87,6 +91,7 @@ src/lib/
 ```
 
 **Output:**
+
 ```json
 {
   "data": {
@@ -118,6 +123,7 @@ src/lib/
 ```
 
 **Wymagania:**
+
 - Scores: integer 1-5 (1=złe, 5=doskonałe)
 - `explanation`: string opisujący dlaczego dane scores (min 50 znaków)
 - `season_info`: opcjonalny obiekt z ocenami sezonowymi
@@ -130,30 +136,31 @@ Backend dostarcza AI następujące dane o działce:
 
 ```typescript
 {
-  plan_id: string;           // UUID planu
+  plan_id: string; // UUID planu
   location: {
-    lat: number;             // Szerokość geograficzna
-    lon: number;             // Długość geograficzna
-    address: string;         // Adres działki
-  };
-  orientation: number;       // Orientacja 0-359° (0 = północ)
+    lat: number; // Szerokość geograficzna
+    lon: number; // Długość geograficzna
+    address: string; // Adres działki
+  }
+  orientation: number; // Orientacja 0-359° (0 = północ)
   climate: {
-    zone: string;            // Strefa klimatyczna (np. "6a", "7b")
+    zone: string; // Strefa klimatyczna (np. "6a", "7b")
     annual_temp_avg: number; // Średnia temp. roczna (°C)
-    annual_precip: number;   // Roczne opady (mm)
+    annual_precip: number; // Roczne opady (mm)
     frost_free_days: number; // Dni bez przymrozków
-  };
+  }
   cell: {
-    x: number;               // Współrzędna X komórki
-    y: number;               // Współrzędna Y komórki
-    type: "soil";            // Typ komórki (zawsze 'soil' dla roślin)
-    sunlight_hours: number;  // Szacowane nasłonecznienie (h/dzień)
-  };
-  plant_name: string;        // Nazwa rośliny do oceny
+    x: number; // Współrzędna X komórki
+    y: number; // Współrzędna Y komórki
+    type: "soil"; // Typ komórki (zawsze 'soil' dla roślin)
+    sunlight_hours: number; // Szacowane nasłonecznienie (h/dzień)
+  }
+  plant_name: string; // Nazwa rośliny do oceny
 }
 ```
 
 **Źródła danych:**
+
 - Lokalizacja: Google Maps Geocoding API
 - Dane pogodowe: Open-Meteo API (już zaimplementowane w `src/lib/integrations/open-meteo.ts`)
 - Nasłonecznienie: Kalkulowane na podstawie orientation i położenia komórki
@@ -175,6 +182,7 @@ PUBLIC_USE_MOCK_AI=true
 Mock data znajdują się w `src/lib/mocks/ai-mock-data.ts`:
 
 **Plant Search:**
+
 - `"pomidor"` → 3 kandydaty (pomidor, koktajlowy, malinowy)
 - `"ogórek"` → 2 kandydaty
 - `"marchew"` → 1 kandydat
@@ -184,6 +192,7 @@ Mock data znajdują się w `src/lib/mocks/ai-mock-data.ts`:
 - Inne → pusta lista
 
 **Plant Fit:**
+
 - `"pomidor"` → Idealne warunki (scores 4-5)
 - `"ogórek"` → Dobre warunki (scores 3-4)
 - `"róża"` → Średnie warunki (scores 3)
@@ -349,10 +358,7 @@ export const POST: APIRoute = async ({ request }) => {
     );
   } catch (error) {
     console.error("AI search error:", error);
-    return new Response(
-      JSON.stringify({ error: "AI service unavailable" }),
-      { status: 504 }
-    );
+    return new Response(JSON.stringify({ error: "AI service unavailable" }), { status: 504 });
   }
 };
 ```
@@ -383,10 +389,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .single();
 
     if (!plan) {
-      return new Response(
-        JSON.stringify({ error: "Plan not found" }),
-        { status: 404 }
-      );
+      return new Response(JSON.stringify({ error: "Plan not found" }), { status: 404 });
     }
 
     // 2. Pobierz dane pogodowe
@@ -440,16 +443,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const result = JSON.parse(completion.choices[0].message.content || "{}");
 
-    return new Response(
-      JSON.stringify({ data: result }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ data: result }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("AI fit error:", error);
-    return new Response(
-      JSON.stringify({ error: "AI service unavailable" }),
-      { status: 504 }
-    );
+    return new Response(JSON.stringify({ error: "AI service unavailable" }), { status: 504 });
   }
 };
 ```
@@ -489,6 +489,7 @@ npm test
 ### 5.4 Error Scenarios
 
 Przetestuj:
+
 - ❌ Timeout (>10s) → `AIErrorDialog` z opcją retry
 - ❌ Rate limit (429) → `AIErrorDialog` z czasem oczekiwania
 - ❌ Bad JSON → `AIErrorDialog` z opcją manual entry
@@ -511,6 +512,7 @@ console.log("[AIService] response:", result);
 ### 6.2 Network Tab
 
 W DevTools → Network:
+
 - Sprawdź timing (≤10s)
 - Sprawdź payloads (request/response)
 - Sprawdź status codes (200, 429, 504)
@@ -533,6 +535,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 ```
 
 Sprawdź:
+
 - Query keys: `["plants", "search", query]`, `["plants", "fit", command]`
 - Cache status (fresh, stale, fetching)
 - Error states
@@ -566,6 +569,7 @@ const debouncedQuery = useDebouncedValue(query, 500); // 500ms delay
 ### 7.3 Rate Limiting
 
 Backend powinien implementować rate limiting per user:
+
 - Max 60 requests / minute
 - Header: `X-RateLimit-Remaining: 59`
 - Response 429 z `Retry-After: 60`
@@ -582,26 +586,34 @@ Backend powinien implementować rate limiting per user:
 ## 8. Troubleshooting
 
 ### Problem: "AI service unavailable"
+
 **Rozwiązanie:**
+
 1. Sprawdź czy `OPENROUTER_API_KEY` jest ustawiony
 2. Sprawdź czy backend endpoints są zaimplementowane
 3. Sprawdź logs w konsoli serwera
 4. Sprawdź balance na OpenRouter
 
 ### Problem: Timeout po 10s
+
 **Rozwiązanie:**
+
 1. Użyj szybszego modelu (GPT-3.5 zamiast GPT-4)
 2. Skróć prompt (mniej kontekstu)
 3. Zwiększ `timeout` w `ai.config.ts` (ostrożnie!)
 
 ### Problem: Bad JSON response
+
 **Rozwiązanie:**
+
 1. Sprawdź czy prompt wymusza `response_format: { type: "json_object" }`
 2. Sprawdź czy prompt zawiera przykład poprawnego JSON
 3. Dodaj fallback parsing w backend
 
 ### Problem: Scores poza zakresem 1-5
+
 **Rozwiązanie:**
+
 1. Zod schemas automatycznie odrzucą niepoprawne scores
 2. Sprawdź czy prompt jasno określa zakres 1-5
 3. Dodaj clamp w backend: `Math.max(1, Math.min(5, score))`
@@ -611,6 +623,7 @@ Backend powinien implementować rate limiting per user:
 ## 9. Roadmap (Future Enhancements)
 
 ### v2.0 - Advanced Features
+
 - [ ] Caching w Redis (backend)
 - [ ] AI-powered plant recommendations (na podstawie istniejących roślin)
 - [ ] Companion planting suggestions (które rośliny dobrze rosną razem)
@@ -618,11 +631,13 @@ Backend powinien implementować rate limiting per user:
 - [ ] Planting calendar generation (optymalny harmonogram)
 
 ### v2.1 - Multimodal AI
+
 - [ ] Image recognition dla identyfikacji roślin
 - [ ] Voice search (Whisper API)
 - [ ] AR preview rośliny na działce (mobile)
 
 ### v3.0 - AI Garden Designer
+
 - [ ] Pełny layout generator (AI projektuje całą działkę)
 - [ ] Style presets (cottage garden, vegetable patch, zen garden)
 - [ ] 3D visualization preview
@@ -643,4 +658,3 @@ Backend powinien implementować rate limiting per user:
 **Ostatnia aktualizacja:** 2025-11-22  
 **Wersja dokumentu:** 1.0  
 **Status implementacji:** ✅ Ready for AI Provider Integration
-

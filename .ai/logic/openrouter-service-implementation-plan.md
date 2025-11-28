@@ -75,34 +75,34 @@ Usługa OpenRouter stanowi kluczowy komponent integracji AI w PlantsPlaner, umo�
 export interface OpenRouterConfig {
   /** Klucz API z OpenRouter (OPENROUTER_API_KEY) */
   apiKey: string;
-  
+
   /** Base URL API (domyślnie: https://openrouter.ai/api/v1) */
   baseUrl?: string;
-  
+
   /** Model do wyszukiwania roślin (szybszy, tańszy) */
   searchModel: string;
-  
+
   /** Model do oceny dopasowania (bardziej zaawansowany) */
   fitModel: string;
-  
+
   /** Timeout w milisekundach (domyślnie: 10000) */
   timeout?: number;
-  
+
   /** Maksymalna liczba prób ponowienia (domyślnie: 1) */
   maxRetries?: number;
-  
+
   /** Temperatura modelu (0-2, domyślnie: 0.7) */
   temperature?: number;
-  
+
   /** Top P sampling (0-1, domyślnie: 1) */
   topP?: number;
-  
+
   /** Maksymalna liczba tokenów w odpowiedzi (domyślnie: 1000) */
   maxTokens?: number;
-  
+
   /** Identyfikator aplikacji dla OpenRouter (opcjonalny) */
   appName?: string;
-  
+
   /** URL strony aplikacji (opcjonalny) */
   siteUrl?: string;
 }
@@ -113,34 +113,35 @@ export interface OpenRouterConfig {
 ```typescript
 // src/lib/services/openrouter.service.ts
 
-import { OpenRouterService } from './openrouter.service';
+import { OpenRouterService } from "./openrouter.service";
 
 // Inicjalizacja z minimalnymi parametrami
 const openRouterService = new OpenRouterService({
   apiKey: import.meta.env.OPENROUTER_API_KEY,
-  searchModel: 'openai/gpt-4o-mini', 
-  fitModel: 'openai/gpt-4o-mini', 
+  searchModel: "openai/gpt-4o-mini",
+  fitModel: "openai/gpt-4o-mini",
 });
 
 // Inicjalizacja z pełną konfiguracją
 const openRouterServiceFull = new OpenRouterService({
   apiKey: import.meta.env.OPENROUTER_API_KEY,
-  baseUrl: 'https://openrouter.ai/api/v1',
-  searchModel: 'openai/gpt-4o-mini',
-  fitModel: 'openai/gpt-4o-mini',
+  baseUrl: "https://openrouter.ai/api/v1",
+  searchModel: "openai/gpt-4o-mini",
+  fitModel: "openai/gpt-4o-mini",
   timeout: 10000,
   maxRetries: 1,
   temperature: 0.7,
   topP: 1,
   maxTokens: 1000,
-  appName: 'PlantsPlaner',
-  siteUrl: 'https://plantsplaner.app',
+  appName: "PlantsPlaner",
+  siteUrl: "https://plantsplaner.app",
 });
 ```
 
 ### 2.3 Walidacja konfiguracji
 
 Konstruktor powinien walidować:
+
 - `apiKey` nie może być pusty
 - `timeout` > 0
 - `maxRetries` >= 0
@@ -170,9 +171,9 @@ async searchPlants(query: string): Promise<PlantSearchResultDto>
 ```typescript
 interface PlantSearchResultDto {
   candidates: Array<{
-    name: string;           // Nazwa zwyczajna
-    latin_name?: string;    // Nazwa łacińska (opcjonalna)
-    source: "ai";           // Zawsze "ai"
+    name: string; // Nazwa zwyczajna
+    latin_name?: string; // Nazwa łacińska (opcjonalna)
+    source: "ai"; // Zawsze "ai"
   }>;
 }
 ```
@@ -211,30 +212,31 @@ async checkPlantFit(context: PlantFitContext): Promise<PlantFitResultDto>
 
 ```typescript
 interface PlantFitContext {
-  plant_name: string;        // Nazwa rośliny
+  plant_name: string; // Nazwa rośliny
   location: {
-    lat: number;             // Szerokość geograficzna
-    lon: number;             // Długość geograficzna
-    address?: string;        // Adres (opcjonalny)
+    lat: number; // Szerokość geograficzna
+    lon: number; // Długość geograficzna
+    address?: string; // Adres (opcjonalny)
   };
-  orientation: number;       // Orientacja działki 0-359° (0 = północ)
+  orientation: number; // Orientacja działki 0-359° (0 = północ)
   climate: {
-    zone?: string;           // Strefa klimatyczna (np. "6a")
+    zone?: string; // Strefa klimatyczna (np. "6a")
     annual_temp_avg: number; // Średnia temp. roczna (°C)
-    annual_precip: number;   // Roczne opady (mm)
-    frost_free_days?: number;// Dni bez przymrozków
+    annual_precip: number; // Roczne opady (mm)
+    frost_free_days?: number; // Dni bez przymrozków
   };
   cell: {
-    x: number;               // Współrzędna X
-    y: number;               // Współrzędna Y
+    x: number; // Współrzędna X
+    y: number; // Współrzędna Y
     sunlight_hours?: number; // Nasłonecznienie (h/dzień)
   };
-  weather_monthly?: Array<{  // Dane miesięczne z Open-Meteo
-    month: number;           // 1-12
-    temperature: number;     // °C
-    sunlight: number;        // Znormalizowane 0-100
-    humidity: number;        // Znormalizowane 0-100
-    precip: number;          // Znormalizowane 0-100
+  weather_monthly?: Array<{
+    // Dane miesięczne z Open-Meteo
+    month: number; // 1-12
+    temperature: number; // °C
+    sunlight: number; // Znormalizowane 0-100
+    humidity: number; // Znormalizowane 0-100
+    precip: number; // Znormalizowane 0-100
   }>;
 }
 ```
@@ -243,11 +245,11 @@ interface PlantFitContext {
 
 ```typescript
 interface PlantFitResultDto {
-  sunlight_score: number;    // 1-5
-  humidity_score: number;    // 1-5
-  precip_score: number;      // 1-5
-  overall_score: number;     // 1-5
-  explanation?: string;      // Wyjaśnienie (min 50 znaków)
+  sunlight_score: number; // 1-5
+  humidity_score: number; // 1-5
+  precip_score: number; // 1-5
+  overall_score: number; // 1-5
+  explanation?: string; // Wyjaśnienie (min 50 znaków)
 }
 ```
 
@@ -271,14 +273,14 @@ const result = await openRouterService.checkPlantFit({
     zone: "6a",
     annual_temp_avg: 8.5,
     annual_precip: 550,
-    frost_free_days: 180
+    frost_free_days: 180,
   },
   cell: { x: 5, y: 10, sunlight_hours: 7 },
   weather_monthly: [
     { month: 4, temperature: 9, sunlight: 60, humidity: 70, precip: 40 },
     { month: 5, temperature: 14, sunlight: 70, humidity: 65, precip: 55 },
     // ... więcej miesięcy
-  ]
+  ],
 });
 
 console.log(result);
@@ -304,6 +306,7 @@ async testConnection(): Promise<{ success: boolean; model?: string; error?: stri
 #### Opis
 
 Testuje połączenie z OpenRouter API i sprawdza poprawność API key. Przydatne do:
+
 - Weryfikacji konfiguracji podczas deploymentu
 - Health checks
 - Debugowania problemów z połączeniem
@@ -513,7 +516,7 @@ Niskopoziomowa metoda wykonująca zapytanie do OpenRouter API.
 ```typescript
 interface CompletionConfig {
   model: string;
-  messages: Array<{ role: 'system' | 'user'; content: string }>;
+  messages: Array<{ role: "system" | "user"; content: string }>;
   response_format: ResponseFormat;
   temperature?: number;
   top_p?: number;
@@ -556,7 +559,7 @@ private async createCompletion(config: CompletionConfig): Promise<any> {
 
     const data = await response.json();
     return JSON.parse(data.choices[0].message.content);
-    
+
   } catch (error) {
     clearTimeout(timeoutId);
     throw this.transformError(error);
@@ -573,28 +576,28 @@ Przekształca błędy HTTP na domenowe błędy aplikacji.
 ```typescript
 private async handleHttpError(response: Response): Promise<Error> {
   const status = response.status;
-  
+
   // 401: Niepoprawny API key
   if (status === 401) {
     return new Error('OPENROUTER_API_KEY jest niepoprawny lub wygasł');
   }
-  
+
   // 429: Rate limit
   if (status === 429) {
     const retryAfter = response.headers.get('Retry-After') || '60';
     return new Error(`Rate limit przekroczony. Spróbuj ponownie za ${retryAfter}s`);
   }
-  
+
   // 402: Brak środków
   if (status === 402) {
     return new Error('Brak środków na koncie OpenRouter. Doładuj konto.');
   }
-  
+
   // 500+: Błąd serwera OpenRouter
   if (status >= 500) {
     return new Error('OpenRouter API jest niedostępne. Spróbuj później.');
   }
-  
+
   // Inne błędy
   const errorBody = await response.text();
   return new Error(`OpenRouter API error (${status}): ${errorBody}`);
@@ -613,17 +616,17 @@ private transformError(error: unknown): Error {
   if (error instanceof Error && error.name === 'AbortError') {
     return new Error('Przekroczono limit czasu (10s). Spróbuj ponownie.');
   }
-  
+
   // Network error
   if (error instanceof TypeError) {
     return new Error('Błąd połączenia z OpenRouter. Sprawdź internet.');
   }
-  
+
   // Już przekształcony błąd
   if (error instanceof Error) {
     return error;
   }
-  
+
   // Nieznany błąd
   return new Error('Nieznany błąd komunikacji z AI');
 }
@@ -660,7 +663,7 @@ const PlantFitResultSchema = z.object({
 
 private validateResponse<T>(data: unknown, type: 'search' | 'fit'): T {
   const schema = type === 'search' ? PlantSearchResultSchema : PlantFitResultSchema;
-  
+
   try {
     return schema.parse(data) as T;
   } catch (error) {
@@ -682,15 +685,15 @@ class OpenRouterService {
   private readonly config: Required<OpenRouterConfig>;
   private requestCount: number = 0;
   private lastRequestTime: number = 0;
-  
+
   constructor(config: OpenRouterConfig) {
     this.config = this.normalizeConfig(config);
   }
-  
+
   private normalizeConfig(config: OpenRouterConfig): Required<OpenRouterConfig> {
     return {
       apiKey: config.apiKey,
-      baseUrl: config.baseUrl || 'https://openrouter.ai/api/v1',
+      baseUrl: config.baseUrl || "https://openrouter.ai/api/v1",
       searchModel: config.searchModel,
       fitModel: config.fitModel,
       timeout: config.timeout || 10000,
@@ -698,8 +701,8 @@ class OpenRouterService {
       temperature: config.temperature ?? 0.7,
       topP: config.topP ?? 1,
       maxTokens: config.maxTokens ?? 1000,
-      appName: config.appName || 'PlantsPlaner',
-      siteUrl: config.siteUrl || '',
+      appName: config.appName || "PlantsPlaner",
+      siteUrl: config.siteUrl || "",
     };
   }
 }
@@ -723,7 +726,7 @@ export class OpenRouterError extends Error {
     public readonly retryAfter?: number
   ) {
     super(message);
-    this.name = 'OpenRouterError';
+    this.name = "OpenRouterError";
   }
 }
 
@@ -733,11 +736,11 @@ export class OpenRouterError extends Error {
 export class TimeoutError extends OpenRouterError {
   constructor() {
     super(
-      'Przekroczono limit czasu oczekiwania (10s)',
-      'TIMEOUT',
+      "Przekroczono limit czasu oczekiwania (10s)",
+      "TIMEOUT",
       true // retryable
     );
-    this.name = 'TimeoutError';
+    this.name = "TimeoutError";
   }
 }
 
@@ -748,11 +751,11 @@ export class RateLimitError extends OpenRouterError {
   constructor(retryAfter: number) {
     super(
       `Zbyt wiele zapytań. Spróbuj ponownie za ${retryAfter}s`,
-      'RATE_LIMIT',
+      "RATE_LIMIT",
       true, // retryable
       retryAfter
     );
-    this.name = 'RateLimitError';
+    this.name = "RateLimitError";
   }
 }
 
@@ -762,11 +765,11 @@ export class RateLimitError extends OpenRouterError {
 export class AuthenticationError extends OpenRouterError {
   constructor() {
     super(
-      'OPENROUTER_API_KEY jest niepoprawny lub wygasł',
-      'AUTHENTICATION',
+      "OPENROUTER_API_KEY jest niepoprawny lub wygasł",
+      "AUTHENTICATION",
       false // nie retryable
     );
-    this.name = 'AuthenticationError';
+    this.name = "AuthenticationError";
   }
 }
 
@@ -777,10 +780,10 @@ export class ValidationError extends OpenRouterError {
   constructor(details: string) {
     super(
       `Niepoprawna odpowiedź AI: ${details}`,
-      'VALIDATION',
+      "VALIDATION",
       false // nie retryable (AI zwróciło złe dane)
     );
-    this.name = 'ValidationError';
+    this.name = "ValidationError";
   }
 }
 
@@ -790,11 +793,11 @@ export class ValidationError extends OpenRouterError {
 export class NetworkError extends OpenRouterError {
   constructor() {
     super(
-      'Błąd połączenia z OpenRouter',
-      'NETWORK',
+      "Błąd połączenia z OpenRouter",
+      "NETWORK",
       true // retryable
     );
-    this.name = 'NetworkError';
+    this.name = "NetworkError";
   }
 }
 
@@ -804,25 +807,25 @@ export class NetworkError extends OpenRouterError {
 export class InsufficientCreditsError extends OpenRouterError {
   constructor() {
     super(
-      'Brak środków na koncie OpenRouter',
-      'INSUFFICIENT_CREDITS',
+      "Brak środków na koncie OpenRouter",
+      "INSUFFICIENT_CREDITS",
       false // nie retryable
     );
-    this.name = 'InsufficientCreditsError';
+    this.name = "InsufficientCreditsError";
   }
 }
 ```
 
 ### 5.2 Mapowanie błędów HTTP
 
-| Status | Błąd | Retryable | Komunikat |
-|--------|------|-----------|-----------|
-| 401 | `AuthenticationError` | ❌ | OPENROUTER_API_KEY jest niepoprawny |
-| 402 | `InsufficientCreditsError` | ❌ | Brak środków na koncie |
-| 429 | `RateLimitError` | ✅ | Zbyt wiele zapytań (retry after Xs) |
-| 500-599 | `NetworkError` | ✅ | Błąd serwera OpenRouter |
-| timeout | `TimeoutError` | ✅ | Przekroczono limit czasu (10s) |
-| parse error | `ValidationError` | ❌ | Niepoprawna odpowiedź AI |
+| Status      | Błąd                       | Retryable | Komunikat                           |
+| ----------- | -------------------------- | --------- | ----------------------------------- |
+| 401         | `AuthenticationError`      | ❌        | OPENROUTER_API_KEY jest niepoprawny |
+| 402         | `InsufficientCreditsError` | ❌        | Brak środków na koncie              |
+| 429         | `RateLimitError`           | ✅        | Zbyt wiele zapytań (retry after Xs) |
+| 500-599     | `NetworkError`             | ✅        | Błąd serwera OpenRouter             |
+| timeout     | `TimeoutError`             | ✅        | Przekroczono limit czasu (10s)      |
+| parse error | `ValidationError`          | ❌        | Niepoprawna odpowiedź AI            |
 
 ### 5.3 Strategia retry
 
@@ -832,31 +835,31 @@ private async executeWithRetry<T>(
   retries: number = this.config.maxRetries
 ): Promise<T> {
   let lastError: Error;
-  
+
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       return await operation();
     } catch (error) {
       lastError = error as Error;
-      
+
       // Nie retry dla błędów nie-retryable
       if (error instanceof OpenRouterError && !error.retryable) {
         throw error;
       }
-      
+
       // Ostatnia próba - throw
       if (attempt === retries) {
         throw error;
       }
-      
+
       // Exponential backoff: 1s, 2s, 4s...
       const delay = Math.pow(2, attempt) * 1000;
       await new Promise(resolve => setTimeout(resolve, delay));
-      
+
       console.warn(`[OpenRouterService] Retry ${attempt + 1}/${retries} po błędzie:`, error);
     }
   }
-  
+
   throw lastError!;
 }
 ```
@@ -876,12 +879,12 @@ private logError(context: string, error: Error, metadata?: Record<string, any>) 
     },
     metadata,
   };
-  
+
   // Development: console
   if (import.meta.env.DEV) {
     console.error('[OpenRouterService]', logEntry);
   }
-  
+
   // Production: Sentry/LogRocket/etc.
   if (import.meta.env.PROD) {
     // TODO: Integracja z monitoring service
@@ -900,18 +903,18 @@ private logError(context: string, error: Error, metadata?: Record<string, any>) 
 
 ```typescript
 // .env (NIE commituj do repo!)
-OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxxxxxxx
+OPENROUTER_API_KEY = sk - or - v1 - xxxxxxxxxxxxxxxxxxxxx;
 
 // .env.example (commituj jako szablon)
-OPENROUTER_API_KEY=sk-or-v1-your-key-here
+OPENROUTER_API_KEY = sk - or - v1 - your - key - here;
 
 // astro.config.mjs - dostęp tylko na serwerze
 export default defineConfig({
   vite: {
     define: {
-      'import.meta.env.OPENROUTER_API_KEY': undefined, // Blokuj na kliencie
-    }
-  }
+      "import.meta.env.OPENROUTER_API_KEY": undefined, // Blokuj na kliencie
+    },
+  },
 });
 ```
 
@@ -933,18 +936,18 @@ fetch(`https://api.com?key=${apiKey}`); // ❌
 ```typescript
 class RateLimiter {
   private requests: Map<string, number[]> = new Map();
-  
+
   async checkLimit(userId: string, maxPerMinute: number = 10): Promise<boolean> {
     const now = Date.now();
     const userRequests = this.requests.get(userId) || [];
-    
+
     // Usuń requesty starsze niż 1 minuta
-    const recentRequests = userRequests.filter(time => now - time < 60000);
-    
+    const recentRequests = userRequests.filter((time) => now - time < 60000);
+
     if (recentRequests.length >= maxPerMinute) {
       return false; // Limit przekroczony
     }
-    
+
     recentRequests.push(now);
     this.requests.set(userId, recentRequests);
     return true;
@@ -956,14 +959,14 @@ const rateLimiter = new RateLimiter();
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const userId = locals.user?.id;
-  
-  if (!await rateLimiter.checkLimit(userId, 10)) {
-    return new Response(
-      JSON.stringify({ error: 'Rate limit exceeded' }),
-      { status: 429, headers: { 'Retry-After': '60' } }
-    );
+
+  if (!(await rateLimiter.checkLimit(userId, 10))) {
+    return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+      status: 429,
+      headers: { "Retry-After": "60" },
+    });
   }
-  
+
   // Kontynuuj...
 };
 ```
@@ -982,11 +985,11 @@ private sanitizeUserInput(input: string): string {
 // W metodach publicznych
 async searchPlants(query: string): Promise<PlantSearchResultDto> {
   const sanitizedQuery = this.sanitizeUserInput(query);
-  
+
   if (!sanitizedQuery || sanitizedQuery.length < 2) {
     throw new Error('Zapytanie musi mieć minimum 2 znaki');
   }
-  
+
   // Kontynuuj z sanitizedQuery...
 }
 ```
@@ -997,14 +1000,14 @@ async searchPlants(query: string): Promise<PlantSearchResultDto> {
 // Upewnij się, że AI nie może wstrzyknąć złośliwych danych
 private validateSearchResult(data: any): PlantSearchResultDto {
   const validated = PlantSearchResultSchema.parse(data);
-  
+
   // Dodatkowa sanityzacja string fields
   validated.candidates = validated.candidates.map(c => ({
     name: this.sanitizeUserInput(c.name),
     latin_name: c.latin_name ? this.sanitizeUserInput(c.latin_name) : undefined,
     source: 'ai' as const,
   }));
-  
+
   return validated;
 }
 ```
@@ -1018,11 +1021,11 @@ class SecurityMonitor {
     // 1. Zbyt wiele identycznych zapytań w krótkim czasie (potential attack)
     // 2. Nietypowe długości zapytań (potential injection)
     // 3. Nietypowe wzorce w danych wejściowych
-    
+
     if (this.isSuspicious(requestData)) {
       this.sendAlert({
         userId,
-        reason: 'Suspicious activity detected',
+        reason: "Suspicious activity detected",
         data: requestData,
       });
     }
@@ -1086,7 +1089,7 @@ OPENROUTER_SITE_URL=
 interface ImportMetaEnv {
   // Existing...
   readonly PUBLIC_USE_MOCK_AI?: string;
-  
+
   // OpenRouter (server-only)
   readonly OPENROUTER_API_KEY: string;
   readonly OPENROUTER_SEARCH_MODEL?: string;
@@ -1109,49 +1112,91 @@ interface ImportMeta {
 Utwórz `src/lib/services/openrouter.service.ts`:
 
 ```typescript
-import { z } from 'zod';
-import type { PlantSearchResultDto, PlantFitResultDto } from '@/types';
+import { z } from "zod";
+import type { PlantSearchResultDto, PlantFitResultDto } from "@/types";
 
 // 1. Interfejsy i typy (skopiuj z sekcji 2.1)
-export interface OpenRouterConfig { /* ... */ }
-export interface PlantFitContext { /* ... */ }
+export interface OpenRouterConfig {
+  /* ... */
+}
+export interface PlantFitContext {
+  /* ... */
+}
 
 // 2. Klasy błędów (skopiuj z sekcji 5.1)
-export class OpenRouterError extends Error { /* ... */ }
-export class TimeoutError extends OpenRouterError { /* ... */ }
+export class OpenRouterError extends Error {
+  /* ... */
+}
+export class TimeoutError extends OpenRouterError {
+  /* ... */
+}
 // ... pozostałe klasy błędów
 
 // 3. Zod schemas (skopiuj z sekcji 4.7)
-const PlantSearchResultSchema = z.object({ /* ... */ });
-const PlantFitResultSchema = z.object({ /* ... */ });
+const PlantSearchResultSchema = z.object({
+  /* ... */
+});
+const PlantFitResultSchema = z.object({
+  /* ... */
+});
 
 // 4. Główna klasa serwisu
 export class OpenRouterService {
   private readonly config: Required<OpenRouterConfig>;
-  
+
   constructor(config: OpenRouterConfig) {
     this.config = this.normalizeConfig(config);
     this.validateConfig();
   }
-  
+
   // Publiczne metody (skopiuj z sekcji 3)
-  async searchPlants(query: string): Promise<PlantSearchResultDto> { /* ... */ }
-  async checkPlantFit(context: PlantFitContext): Promise<PlantFitResultDto> { /* ... */ }
-  async testConnection(): Promise<{ success: boolean; model?: string; error?: string }> { /* ... */ }
-  
+  async searchPlants(query: string): Promise<PlantSearchResultDto> {
+    /* ... */
+  }
+  async checkPlantFit(context: PlantFitContext): Promise<PlantFitResultDto> {
+    /* ... */
+  }
+  async testConnection(): Promise<{ success: boolean; model?: string; error?: string }> {
+    /* ... */
+  }
+
   // Prywatne metody (skopiuj z sekcji 4)
-  private normalizeConfig(config: OpenRouterConfig): Required<OpenRouterConfig> { /* ... */ }
-  private validateConfig(): void { /* ... */ }
-  private buildSystemPrompt(type: 'search' | 'fit'): string { /* ... */ }
-  private buildUserPrompt(type: 'search', data: any): string { /* ... */ }
-  private buildResponseFormat(type: 'search' | 'fit'): any { /* ... */ }
-  private async createCompletion(config: any): Promise<any> { /* ... */ }
-  private async handleHttpError(response: Response): Promise<Error> { /* ... */ }
-  private transformError(error: unknown): Error { /* ... */ }
-  private validateResponse<T>(data: unknown, type: 'search' | 'fit'): T { /* ... */ }
-  private async executeWithRetry<T>(operation: () => Promise<T>, retries?: number): Promise<T> { /* ... */ }
-  private sanitizeUserInput(input: string): string { /* ... */ }
-  private logError(context: string, error: Error, metadata?: any): void { /* ... */ }
+  private normalizeConfig(config: OpenRouterConfig): Required<OpenRouterConfig> {
+    /* ... */
+  }
+  private validateConfig(): void {
+    /* ... */
+  }
+  private buildSystemPrompt(type: "search" | "fit"): string {
+    /* ... */
+  }
+  private buildUserPrompt(type: "search", data: any): string {
+    /* ... */
+  }
+  private buildResponseFormat(type: "search" | "fit"): any {
+    /* ... */
+  }
+  private async createCompletion(config: any): Promise<any> {
+    /* ... */
+  }
+  private async handleHttpError(response: Response): Promise<Error> {
+    /* ... */
+  }
+  private transformError(error: unknown): Error {
+    /* ... */
+  }
+  private validateResponse<T>(data: unknown, type: "search" | "fit"): T {
+    /* ... */
+  }
+  private async executeWithRetry<T>(operation: () => Promise<T>, retries?: number): Promise<T> {
+    /* ... */
+  }
+  private sanitizeUserInput(input: string): string {
+    /* ... */
+  }
+  private logError(context: string, error: Error, metadata?: any): void {
+    /* ... */
+  }
 }
 ```
 
@@ -1160,7 +1205,7 @@ export class OpenRouterService {
 Utwórz `src/lib/services/openrouter.instance.ts`:
 
 ```typescript
-import { OpenRouterService } from './openrouter.service';
+import { OpenRouterService } from "./openrouter.service";
 
 /**
  * Singleton instance serwisu OpenRouter
@@ -1171,25 +1216,25 @@ let openRouterInstance: OpenRouterService | null = null;
 export function getOpenRouterService(): OpenRouterService {
   if (!openRouterInstance) {
     const apiKey = import.meta.env.OPENROUTER_API_KEY;
-    
+
     if (!apiKey) {
-      throw new Error('OPENROUTER_API_KEY is not set in environment variables');
+      throw new Error("OPENROUTER_API_KEY is not set in environment variables");
     }
-    
+
     openRouterInstance = new OpenRouterService({
       apiKey,
-      searchModel: import.meta.env.OPENROUTER_SEARCH_MODEL || 'openai/gpt-4o-mini',
-      fitModel: import.meta.env.OPENROUTER_FIT_MODEL || 'openai/gpt-4o-mini',
+      searchModel: import.meta.env.OPENROUTER_SEARCH_MODEL || "openai/gpt-4o-mini",
+      fitModel: import.meta.env.OPENROUTER_FIT_MODEL || "openai/gpt-4o-mini",
       timeout: 10000,
       maxRetries: 1,
       temperature: 0.7,
       topP: 1,
       maxTokens: 1000,
-      appName: import.meta.env.OPENROUTER_APP_NAME || 'PlantsPlaner',
-      siteUrl: import.meta.env.OPENROUTER_SITE_URL || '',
+      appName: import.meta.env.OPENROUTER_APP_NAME || "PlantsPlaner",
+      siteUrl: import.meta.env.OPENROUTER_SITE_URL || "",
     });
   }
-  
+
   return openRouterInstance;
 }
 
@@ -1210,10 +1255,10 @@ export function resetOpenRouterService(): void {
 Utwórz `src/pages/api/ai/plants/search.ts`:
 
 ```typescript
-import type { APIRoute } from 'astro';
-import { z } from 'zod';
-import { getOpenRouterService } from '@/lib/services/openrouter.instance';
-import type { ApiItemResponse, ApiErrorResponse, PlantSearchResultDto } from '@/types';
+import type { APIRoute } from "astro";
+import { z } from "zod";
+import { getOpenRouterService } from "@/lib/services/openrouter.instance";
+import type { ApiItemResponse, ApiErrorResponse, PlantSearchResultDto } from "@/types";
 
 // Walidacja request body
 const SearchRequestSchema = z.object({
@@ -1227,90 +1272,89 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'Unauthorized',
-            message: 'Musisz być zalogowany',
+            code: "Unauthorized",
+            message: "Musisz być zalogowany",
           },
         } satisfies ApiErrorResponse),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
+        { status: 401, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     // 2. Parse i walidacja body
     const body = await request.json();
     const validation = SearchRequestSchema.safeParse(body);
-    
+
     if (!validation.success) {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'ValidationError',
-            message: 'Nieprawidłowe zapytanie',
+            code: "ValidationError",
+            message: "Nieprawidłowe zapytanie",
             details: { field_errors: validation.error.flatten().fieldErrors },
           },
         } satisfies ApiErrorResponse),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     // 3. Rate limiting (opcjonalnie - TODO)
     // await checkRateLimit(locals.user.id);
-    
+
     // 4. Wywołanie OpenRouter
     const openRouter = getOpenRouterService();
     const result = await openRouter.searchPlants(validation.data.query);
-    
+
     // 5. Zwrócenie wyniku
     return new Response(
       JSON.stringify({
         data: result,
       } satisfies ApiItemResponse<PlantSearchResultDto>),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      { status: 200, headers: { "Content-Type": "application/json" } }
     );
-    
   } catch (error) {
-    console.error('[API] /api/ai/plants/search error:', error);
-    
+    console.error("[API] /api/ai/plants/search error:", error);
+
     // Timeout
-    if (error instanceof Error && error.message.includes('Przekroczono limit czasu')) {
+    if (error instanceof Error && error.message.includes("Przekroczono limit czasu")) {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'UpstreamTimeout',
-            message: 'AI nie odpowiada. Spróbuj ponownie lub dodaj roślinę ręcznie.',
+            code: "UpstreamTimeout",
+            message: "AI nie odpowiada. Spróbuj ponownie lub dodaj roślinę ręcznie.",
           },
         } satisfies ApiErrorResponse),
-        { status: 504, headers: { 'Content-Type': 'application/json' } }
+        { status: 504, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     // Rate limit
-    if (error instanceof Error && error.message.includes('Rate limit')) {
+    if (error instanceof Error && error.message.includes("Rate limit")) {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'RateLimited',
+            code: "RateLimited",
             message: error.message,
           },
         } satisfies ApiErrorResponse),
-        { 
-          status: 429, 
-          headers: { 
-            'Content-Type': 'application/json',
-            'Retry-After': '60',
-          } 
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": "60",
+          },
         }
       );
     }
-    
+
     // Inne błędy
     return new Response(
       JSON.stringify({
         error: {
-          code: 'InternalError',
-          message: 'Nie udało się wyszukać roślin',
+          code: "InternalError",
+          message: "Nie udało się wyszukać roślin",
         },
       } satisfies ApiErrorResponse),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 };
@@ -1321,16 +1365,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
 Utwórz `src/pages/api/ai/plants/fit.ts`:
 
 ```typescript
-import type { APIRoute } from 'astro';
-import { z } from 'zod';
-import { getOpenRouterService } from '@/lib/services/openrouter.instance';
-import { getSupabaseServerClient } from '@/db/supabase.client';
-import type { 
-  ApiItemResponse, 
-  ApiErrorResponse, 
-  PlantFitResultDto,
-  PlantFitContext 
-} from '@/types';
+import type { APIRoute } from "astro";
+import { z } from "zod";
+import { getOpenRouterService } from "@/lib/services/openrouter.instance";
+import { getSupabaseServerClient } from "@/db/supabase.client";
+import type { ApiItemResponse, ApiErrorResponse, PlantFitResultDto, PlantFitContext } from "@/types";
 
 // Walidacja request body
 const FitRequestSchema = z.object({
@@ -1347,106 +1386,106 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'Unauthorized',
-            message: 'Musisz być zalogowany',
+            code: "Unauthorized",
+            message: "Musisz być zalogowany",
           },
         } satisfies ApiErrorResponse),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
+        { status: 401, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     // 2. Parse i walidacja body
     const body = await request.json();
     const validation = FitRequestSchema.safeParse(body);
-    
+
     if (!validation.success) {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'ValidationError',
-            message: 'Nieprawidłowe dane',
+            code: "ValidationError",
+            message: "Nieprawidłowe dane",
             details: { field_errors: validation.error.flatten().fieldErrors },
           },
         } satisfies ApiErrorResponse),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     const { plan_id, x, y, plant_name } = validation.data;
-    
+
     // 3. Pobierz dane planu z bazy
     const supabase = getSupabaseServerClient(request, cookies);
     const { data: plan, error: planError } = await supabase
-      .from('plans')
-      .select('user_id, latitude, longitude, orientation, hemisphere')
-      .eq('id', plan_id)
+      .from("plans")
+      .select("user_id, latitude, longitude, orientation, hemisphere")
+      .eq("id", plan_id)
       .single();
-    
+
     if (planError || !plan) {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'NotFound',
-            message: 'Plan nie został znaleziony',
+            code: "NotFound",
+            message: "Plan nie został znaleziony",
           },
         } satisfies ApiErrorResponse),
-        { status: 404, headers: { 'Content-Type': 'application/json' } }
+        { status: 404, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     // 4. Sprawdź czy użytkownik jest właścicielem planu
     if (plan.user_id !== locals.user.id) {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'Forbidden',
-            message: 'Brak dostępu do tego planu',
+            code: "Forbidden",
+            message: "Brak dostępu do tego planu",
           },
         } satisfies ApiErrorResponse),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
+        { status: 403, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     // 5. Sprawdź czy komórka jest typu 'soil'
     const { data: cell, error: cellError } = await supabase
-      .from('grid_cells')
-      .select('type')
-      .eq('plan_id', plan_id)
-      .eq('x', x)
-      .eq('y', y)
+      .from("grid_cells")
+      .select("type")
+      .eq("plan_id", plan_id)
+      .eq("x", x)
+      .eq("y", y)
       .single();
-    
+
     if (cellError || !cell) {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'UnprocessableEntity',
-            message: 'Komórka nie istnieje',
+            code: "UnprocessableEntity",
+            message: "Komórka nie istnieje",
           },
         } satisfies ApiErrorResponse),
-        { status: 422, headers: { 'Content-Type': 'application/json' } }
+        { status: 422, headers: { "Content-Type": "application/json" } }
       );
     }
-    
-    if (cell.type !== 'soil') {
+
+    if (cell.type !== "soil") {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'UnprocessableEntity',
+            code: "UnprocessableEntity",
             message: 'Roślinę można dodać tylko na komórce typu "ziemia"',
           },
         } satisfies ApiErrorResponse),
-        { status: 422, headers: { 'Content-Type': 'application/json' } }
+        { status: 422, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     // 6. Pobierz dane pogodowe (cached w tabeli weather_monthly)
     const { data: weatherData } = await supabase
-      .from('weather_monthly')
-      .select('month, temperature, sunlight, humidity, precip')
-      .eq('plan_id', plan_id)
-      .order('month', { ascending: true });
-    
+      .from("weather_monthly")
+      .select("month, temperature, sunlight, humidity, precip")
+      .eq("plan_id", plan_id)
+      .order("month", { ascending: true });
+
     // 7. Przygotuj kontekst dla AI
     const context: PlantFitContext = {
       plant_name,
@@ -1462,43 +1501,42 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
       cell: { x, y },
       weather_monthly: weatherData || [],
     };
-    
+
     // 8. Wywołanie OpenRouter
     const openRouter = getOpenRouterService();
     const result = await openRouter.checkPlantFit(context);
-    
+
     // 9. Zwrócenie wyniku
     return new Response(
       JSON.stringify({
         data: result,
       } satisfies ApiItemResponse<PlantFitResultDto>),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      { status: 200, headers: { "Content-Type": "application/json" } }
     );
-    
   } catch (error) {
-    console.error('[API] /api/ai/plants/fit error:', error);
-    
+    console.error("[API] /api/ai/plants/fit error:", error);
+
     // Obsługa błędów (podobnie jak w search)
-    if (error instanceof Error && error.message.includes('Przekroczono limit czasu')) {
+    if (error instanceof Error && error.message.includes("Przekroczono limit czasu")) {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'UpstreamTimeout',
-            message: 'AI nie odpowiada. Możesz dodać roślinę bez oceny dopasowania.',
+            code: "UpstreamTimeout",
+            message: "AI nie odpowiada. Możesz dodać roślinę bez oceny dopasowania.",
           },
         } satisfies ApiErrorResponse),
-        { status: 504, headers: { 'Content-Type': 'application/json' } }
+        { status: 504, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     return new Response(
       JSON.stringify({
         error: {
-          code: 'InternalError',
-          message: 'Nie udało się sprawdzić dopasowania rośliny',
+          code: "InternalError",
+          message: "Nie udało się sprawdzić dopasowania rośliny",
         },
       } satisfies ApiErrorResponse),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 };
@@ -1513,29 +1551,29 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
 Utwórz `scripts/test-openrouter.ts`:
 
 ```typescript
-import { OpenRouterService } from '../src/lib/services/openrouter.service';
-import * as dotenv from 'dotenv';
+import { OpenRouterService } from "../src/lib/services/openrouter.service";
+import * as dotenv from "dotenv";
 
 dotenv.config();
 
 async function main() {
   const apiKey = process.env.OPENROUTER_API_KEY;
-  
+
   if (!apiKey) {
-    console.error('❌ OPENROUTER_API_KEY not set');
+    console.error("❌ OPENROUTER_API_KEY not set");
     process.exit(1);
   }
-  
+
   const service = new OpenRouterService({
     apiKey,
-    searchModel: 'openai/gpt-3.5-turbo',
-    fitModel: 'openai/gpt-4-turbo-preview',
+    searchModel: "openai/gpt-3.5-turbo",
+    fitModel: "openai/gpt-4-turbo-preview",
     timeout: 10000,
     maxRetries: 1,
   });
-  
-  console.log('🔍 Testing OpenRouter connection...\n');
-  
+
+  console.log("🔍 Testing OpenRouter connection...\n");
+
   // Test 1: Connection
   try {
     const status = await service.testConnection();
@@ -1546,25 +1584,25 @@ async function main() {
       process.exit(1);
     }
   } catch (error) {
-    console.error('❌ Connection test failed:', error);
+    console.error("❌ Connection test failed:", error);
     process.exit(1);
   }
-  
+
   // Test 2: Search
-  console.log('\n🔍 Testing plant search...');
+  console.log("\n🔍 Testing plant search...");
   try {
-    const searchResult = await service.searchPlants('pomidor');
-    console.log('✅ Search OK:');
+    const searchResult = await service.searchPlants("pomidor");
+    console.log("✅ Search OK:");
     console.log(JSON.stringify(searchResult, null, 2));
   } catch (error) {
-    console.error('❌ Search failed:', error);
+    console.error("❌ Search failed:", error);
   }
-  
+
   // Test 3: Fit (simplified context)
-  console.log('\n🔍 Testing plant fit check...');
+  console.log("\n🔍 Testing plant fit check...");
   try {
     const fitResult = await service.checkPlantFit({
-      plant_name: 'Pomidor',
+      plant_name: "Pomidor",
       location: { lat: 52.2297, lon: 21.0122 },
       orientation: 180,
       climate: {
@@ -1577,13 +1615,13 @@ async function main() {
         { month: 5, temperature: 14, sunlight: 70, humidity: 65, precip: 55 },
       ],
     });
-    console.log('✅ Fit check OK:');
+    console.log("✅ Fit check OK:");
     console.log(JSON.stringify(fitResult, null, 2));
   } catch (error) {
-    console.error('❌ Fit check failed:', error);
+    console.error("❌ Fit check failed:", error);
   }
-  
-  console.log('\n✨ All tests completed!');
+
+  console.log("\n✨ All tests completed!");
 }
 
 main().catch(console.error);
@@ -1618,12 +1656,14 @@ Zaktualizuj `src/lib/hooks/mutations/useAIMutations.ts` - upewnij się, że endp
 #### Krok 4.3: Manual testing w aplikacji
 
 1. Ustaw `.env`:
+
 ```bash
 PUBLIC_USE_MOCK_AI=false
 OPENROUTER_API_KEY=sk-or-v1-twoj-klucz
 ```
 
 2. Uruchom dev server:
+
 ```bash
 npm run dev
 ```
@@ -1653,12 +1693,13 @@ npm run dev
 
 Zaktualizuj `.ai/docs/ai-integration-guide.md`:
 
-```markdown
+````markdown
 ## 4. Integracja z OpenRouter (✅ ZAIMPLEMENTOWANE)
 
 ### 4.1 Architektura
 
 PlantsPlaner używa OpenRouter jako unified API dla różnych modeli LLM:
+
 - **Search**: GPT-3.5 Turbo (szybki i tani)
 - **Fit**: GPT-4 Turbo Preview (dokładny i zaawansowany)
 
@@ -1669,24 +1710,27 @@ Zobacz `.env.example` dla wymaganych zmiennych środowiskowych.
 ### 4.3 Użycie
 
 ```typescript
-import { getOpenRouterService } from '@/lib/services/openrouter.instance';
+import { getOpenRouterService } from "@/lib/services/openrouter.instance";
 
 const openRouter = getOpenRouterService();
-const result = await openRouter.searchPlants('pomidor');
+const result = await openRouter.searchPlants("pomidor");
 ```
+````
 
 ### 4.4 Modele wspierane
 
 Lista wszystkich dostępnych modeli: https://openrouter.ai/models
 
 Zalecane:
+
 - Search: `openai/gpt-4o-mini`
 - Fit: `openai/gpt-4o-mini`
 
 ### 4.5 Monitoring kosztów
 
 Dashboard OpenRouter: https://openrouter.ai/activity
-```
+
+````
 
 #### Krok 5.2: README update
 
@@ -1703,18 +1747,21 @@ PlantsPlaner uses OpenRouter for AI-powered plant search and fit assessment.
 2. Add to `.env`:
 ```bash
 OPENROUTER_API_KEY=sk-or-v1-your-key
-```
+````
+
 3. (Optional) Configure models in `.env`
 
 ### Development mode
 
 For development without AI provider, use mock data:
+
 ```bash
 PUBLIC_USE_MOCK_AI=true
 ```
 
 See `.ai/docs/ai-integration-guide.md` for details.
-```
+
+````
 
 #### Krok 5.3: Optymalizacja promptów
 
@@ -1745,7 +1792,7 @@ Return ONLY valid JSON.`;
   }
   // ... fit prompt
 }
-```
+````
 
 ---
 
@@ -1812,6 +1859,7 @@ Po zaimplementowaniu tego planu będziesz miał:
 ### Wsparcie
 
 W razie problemów:
+
 1. Sprawdź `.ai/docs/ai-integration-guide.md` (troubleshooting)
 2. Uruchom `npm run test:openrouter` (diagnostyka)
 3. Sprawdź logi OpenRouter Dashboard
@@ -1824,4 +1872,3 @@ W razie problemów:
 **Status:** ✅ Ready for Implementation
 
 **Powodzenia z implementacją! 🚀**
-

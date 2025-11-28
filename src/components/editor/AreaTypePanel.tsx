@@ -80,7 +80,7 @@ export function AreaTypePanel({ selection, cellCount, onApply, onCancel, isApply
           <SelectTrigger id="area-type-select" className="w-full">
             <SelectValue placeholder="Wybierz typ..." />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[2000]">
             {Object.entries(GRID_CELL_TYPE_LABELS).map(([type, label]) => (
               <SelectItem key={type} value={type}>
                 {label}

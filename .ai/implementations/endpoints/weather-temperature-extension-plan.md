@@ -12,6 +12,7 @@ Rozszerzenie istniejącego systemu pobierania danych pogodowych z Open-Meteo o *
 ### 2.1 Obecne metryki pogodowe
 
 Obecnie system pobiera i przechowuje:
+
 - **Sunlight** (0-100) - znormalizowana wartość z `shortwave_radiation_sum` + `sunshine_duration`
 - **Humidity** (0-100) - bezpośrednio z `relative_humidity_2m_mean` (%)
 - **Precip** (0-100) - znormalizowana wartość z `precipitation_sum` (mm)
@@ -50,12 +51,14 @@ Open-Meteo API → Integration Layer → Weather Service → Database
 **Plik:** `supabase/migrations/YYYYMMDDHHMMSS_add_temperature_to_weather_monthly.sql`
 
 **Zmiany:**
+
 - Dodanie kolumny `temperature` do tabeli `weather_monthly`
 - Typ: `smallint NOT NULL CHECK (temperature BETWEEN 0 AND 100)`
 - Domyślna wartość dla istniejących rekordów: `NULL` (lub 0, w zależności od strategii)
 - Aktualizacja constraintów i indeksów (jeśli potrzebne)
 
 **SQL:**
+
 ```sql
 ALTER TABLE public.weather_monthly
 ADD COLUMN temperature smallint CHECK (temperature BETWEEN 0 AND 100);
@@ -68,6 +71,7 @@ ADD COLUMN temperature smallint CHECK (temperature BETWEEN 0 AND 100);
 ```
 
 **Uwagi:**
+
 - Rozważyć strategię dla istniejących rekordów (NULL vs 0)
 - Sprawdzić czy RLS policies wymagają aktualizacji
 - Zaktualizować typy TypeScript po migracji (`src/db/database.types.ts`)
@@ -87,6 +91,7 @@ ADD COLUMN temperature smallint CHECK (temperature BETWEEN 0 AND 100);
    - Dodanie `temperature_2m_mean` do listy `requiredFields` w walidacji (linia ~118)
 
 **Przykładowe zmiany:**
+
 ```typescript
 // W daily_units:
 temperature_2m_mean: string; // "°C"
@@ -111,6 +116,7 @@ const requiredFields = [
 ```
 
 **Dokumentacja Open-Meteo:**
+
 - Parametr: `temperature_2m_mean` - średnia temperatura dzienna na wysokości 2m
 - Jednostka: °C (Celsius)
 - Format: tablica wartości dziennych
@@ -140,17 +146,20 @@ const requiredFields = [
 **Normalizacja temperatury:**
 
 **Propozycja zakresu:** -20°C do +40°C → 0-100
+
 - Zakres: -20°C (min) do +40°C (max)
 - Formuła: `((temp - (-20)) / (40 - (-20))) * 100`
 - Uproszczenie: `((temp + 20) / 60) * 100`
 - Clamp: `clamp(temperature, 0, 100)`
 
 **Alternatywne zakresy do rozważenia:**
+
 - **Opcja 1 (szeroki):** -30°C do +50°C → lepsze pokrycie ekstremów
 - **Opcja 2 (wąski):** -10°C do +35°C → lepsze rozdzielczość dla typowych klimatów
 - **Opcja 3 (średni):** -20°C do +40°C → kompromis (proponowany)
 
 **Przykładowe zmiany:**
+
 ```typescript
 // W NormalizedMonthlyData:
 interface NormalizedMonthlyData {
@@ -186,6 +195,7 @@ function normalizeTemperature(celsius: number): number {
    - Dodanie `"temperature"` do `Pick<DbWeatherMonthly, ...>`
 
 **Przykładowe zmiany:**
+
 ```typescript
 export type WeatherMonthlyDto = Pick<
   DbWeatherMonthly,
@@ -194,21 +204,25 @@ export type WeatherMonthlyDto = Pick<
 ```
 
 **Uwagi:**
+
 - Po migracji bazy danych, typ `DbWeatherMonthly` zostanie automatycznie zaktualizowany przez Supabase CLI
 - Jeśli typy nie są automatycznie generowane, trzeba ręcznie zaktualizować `src/db/database.types.ts`
 
 ### 3.5 Krok 5: Aktualizacja komponentów frontendowych (opcjonalne)
 
 **Pliki:**
+
 - `src/components/editor/SideDrawer/WeatherMonthlyChart.tsx`
 - `src/components/editor/SideDrawer/WeatherMetricsTable.tsx`
 
 **Zmiany:**
+
 - Dodanie wyświetlania temperatury w wykresie (jeśli używany)
 - Dodanie kolumny "Temperatura" w tabeli
 - Formatowanie: wyświetlanie znormalizowanej wartości (0-100) lub konwersja z powrotem do °C
 
 **Uwagi:**
+
 - Jeśli komponenty są generyczne i automatycznie wyświetlają wszystkie pola z `WeatherMonthlyDto`, mogą nie wymagać zmian
 - Rozważyć czy wyświetlać wartość znormalizowaną (0-100) czy rzeczywistą (°C)
 - Jeśli wyświetlamy °C, potrzebna funkcja denormalizacji: `((temp / 100) * 60) - 20`
@@ -216,11 +230,13 @@ export type WeatherMonthlyDto = Pick<
 ### 3.6 Krok 6: Aktualizacja dokumentacji
 
 **Pliki:**
+
 - `.ai/implementations/endpoints/weather-implementation-report.md`
 - `.ai/endpoints/weather/post-weather-plan.md` (jeśli istnieje)
 - `.ai/endpoints/weather/get-weather-plan.md` (jeśli istnieje)
 
 **Zmiany:**
+
 - Aktualizacja sekcji "Metryki pobierane"
 - Aktualizacja sekcji "Normalizacja metryk" (dodanie temperatury)
 - Aktualizacja przykładów odpowiedzi API
@@ -244,6 +260,7 @@ export type WeatherMonthlyDto = Pick<
 **Formuła:** `((temp + 20) / 60) * 100`
 
 **Przykłady:**
+
 - -20°C → 0
 - 0°C → 33.33
 - 10°C → 50
@@ -251,20 +268,24 @@ export type WeatherMonthlyDto = Pick<
 - 40°C → 100
 
 **Obsługa wartości poza zakresem:**
+
 - Wartości < -20°C → clamp do 0
 - Wartości > +40°C → clamp do 100
 
 ### 4.3 Strategia dla istniejących rekordów
 
 **Opcja A: NULL dla starych rekordów**
+
 - Zalety: wyraźne oznaczenie braku danych
 - Wady: wymaga obsługi NULL w frontendzie
 
 **Opcja B: Wartość domyślna (0)**
+
 - Zalety: brak NULL, prostsza obsługa
 - Wady: może być mylące (0 = -20°C)
 
 **Opcja C: Backfill przy pierwszym refresh**
+
 - Zalety: wszystkie rekordy mają pełne dane
 - Wady: wymaga dodatkowej logiki
 
@@ -301,18 +322,21 @@ export type WeatherMonthlyDto = Pick<
 ## 6. Checklist wdrożenia
 
 ### Faza 1: Baza danych
+
 - [ ] Utworzenie migracji dodającej kolumnę `temperature`
 - [ ] Uruchomienie migracji na środowisku dev/staging
 - [ ] Weryfikacja struktury tabeli
 - [ ] Aktualizacja typów TypeScript (`database.types.ts`)
 
 ### Faza 2: Backend - Integracja
+
 - [ ] Aktualizacja `OpenMeteoRawResponse` interface
 - [ ] Dodanie `temperature_2m_mean` do parametrów API
 - [ ] Dodanie walidacji `temperature_2m_mean` w odpowiedzi
 - [ ] Test pobrania danych z Open-Meteo (manualny)
 
 ### Faza 3: Backend - Service
+
 - [ ] Aktualizacja `NormalizedMonthlyData` interface
 - [ ] Implementacja normalizacji temperatury
 - [ ] Aktualizacja `normalizeWeatherData()` - grupowanie i obliczenia
@@ -321,22 +345,26 @@ export type WeatherMonthlyDto = Pick<
 - [ ] Test end-to-end refresh (manualny)
 
 ### Faza 4: Typy i API
+
 - [ ] Aktualizacja `WeatherMonthlyDto` w `src/types.ts`
 - [ ] Test GET endpoint - weryfikacja że temperatura jest w odpowiedzi
 - [ ] Test POST endpoint - weryfikacja że temperatura jest zapisywana
 
 ### Faza 5: Frontend (opcjonalne)
+
 - [ ] Sprawdzenie czy komponenty wymagają zmian
 - [ ] Aktualizacja `WeatherMonthlyChart.tsx` (jeśli potrzebne)
 - [ ] Aktualizacja `WeatherMetricsTable.tsx` (jeśli potrzebne)
 - [ ] Test wizualny wyświetlania temperatury
 
 ### Faza 6: Dokumentacja
+
 - [ ] Aktualizacja raportu implementacji
 - [ ] Aktualizacja dokumentacji API endpoints
 - [ ] Aktualizacja komentarzy w kodzie
 
 ### Faza 7: Deployment
+
 - [ ] Code review
 - [ ] Testy na staging
 - [ ] Migracja na produkcję
@@ -350,6 +378,7 @@ export type WeatherMonthlyDto = Pick<
 **Problem:** API może nie zwracać `temperature_2m_mean` dla niektórych lokalizacji lub okresów.
 
 **Rozwiązanie:**
+
 - Walidacja w `fetchWeatherArchive()` - sprawdzenie czy pole istnieje
 - Obsługa NULL/braku danych w normalizacji
 - Logowanie ostrzeżenia jeśli temperatura nie jest dostępna
@@ -359,6 +388,7 @@ export type WeatherMonthlyDto = Pick<
 **Problem:** Niektóre lokalizacje mogą mieć temperatury < -20°C lub > +40°C.
 
 **Rozwiązanie:**
+
 - Użycie funkcji `clamp()` do ograniczenia wartości
 - Rozważenie szerszego zakresu normalizacji (-30°C do +50°C)
 - Logowanie wartości ekstremalnych dla analizy
@@ -368,6 +398,7 @@ export type WeatherMonthlyDto = Pick<
 **Problem:** Stare rekordy w bazie nie będą miały wartości temperatury.
 
 **Rozwiązanie:**
+
 - Kolumna `temperature` jako nullable (lub z wartością domyślną)
 - Frontend musi obsługiwać brak temperatury
 - Opcjonalny backfill przy następnym refresh
@@ -377,6 +408,7 @@ export type WeatherMonthlyDto = Pick<
 **Problem:** Dodanie kolejnego parametru może zwiększyć czas odpowiedzi API.
 
 **Rozwiązanie:**
+
 - Monitorowanie czasu odpowiedzi
 - Rozważenie zwiększenia timeout (obecnie 30s)
 - Cache'owanie odpowiedzi (w przyszłości)
@@ -388,6 +420,7 @@ export type WeatherMonthlyDto = Pick<
 **Pytanie:** Jaki zakres temperatury użyć do normalizacji?
 
 **Opcje:**
+
 - **A:** -20°C do +40°C (proponowany)
 - **B:** -30°C do +50°C (szerszy, lepsze pokrycie ekstremów)
 - **C:** -10°C do +35°C (węższy, lepsza rozdzielczość dla typowych klimatów)
@@ -399,6 +432,7 @@ export type WeatherMonthlyDto = Pick<
 **Pytanie:** Jak obsłużyć stare rekordy bez temperatury?
 
 **Opcje:**
+
 - **A:** NULL (wymaga obsługi w frontendzie)
 - **B:** Wartość domyślna 0 (może być mylące)
 - **C:** Backfill przy następnym refresh (wymaga dodatkowej logiki)
@@ -410,6 +444,7 @@ export type WeatherMonthlyDto = Pick<
 **Pytanie:** Wyświetlać wartość znormalizowaną (0-100) czy rzeczywistą (°C)?
 
 **Opcje:**
+
 - **A:** Wartość znormalizowana (0-100) - spójność z innymi metrykami
 - **B:** Wartość rzeczywista (°C) - bardziej czytelna dla użytkownika
 - **C:** Obie wartości - znormalizowana dla porównań, rzeczywista dla czytelności
@@ -433,11 +468,13 @@ export type WeatherMonthlyDto = Pick<
 Plan zakłada minimalne zmiany w istniejącej architekturze, dodając temperaturę w sposób spójny z obecnymi metrykami. Wszystkie zmiany są backward-compatible (z wyjątkiem migracji bazy danych, która wymaga planowania).
 
 **Kluczowe decyzje do podjęcia:**
+
 1. Zakres normalizacji temperatury (-20°C do +40°C vs inne)
 2. Strategia dla istniejących rekordów (NULL vs wartość domyślna)
 3. Format wyświetlania w frontendzie (znormalizowany vs °C)
 
 **Następne kroki:**
+
 1. Zatwierdzenie planu
 2. Podjęcie decyzji dotyczących punktów z sekcji 8
 3. Rozpoczęcie implementacji zgodnie z checklist (sekcja 6)
@@ -447,4 +484,3 @@ Plan zakłada minimalne zmiany w istniejącej architekturze, dodając temperatur
 **Przygotował:** AI Assistant  
 **Data:** 2025-01-21  
 **Status:** Oczekuje na feedback przed implementacją
-

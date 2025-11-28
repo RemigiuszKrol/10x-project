@@ -13,6 +13,7 @@ Funkcjonalność jest częścią istniejącego widoku edytora:
 **Rozszerzenie:** Zakładka "Rośliny" w SideDrawer (prawy panel edytora)
 
 **Warunki dostępu:**
+
 - Wymaga uwierzytelnienia (istniejący middleware)
 - Plan musi należeć do zalogowanego użytkownika
 - Plan musi mieć ustawioną lokalizację (dla AI fit)
@@ -101,6 +102,7 @@ Modals (globalne, nowe):
 **Opis:** Główny kontener zakładki "Rośliny" w SideDrawer. Wyświetla listę wszystkich roślin w planie oraz przycisk dodawania nowej rośliny. Zarządza stanem AddPlantDialog.
 
 **Główne elementy:**
+
 - `<div className="flex flex-col h-full">`
 - PlantsTabHeader z licznikiem i przyciskiem
 - ScrollArea z PlantsList
@@ -108,20 +110,24 @@ Modals (globalne, nowe):
 - AddPlantDialog (warunkowe renderowanie)
 
 **Obsługiwane zdarzenia:**
+
 - `onAddPlantClick()` - otwarcie dialogu dodawania (sprawdza czy jest zaznaczona komórka)
 - `onPlantAdded()` - zamknięcie dialogu po sukcesie
 - `onPlantDeleted(x, y)` - usunięcie rośliny z listy
 
 **Walidacja:**
+
 - Przycisk "Dodaj roślinę" disabled jeśli brak zaznaczonej komórki LUB komórka !== 'soil'
 - Tooltip wyjaśniający dlaczego disabled
 
 **Typy:**
+
 - `PlantPlacementDto[]` - lista roślin z query
 - `CellPosition | null` - zaznaczona komórka z EditorState
 - `GridCellType | null` - typ zaznaczonej komórki
 
 **Propsy:**
+
 ```typescript
 interface PlantsTabProps {
   planId: string;
@@ -136,21 +142,25 @@ interface PlantsTabProps {
 **Opis:** Lista wszystkich roślin w planie. Wyświetla PlantCard dla każdej rośliny. Obsługuje filtrowanie i sortowanie (opcjonalnie).
 
 **Główne elementy:**
+
 - `<div className="space-y-2">`
 - Array.map PlantCard
 - EmptyState jeśli pusta lista
 
 **Obsługiwane zdarzenia:**
+
 - `onPlantClick(x, y)` - focus na komórce w GridCanvas
 - `onDeleteClick(x, y)` - otwarcie DeletePlantConfirmDialog
 
 **Walidacja:** brak
 
 **Typy:**
+
 - `PlantPlacementDto[]`
 - `PlantCardViewModel[]` (derived)
 
 **Propsy:**
+
 ```typescript
 interface PlantsListProps {
   planId: string;
@@ -165,6 +175,7 @@ interface PlantsListProps {
 **Opis:** Pojedyncza karta rośliny w liście. Wyświetla nazwę, pozycję, oceny dopasowania (gwiazdki) oraz akcje (przejdź do, usuń).
 
 **Główne elementy:**
+
 - `<Card className="p-4">`
 - Flex layout: Info (left) + Actions (right)
 - PlantName + LatinName (jeśli dostępna)
@@ -173,15 +184,18 @@ interface PlantsListProps {
 - Button group: JumpTo, Delete
 
 **Obsługiwane zdarzenia:**
+
 - `onJumpToClick()` - fokus na komórce
 - `onDeleteClick()` - potwierdzenie usunięcia
 
 **Walidacja:** brak
 
 **Typy:**
+
 - `PlantPlacementDto`
 
 **Propsy:**
+
 ```typescript
 interface PlantCardProps {
   plant: PlantPlacementDto;
@@ -195,6 +209,7 @@ interface PlantCardProps {
 **Opis:** Modal do dodawania nowej rośliny. Zawiera dwie zakładki: "Wyszukaj" (AI) i "Ręcznie". Zarządza przepływem: wyszukiwanie → wybór kandydata → ocena dopasowania → potwierdzenie.
 
 **Główne elementy:**
+
 - `<Dialog>` z shadcn/ui
 - DialogHeader z tytułem i CellInfoBadge
 - `<Tabs>` z dwoma TabsTrigger
@@ -203,6 +218,7 @@ interface PlantCardProps {
 - DialogFooter z akcjami
 
 **Obsługiwane zdarzenia:**
+
 - `onOpenChange(open)` - otwarcie/zamknięcie dialogu
 - `onSearchSubmit(query)` - wyszukiwanie AI
 - `onCandidateSelect(candidate)` - wybór kandydata → trigger fit
@@ -213,12 +229,14 @@ interface PlantCardProps {
 - `onSkipScores()` - dodanie bez oceny (po timeout fit)
 
 **Walidacja:**
+
 - SearchTab: query.length > 0
 - ManualTab: manualName.length > 0
 - ConfirmButton enabled jeśli (selectedCandidate !== null) LUB (manualName !== '')
 - ConfirmButton disabled podczas isSubmitting
 
 **Typy:**
+
 - `AddPlantDialogState` (ViewModel)
 - `PlantSearchCommand`, `PlantSearchResultDto`
 - `PlantFitCommand`, `PlantFitResultDto`
@@ -226,6 +244,7 @@ interface PlantCardProps {
 - `AIError` (ViewModel)
 
 **Propsy:**
+
 ```typescript
 interface AddPlantDialogProps {
   isOpen: boolean;
@@ -242,21 +261,26 @@ interface AddPlantDialogProps {
 **Opis:** Formularz wyszukiwania roślin z input i przyciskiem. Obsługuje wysyłanie zapytania do AI.
 
 **Główne elementy:**
+
 - `<form onSubmit={handleSearch}>`
 - `<Input>` z placeholder "Wpisz nazwę rośliny..."
 - `<Button type="submit">` "Szukaj" z ikoną Search
 - LoadingSpinner (podczas wyszukiwania)
 
 **Obsługiwane zdarzenia:**
+
 - `onSubmit(query)` - wysłanie POST /ai/plants/search
 
 **Walidacja:**
+
 - query.length > 0 (disabled button)
 
 **Typy:**
+
 - `PlantSearchCommand`
 
 **Propsy:**
+
 ```typescript
 interface PlantSearchFormProps {
   onSearch: (query: string) => Promise<void>;
@@ -269,19 +293,23 @@ interface PlantSearchFormProps {
 **Opis:** Lista kandydatów zwróconych przez AI. Każdy kandydat to przycisk z nazwą i nazwą łacińską.
 
 **Główne elementy:**
+
 - `<div className="space-y-2">`
 - Array.map CandidateItem
 - NoResultsMessage (jeśli candidates.length === 0)
 
 **Obsługiwane zdarzenia:**
+
 - `onCandidateClick(candidate)` - wybór kandydata
 
 **Walidacja:** brak
 
 **Typy:**
+
 - `PlantSearchCandidateDto[]`
 
 **Propsy:**
+
 ```typescript
 interface PlantSearchResultsProps {
   candidates: PlantSearchCandidateDto[];
@@ -294,6 +322,7 @@ interface PlantSearchResultsProps {
 **Opis:** Wyświetlanie wyników oceny dopasowania rośliny. Pokazuje 4 scores jako gwiazdki (1-5) oraz explanation text.
 
 **Główne elementy:**
+
 - `<div className="space-y-4">`
 - Grid 2x2 dla 4 ScoreCard (sunlight, humidity, precip, overall)
 - ExplanationText (jeśli dostępne)
@@ -304,9 +333,11 @@ interface PlantSearchResultsProps {
 **Walidacja:** brak
 
 **Typy:**
+
 - `PlantFitResultDto`
 
 **Propsy:**
+
 ```typescript
 interface PlantFitDisplayProps {
   fitResult: PlantFitResultDto;
@@ -319,6 +350,7 @@ interface PlantFitDisplayProps {
 **Opis:** Pojedyncza karta z oceną parametru (np. nasłonecznienie). Wyświetla nazwę, gwiazdki (1-5) oraz tooltip z wyjaśnieniem.
 
 **Główne elementy:**
+
 - `<Card className="p-3">`
 - Label (np. "Nasłonecznienie")
 - Stars row (★★★★☆)
@@ -329,9 +361,11 @@ interface PlantFitDisplayProps {
 **Walidacja:** score 1-5
 
 **Typy:**
+
 - `score: number` (1-5)
 
 **Propsy:**
+
 ```typescript
 interface ScoreCardProps {
   label: string;
@@ -346,6 +380,7 @@ interface ScoreCardProps {
 **Opis:** Modal wyświetlający błędy związane z AI (timeout, bad JSON, rate limit). Oferuje akcje: ponowienie, dodanie bez oceny, anulowanie.
 
 **Główne elementy:**
+
 - `<AlertDialog>` z shadcn/ui
 - AlertDialogHeader z ikoną błędu
 - ErrorMessage (zależnie od typu)
@@ -353,6 +388,7 @@ interface ScoreCardProps {
 - AlertDialogFooter z akcjami
 
 **Obsługiwane zdarzenia:**
+
 - `onRetry()` - ponowienie zapytania AI
 - `onAddWithoutScores()` - dodanie rośliny bez oceny (tylko dla fit error)
 - `onAddManually()` - przejście do ManualTab (tylko dla search error)
@@ -361,14 +397,16 @@ interface ScoreCardProps {
 **Walidacja:** brak
 
 **Typy:**
+
 - `AIError` (ViewModel)
 
 **Propsy:**
+
 ```typescript
 interface AIErrorDialogProps {
   isOpen: boolean;
   error: AIError;
-  context: 'search' | 'fit';
+  context: "search" | "fit";
   onRetry: () => Promise<void>;
   onAddWithoutScores?: () => void;
   onAddManually?: () => void;
@@ -381,12 +419,14 @@ interface AIErrorDialogProps {
 **Opis:** Prosty modal informujący, że rośliny można dodawać tylko na pola typu 'ziemia'.
 
 **Główne elementy:**
+
 - `<AlertDialog>`
 - WarningIcon
 - WarningMessage: "Rośliny można dodawać tylko na pola typu 'ziemia'"
 - OkButton
 
 **Obsługiwane zdarzenia:**
+
 - `onOk()` - zamknięcie dialogu
 
 **Walidacja:** brak
@@ -394,6 +434,7 @@ interface AIErrorDialogProps {
 **Typy:** brak
 
 **Propsy:**
+
 ```typescript
 interface CellNotSoilDialogProps {
   isOpen: boolean;
@@ -407,21 +448,25 @@ interface CellNotSoilDialogProps {
 **Opis:** Potwierdzenie usunięcia rośliny z pola.
 
 **Główne elementy:**
+
 - `<AlertDialog>`
 - ConfirmMessage: "Czy na pewno chcesz usunąć roślinę '{plantName}'?"
 - Position info: "Pole (x: 3, y: 7)"
 - Actions: Cancel, Confirm
 
 **Obsługiwane zdarzenia:**
+
 - `onConfirm()` - DELETE /plants/:x/:y
 - `onCancel()` - zamknięcie bez zmian
 
 **Walidacja:** brak
 
 **Typy:**
+
 - `PlantPlacementDto` (nazwa rośliny)
 
 **Propsy:**
+
 ```typescript
 interface DeletePlantConfirmDialogProps {
   isOpen: boolean;
@@ -436,6 +481,7 @@ interface DeletePlantConfirmDialogProps {
 ### 5.1. Istniejące DTO (z types.ts)
 
 Wykorzystujemy bez zmian:
+
 - `PlantPlacementDto` - roślina w bazie
 - `PlantSearchCommand` - zapytanie wyszukiwania
 - `PlantSearchCandidateDto` - kandydat z AI
@@ -451,8 +497,8 @@ Wykorzystujemy bez zmian:
  * Stan dialogu dodawania rośliny
  */
 export interface AddPlantDialogState {
-  step: 'search' | 'candidate_selected' | 'fit_loading' | 'fit_ready' | 'manual';
-  activeTab: 'search' | 'manual';
+  step: "search" | "candidate_selected" | "fit_loading" | "fit_ready" | "manual";
+  activeTab: "search" | "manual";
   searchQuery: string;
   searchResults: PlantSearchCandidateDto[] | null;
   isSearching: boolean;
@@ -468,9 +514,9 @@ export interface AddPlantDialogState {
  * Błąd AI
  */
 export interface AIError {
-  type: 'timeout' | 'bad_json' | 'rate_limit' | 'network' | 'unknown';
+  type: "timeout" | "bad_json" | "rate_limit" | "network" | "unknown";
   message: string;
-  context: 'search' | 'fit';
+  context: "search" | "fit";
   canRetry: boolean;
   retryAfter?: number; // dla rate_limit, w sekundach
   details?: string;
@@ -481,10 +527,10 @@ export interface AIError {
  */
 export interface ScoreThresholds {
   excellent: { min: number; score: 5 }; // ≥90
-  good: { min: number; score: 4 };      // 80-89
-  fair: { min: number; score: 3 };      // 70-79
-  poor: { min: number; score: 2 };      // 60-69
-  bad: { min: number; score: 1 };       // <60
+  good: { min: number; score: 4 }; // 80-89
+  fair: { min: number; score: 3 }; // 70-79
+  poor: { min: number; score: 2 }; // 60-69
+  bad: { min: number; score: 1 }; // <60
 }
 
 /**
@@ -492,8 +538,8 @@ export interface ScoreThresholds {
  */
 export interface SeasonWeights {
   growingSeason: { months: number[]; weight: 2 }; // IV-IX (northern)
-  offSeason: { months: number[]; weight: 1 };     // X-III
-  hemisphere: 'northern' | 'southern';
+  offSeason: { months: number[]; weight: 1 }; // X-III
+  hemisphere: "northern" | "southern";
 }
 
 /**
@@ -502,8 +548,8 @@ export interface SeasonWeights {
 export interface PlantCardViewModel {
   placement: PlantPlacementDto;
   displayName: string; // plant_name sformatowana
-  position: string;    // "x: 3, y: 7"
-  hasScores: boolean;  // czy ma wypełnione scores
+  position: string; // "x: 3, y: 7"
+  hasScores: boolean; // czy ma wypełnione scores
 }
 ```
 
@@ -523,9 +569,7 @@ export interface AIServiceConfig {
 /**
  * Wynik walidacji odpowiedzi AI
  */
-export type AIValidationResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: AIError };
+export type AIValidationResult<T> = { success: true; data: T } | { success: false; error: AIError };
 ```
 
 ## 6. Zarządzanie stanem
@@ -533,11 +577,13 @@ export type AIValidationResult<T> =
 ### 6.1. Lokalny stan komponentów
 
 **PlantsTab:**
+
 - `isAddDialogOpen: boolean` - czy AddPlantDialog jest otwarty
 - `isDeleteDialogOpen: boolean` - czy DeletePlantConfirmDialog jest otwarty
 - `plantToDelete: PlantPlacementDto | null` - roślina do usunięcia
 
 **AddPlantDialog:**
+
 - Stan zarządzany przez `useAddPlantFlow` (custom hook)
 
 ### 6.2. Custom Hook: useAddPlantFlow
@@ -552,44 +598,40 @@ interface UseAddPlantFlowReturn {
     searchPlants: (query: string) => Promise<void>;
     selectCandidate: (candidate: PlantSearchCandidateDto) => Promise<void>;
     retrySearch: () => Promise<void>;
-    
+
     // Ocena dopasowania
     checkFit: (plantName: string) => Promise<void>;
     retryFit: () => Promise<void>;
     skipFit: () => void;
-    
+
     // Ręczne dodanie
     setManualName: (name: string) => void;
-    
+
     // Finalizacja
     confirmAdd: () => Promise<void>;
     cancel: () => void;
-    
+
     // Obsługa błędów
     dismissError: () => void;
   };
 }
 
-function useAddPlantFlow(
-  planId: string,
-  cell: CellPosition,
-  onSuccess: () => void
-): UseAddPlantFlowReturn {
+function useAddPlantFlow(planId: string, cell: CellPosition, onSuccess: () => void): UseAddPlantFlowReturn {
   const [state, setState] = useState<AddPlantDialogState>(initialState);
-  
+
   // Mutations z React Query (już istniejące)
   const searchMutation = useAIMutations().search;
   const fitMutation = useAIMutations().fit;
   const addPlantMutation = usePlantMutations().add;
-  
+
   // Tracking analityczny
   const { trackPlantConfirmed } = useAnalyticsEvents(planId);
-  
+
   // AI service z timeout i walidacją
   const aiService = useAIService();
-  
+
   // Implementacja actions...
-  
+
   return { state, actions };
 }
 ```
@@ -606,69 +648,68 @@ interface UseAIServiceReturn {
 
 function useAIService(config?: Partial<AIServiceConfig>): UseAIServiceReturn {
   const defaultConfig: AIServiceConfig = {
-    searchEndpoint: '/api/ai/plants/search',
-    fitEndpoint: '/api/ai/plants/fit',
+    searchEndpoint: "/api/ai/plants/search",
+    fitEndpoint: "/api/ai/plants/fit",
     timeout: 10000,
     maxRetries: 1,
   };
-  
+
   const finalConfig = { ...defaultConfig, ...config };
   const validator = useAIValidation();
-  
+
   const searchPlants = async (query: string) => {
     // 1. Timeout wrapper
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), finalConfig.timeout);
-    
+
     try {
       // 2. Fetch z timeout
       const response = await fetch(finalConfig.searchEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query }),
         signal: controller.signal,
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       // 3. Obsługa błędów HTTP
       if (!response.ok) {
         if (response.status === 429) {
-          const retryAfter = parseInt(response.headers.get('Retry-After') || '60');
-          throw createAIError('rate_limit', 'search', retryAfter);
+          const retryAfter = parseInt(response.headers.get("Retry-After") || "60");
+          throw createAIError("rate_limit", "search", retryAfter);
         }
-        throw createAIError('unknown', 'search');
+        throw createAIError("unknown", "search");
       }
-      
+
       // 4. Walidacja JSON
       const data = await response.json();
       const validation = validator.validateSearchResult(data);
-      
+
       if (!validation.success) {
         throw validation.error;
       }
-      
+
       return validation.data;
-      
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       // 5. Obsługa timeout
-      if (error.name === 'AbortError') {
-        throw createAIError('timeout', 'search');
+      if (error.name === "AbortError") {
+        throw createAIError("timeout", "search");
       }
-      
+
       // 6. Obsługa błędów sieciowych
       if (error instanceof TypeError) {
-        throw createAIError('network', 'search');
+        throw createAIError("network", "search");
       }
-      
+
       throw error;
     }
   };
-  
+
   // checkPlantFit - analogiczna implementacja
-  
+
   return { searchPlants, checkPlantFit };
 }
 ```
@@ -683,13 +724,13 @@ function useAIValidation() {
   const PlantSearchCandidateSchema = z.object({
     name: z.string().min(1),
     latin_name: z.string().optional(),
-    source: z.literal('ai'),
+    source: z.literal("ai"),
   });
-  
+
   const PlantSearchResultSchema = z.object({
     candidates: z.array(PlantSearchCandidateSchema),
   });
-  
+
   const PlantFitResultSchema = z.object({
     sunlight_score: z.number().int().min(1).max(5),
     humidity_score: z.number().int().min(1).max(5),
@@ -697,7 +738,7 @@ function useAIValidation() {
     overall_score: z.number().int().min(1).max(5),
     explanation: z.string().optional(),
   });
-  
+
   return {
     validateSearchResult: (data: unknown): AIValidationResult<PlantSearchResultDto> => {
       const result = PlantSearchResultSchema.safeParse(data);
@@ -706,10 +747,10 @@ function useAIValidation() {
       }
       return {
         success: false,
-        error: createAIError('bad_json', 'search', undefined, result.error.message),
+        error: createAIError("bad_json", "search", undefined, result.error.message),
       };
     },
-    
+
     validateFitResult: (data: unknown): AIValidationResult<PlantFitResultDto> => {
       const result = PlantFitResultSchema.safeParse(data);
       if (result.success) {
@@ -717,7 +758,7 @@ function useAIValidation() {
       }
       return {
         success: false,
-        error: createAIError('bad_json', 'fit', undefined, result.error.message),
+        error: createAIError("bad_json", "fit", undefined, result.error.message),
       };
     },
   };
@@ -727,11 +768,13 @@ function useAIValidation() {
 ### 6.5. React Query
 
 **Wykorzystanie istniejących hooks:**
+
 - `usePlantPlacements(planId)` - GET /api/plans/:id/plants
 - `usePlantMutations()` - PUT/DELETE /plants/:x/:y (już zaimplementowane)
 - `useAIMutations()` - POST /ai/plants/search, /fit (już zaimplementowane)
 
 **Uwagi:**
+
 - Istniejące mutations mają timeout, ale bez sanity-check
 - useAIService dodaje warstwę walidacji
 
@@ -742,6 +785,7 @@ function useAIValidation() {
 **Cel:** Wyszukiwanie roślin po nazwie przez AI
 
 **Request:**
+
 ```json
 {
   "query": "tomato"
@@ -749,6 +793,7 @@ function useAIValidation() {
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -769,6 +814,7 @@ function useAIValidation() {
 ```
 
 **Response 429 (rate limit):**
+
 ```json
 {
   "error": {
@@ -777,9 +823,11 @@ function useAIValidation() {
   }
 }
 ```
+
 Headers: `Retry-After: 60`
 
 **Response 504 (timeout):**
+
 ```json
 {
   "error": {
@@ -790,6 +838,7 @@ Headers: `Retry-After: 60`
 ```
 
 **Frontend handling:**
+
 - Timeout 10s: AbortController + setTimeout
 - Bad JSON: Zod validation → AIErrorDialog
 - Rate limit: Parse Retry-After → disable button z countdown
@@ -800,6 +849,7 @@ Headers: `Retry-After: 60`
 **Cel:** Ocena dopasowania rośliny do lokalizacji
 
 **Request:**
+
 ```json
 {
   "plan_id": "uuid",
@@ -810,6 +860,7 @@ Headers: `Retry-After: 60`
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -825,6 +876,7 @@ Headers: `Retry-After: 60`
 **Błędy:** jak search (429, 504)
 
 **Frontend handling:**
+
 - Jak search
 - Dodatkowa opcja przy timeout: "Dodaj bez oceny" → PUT z plant_name tylko
 
@@ -833,6 +885,7 @@ Headers: `Retry-After: 60`
 **Cel:** Dodanie/aktualizacja rośliny na komórce
 
 **Request:**
+
 ```json
 {
   "plant_name": "tomato",
@@ -844,6 +897,7 @@ Headers: `Retry-After: 60`
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -861,6 +915,7 @@ Headers: `Retry-After: 60`
 ```
 
 **Response 422 (komórka nie-soil):**
+
 ```json
 {
   "error": {
@@ -876,6 +931,7 @@ Headers: `Retry-After: 60`
 ```
 
 **Frontend handling:**
+
 - Success → trackPlantConfirmed, invalidate queries, toast, zamknij dialog
 - 422 → toast "Nie można dodać rośliny na to pole"
 
@@ -888,6 +944,7 @@ Headers: `Retry-After: 60`
 **Response 204:** brak treści
 
 **Frontend handling:**
+
 - Success → invalidate queries, toast "Usunięto roślinę"
 
 ## 8. Interakcje użytkownika
@@ -895,6 +952,7 @@ Headers: `Retry-After: 60`
 ### 8.1. Dodawanie rośliny - happy path
 
 **Scenariusz:**
+
 1. User otwiera PlantsTab w SideDrawer
 2. Klika pole ziemi (3, 7) w GridCanvas → focusedCell = (3, 7)
 3. Klika przycisk "Dodaj roślinę" w PlantsTab
@@ -923,64 +981,48 @@ Headers: `Retry-After: 60`
 ### 8.2. Dodawanie rośliny - timeout AI search
 
 **Scenariusz:**
-1-5. jak happy path
-6. Loading spinner 10s → timeout
-7. AIErrorDialog otwiera się:
-   - Tytuł: "AI nie odpowiedziało"
-   - Message: "Wyszukiwanie rośliny przekroczyło limit czasu (10s)."
-   - Akcje:
-     - "Ponów wyszukiwanie"
-     - "Dodaj ręcznie"
-     - "Anuluj"
+1-5. jak happy path 6. Loading spinner 10s → timeout 7. AIErrorDialog otwiera się:
+
+- Tytuł: "AI nie odpowiedziało"
+- Message: "Wyszukiwanie rośliny przekroczyło limit czasu (10s)."
+- Akcje:
+  - "Ponów wyszukiwanie"
+  - "Dodaj ręcznie"
+  - "Anuluj"
+
 8. User klika "Ponów wyszukiwanie"
 9. Powrót do kroku 5, ponowne wywołanie search
 
-**Alternatywa:**
-8. User klika "Dodaj ręcznie"
-9. Przejście do zakładki "Ręcznie"
-10. User wpisuje "tomato" i klika "Dodaj roślinę"
-11. PUT /plants/3/7 z plant_name tylko (bez scores)
-12. Success jak w happy path
+**Alternatywa:** 8. User klika "Dodaj ręcznie" 9. Przejście do zakładki "Ręcznie" 10. User wpisuje "tomato" i klika "Dodaj roślinę" 11. PUT /plants/3/7 z plant_name tylko (bez scores) 12. Success jak w happy path
 
 ### 8.3. Dodawanie rośliny - timeout AI fit
 
 **Scenariusz:**
-1-8. jak happy path
-9. Loading spinner 10s → timeout
-10. AIErrorDialog:
-    - Message: "Ocena dopasowania przekroczyła limit czasu."
-    - Akcje:
-      - "Ponów ocenę"
-      - "Dodaj bez oceny"
-      - "Anuluj"
-11. User klika "Dodaj bez oceny"
-12. PUT /plants/3/7 z plant_name="tomato" (bez scores)
-13. Success jak w happy path
+1-8. jak happy path 9. Loading spinner 10s → timeout 10. AIErrorDialog: - Message: "Ocena dopasowania przekroczyła limit czasu." - Akcje: - "Ponów ocenę" - "Dodaj bez oceny" - "Anuluj" 11. User klika "Dodaj bez oceny" 12. PUT /plants/3/7 z plant_name="tomato" (bez scores) 13. Success jak w happy path
 
 ### 8.4. Dodawanie rośliny - bad JSON
 
 **Scenariusz:**
-1-6. jak happy path
-7. Response z AI nie pasuje do schematu (np. brak pola `candidates`)
-8. AIErrorDialog:
-   - Message: "Otrzymano niepoprawną odpowiedź od AI."
-   - Details: "Schema validation failed: ..."
-   - Akcje: "Ponów", "Dodaj ręcznie", "Anuluj"
+1-6. jak happy path 7. Response z AI nie pasuje do schematu (np. brak pola `candidates`) 8. AIErrorDialog:
+
+- Message: "Otrzymano niepoprawną odpowiedź od AI."
+- Details: "Schema validation failed: ..."
+- Akcje: "Ponów", "Dodaj ręcznie", "Anuluj"
+
 9. User klika "Ponów" → powrót do kroku 5
 
 ### 8.5. Dodawanie rośliny - brak wyników
 
 **Scenariusz:**
-1-6. jak happy path
-7. Response: `{ candidates: [] }`
-8. NoResultsMessage: "Nie znaleziono rośliny. Spróbuj ponownie lub dodaj ręcznie."
-9. User może:
-   - Zmienić query i ponownie wyszukać
-   - Przełączyć się na zakładkę "Ręcznie"
+1-6. jak happy path 7. Response: `{ candidates: [] }` 8. NoResultsMessage: "Nie znaleziono rośliny. Spróbuj ponownie lub dodaj ręcznie." 9. User może:
+
+- Zmienić query i ponownie wyszukać
+- Przełączyć się na zakładkę "Ręcznie"
 
 ### 8.6. Dodawanie rośliny - pole nie-soil
 
 **Scenariusz:**
+
 1. User klika pole typu 'path' (ścieżka)
 2. Klika "Dodaj roślinę"
 3. CellNotSoilDialog otwiera się:
@@ -990,6 +1032,7 @@ Headers: `Retry-After: 60`
 4. User klika "OK" → dialog zamyka się
 
 **Alternatywa (prewencja):**
+
 1. User klika pole typu 'path'
 2. Przycisk "Dodaj roślinę" jest disabled
 3. Tooltip: "Wybierz pole typu 'ziemia' aby dodać roślinę"
@@ -997,6 +1040,7 @@ Headers: `Retry-After: 60`
 ### 8.7. Usuwanie rośliny
 
 **Scenariusz:**
+
 1. User widzi listę roślin w PlantsTab
 2. Znajduje kartę rośliny "tomato" na pozycji (3, 7)
 3. Klika przycisk "Usuń" (ikona Trash)
@@ -1014,6 +1058,7 @@ Headers: `Retry-After: 60`
 ### 8.8. Przejście do rośliny na siatce
 
 **Scenariusz:**
+
 1. User widzi listę roślin w PlantsTab
 2. Klika przycisk "Przejdź" (ikona ArrowRight) na karcie rośliny "tomato" (3, 7)
 3. GridCanvas fokusuje komórkę (3, 7) (focus ring)
@@ -1029,6 +1074,7 @@ Headers: `Retry-After: 60`
 **Komponenty:** PlantsTab, AddPlantDialog
 
 **Wpływ na UI:**
+
 - Przycisk "Dodaj roślinę" w PlantsTab:
   - Disabled jeśli `cellType !== 'soil'`
   - Tooltip: "Wybierz pole typu 'ziemia'"
@@ -1043,6 +1089,7 @@ Headers: `Retry-After: 60`
 **Komponenty:** PlantsTab
 
 **Wpływ na UI:**
+
 - Przycisk "Dodaj roślinę" disabled jeśli komórka ma już roślinę
 - Tooltip: "Pole już zajęte przez roślinę '{name}'"
 
@@ -1055,6 +1102,7 @@ Headers: `Retry-After: 60`
 **Komponenty:** PlantSearchForm
 
 **Wpływ na UI:**
+
 - Przycisk "Szukaj" disabled jeśli input pusty
 
 ### 9.4. Walidacja nazwy ręcznej
@@ -1064,6 +1112,7 @@ Headers: `Retry-After: 60`
 **Komponenty:** AddPlantDialog (ManualTab)
 
 **Wpływ na UI:**
+
 - Przycisk "Dodaj roślinę" disabled jeśli input pusty
 
 ### 9.5. Walidacja scores z AI
@@ -1073,6 +1122,7 @@ Headers: `Retry-After: 60`
 **Komponenty:** useAIValidation (Zod schema)
 
 **Wpływ na UI:**
+
 - Jeśli scores poza zakresem → AIError 'bad_json'
 - AIErrorDialog z opcją retry
 
@@ -1083,6 +1133,7 @@ Headers: `Retry-After: 60`
 **Komponenty:** useAIService (AbortController + setTimeout)
 
 **Wpływ na UI:**
+
 - Po 10s → AbortError
 - AIErrorDialog z opcją retry lub skip
 
@@ -1093,6 +1144,7 @@ Headers: `Retry-After: 60`
 **Komponenty:** useAIService (obsługa 429)
 
 **Wpływ na UI:**
+
 - Błąd 429 → parse Retry-After header
 - Przycisk "Szukaj" disabled na X sekund
 - Toast: "Zbyt wiele zapytań. Spróbuj za Xs"
@@ -1105,6 +1157,7 @@ Headers: `Retry-After: 60`
 **Scenariusz:** AI nie odpowiada w 10s
 
 **Obsługa:**
+
 - useAIService catch AbortError → throw AIError { type: 'timeout' }
 - useAddPlantFlow catch → set state.error
 - Otwarcie AIErrorDialog
@@ -1113,6 +1166,7 @@ Headers: `Retry-After: 60`
   - **Fit timeout:** Retry / Add without scores / Cancel
 
 **UI:**
+
 - Dialog z wyraźnym komunikatem
 - Ikona zegara (Clock icon)
 - Highlight przycisku "Ponów"
@@ -1122,17 +1176,20 @@ Headers: `Retry-After: 60`
 **Scenariusz:** Odpowiedź AI nie pasuje do schematu
 
 **Obsługa:**
+
 - useAIValidation → Zod safeParse fail
 - Return AIError { type: 'bad_json', details: zodError.message }
 - useAddPlantFlow catch → set state.error
 - AIErrorDialog
 
 **UI:**
+
 - Message: "Otrzymano niepoprawną odpowiedź od AI"
 - Details (collapsed): Zod error message (dla developera)
 - Akcje: Retry / Add manually / Cancel
 
 **Logging:**
+
 - Console.error w development
 - Sentry/monitoring w production (TODO)
 
@@ -1141,6 +1198,7 @@ Headers: `Retry-After: 60`
 **Scenariusz:** Przekroczono limit zapytań AI
 
 **Obsługa:**
+
 - useAIService catch 429
 - Parse `Retry-After` header (seconds)
 - Throw AIError { type: 'rate_limit', retryAfter: 60 }
@@ -1149,6 +1207,7 @@ Headers: `Retry-After: 60`
 - Disable przycisk "Szukaj" na retryAfter sekund
 
 **UI:**
+
 - Toast: "Zbyt wiele zapytań. Spróbuj ponownie za 60s"
 - Przycisk "Szukaj" disabled z countdown: "Szukaj (59s)"
 - Po upływie czasu → przycisk enabled
@@ -1158,12 +1217,14 @@ Headers: `Retry-After: 60`
 **Scenariusz:** Brak połączenia z internetem
 
 **Obsługa:**
+
 - useAIService catch TypeError (fetch failure)
 - Throw AIError { type: 'network' }
 - Toast: "Brak połączenia z internetem"
 - Przycisk retry
 
 **UI:**
+
 - Toast z ikoną WifiOff
 - Akcja retry w toast
 - React Query retry automatyczny (exponential backoff)
@@ -1173,11 +1234,13 @@ Headers: `Retry-After: 60`
 **Scenariusz:** Próba dodania rośliny na pole != 'soil'
 
 **Obsługa:**
+
 - PUT /plants/:x/:y → 422
 - Toast: "Nie można dodać rośliny na to pole"
 - Dialog zamyka się (operacja anulowana)
 
 **Prewencja:**
+
 - Walidacja cellType przed otwarciem dialogu
 - CellNotSoilDialog jako early warning
 
@@ -1186,12 +1249,14 @@ Headers: `Retry-After: 60`
 **Scenariusz:** Błąd serwera
 
 **Obsługa:**
+
 - Catch w mutation
 - Toast: "Wystąpił nieoczekiwany błąd. Spróbuj ponownie"
 - Akcja retry w toast
 - Logging do konsoli/sentry
 
 **UI:**
+
 - Error boundary (top-level, już istniejący)
 - Toast z opcją retry
 - Dialog pozostaje otwarty (nie tracić danych)
@@ -1237,29 +1302,17 @@ export class AIService {
   constructor(private config: AIServiceConfig) {}
 
   async search(query: string): Promise<PlantSearchResultDto> {
-    return this.request<PlantSearchResultDto>(
-      'POST',
-      '/api/ai/plants/search',
-      { query }
-    );
+    return this.request<PlantSearchResultDto>("POST", "/api/ai/plants/search", { query });
   }
 
   async checkFit(command: PlantFitCommand): Promise<PlantFitResultDto> {
-    return this.request<PlantFitResultDto>(
-      'POST',
-      '/api/ai/plants/fit',
-      command
-    );
+    return this.request<PlantFitResultDto>("POST", "/api/ai/plants/fit", command);
   }
 
-  private async request<T>(
-    method: string,
-    endpoint: string,
-    body?: unknown
-  ): Promise<T> {
+  private async request<T>(method: string, endpoint: string, body?: unknown): Promise<T> {
     // Implementacja z timeout i error handling
     // Placeholder na ten moment
-    throw new Error('Not implemented');
+    throw new Error("Not implemented");
   }
 }
 ```
@@ -1269,12 +1322,12 @@ export class AIService {
 ```typescript
 // src/lib/validation/ai.validation.ts
 
-import { z } from 'zod';
+import { z } from "zod";
 
 export const PlantSearchCandidateSchema = z.object({
   name: z.string().min(1),
   latin_name: z.string().optional(),
-  source: z.literal('ai'),
+  source: z.literal("ai"),
 });
 
 export const PlantSearchResultSchema = z.object({
@@ -1308,15 +1361,15 @@ export function validateFitResult(data: unknown) {
 // src/lib/integrations/ai.config.ts
 
 export const AI_CONFIG = {
-  baseUrl: import.meta.env.PUBLIC_API_URL || '',
+  baseUrl: import.meta.env.PUBLIC_API_URL || "",
   endpoints: {
-    search: '/api/ai/plants/search',
-    fit: '/api/ai/plants/fit',
+    search: "/api/ai/plants/search",
+    fit: "/api/ai/plants/fit",
   },
   timeout: 10000, // 10s zgodnie z PRD
   maxRetries: 1,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 } as const;
 
@@ -1326,12 +1379,14 @@ export type AIConfig = typeof AI_CONFIG;
 ### 11.5. Uwagi dotyczące modułu
 
 **Na ten moment:**
+
 - Moduł zawiera strukturę i konfigurację
 - Placeholder implementacja
 - Schemas Zod dla walidacji
 - Typy TypeScript
 
 **TODO (poza zakresem tego planu):**
+
 - Faktyczna implementacja fetch z timeout
 - Integracja z konkretnym dostawcą AI (OpenAI, Claude, etc.)
 - Prompt engineering dla search i fit
@@ -1625,6 +1680,7 @@ export type AIConfig = typeof AI_CONFIG;
 ### Zakres implementacji
 
 Plan obejmuje kompletną implementację funkcjonalności zarządzania roślinami:
+
 - ✅ Dodawanie roślin z wyszukiwaniem AI
 - ✅ Ocena dopasowania rośliny (scoring 1-5)
 - ✅ Walidacja typu komórki (tylko 'soil')
@@ -1638,6 +1694,7 @@ Plan obejmuje kompletną implementację funkcjonalności zarządzania roślinami
 ### Moduł AI
 
 Na ten moment:
+
 - Struktura folderów i plików
 - Typy i interfejsy
 - Zod schemas dla walidacji
@@ -1645,6 +1702,7 @@ Na ten moment:
 - Placeholder implementation
 
 TODO (poza zakresem):
+
 - Faktyczna integracja z AI provider
 - Prompt engineering
 - Caching strategia
@@ -1678,8 +1736,8 @@ TODO (poza zakresem):
 ### Następne kroki
 
 Po ukończeniu implementacji:
+
 1. Integracja z rzeczywistym AI provider
 2. Testy end-to-end z prawdziwymi danymi
 3. Performance optimization dla dużych planów
 4. Dodatkowe features (poza MVP): drag&drop roślin, copy/paste, bulk operations
-

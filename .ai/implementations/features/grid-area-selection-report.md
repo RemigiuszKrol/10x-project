@@ -13,6 +13,7 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 ### 1. Typy i struktury (`src/types.ts`)
 
 **Dodane typy:**
+
 - `SelectionInfo` - informacje o zaznaczonym obszarze (derived state)
 - `AreaTypeOperation` - stan operacji zmiany typu dla obsługi 409 confirmation flow
 - `SetAreaTypeOptions` - opcje wywołania setAreaType
@@ -21,24 +22,29 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 ### 2. Hooki
 
 #### `useGridSelection` (`src/lib/hooks/useGridSelection.ts`)
+
 **Odpowiedzialność:** Zarządzanie logiką drag-to-select
 
 **Funkcjonalność:**
+
 - Obsługa mouse events (start, update, end, cancel)
 - Normalizacja współrzędnych (min/max, clamping)
 - Throttling aktualizacji podczas drag (50ms)
 - Integracja z klawiaturą (przez callbacki)
 
 **Eksportowane akcje:**
+
 - `startSelection(x, y)` - rozpoczęcie zaznaczania
 - `updateSelection(x, y)` - aktualizacja podczas drag
 - `endSelection()` - zakończenie zaznaczania
 - `cancelSelection()` - anulowanie zaznaczania
 
 #### `useAreaTypeWithConfirmation` (`src/lib/hooks/useAreaTypeWithConfirmation.ts`)
+
 **Odpowiedzialność:** Wysokopoziomowe zarządzanie flow zmiany typu z obsługą 409
 
 **Funkcjonalność:**
+
 - Wywołanie mutation setAreaType
 - Wykrywanie błędu 409 (rośliny w obszarze)
 - Parsowanie liczby roślin z error message
@@ -46,14 +52,17 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 - Retry z `confirm_plant_removal=true`
 
 **Eksportowane akcje:**
+
 - `setAreaType(options)` - główna funkcja zmiany typu
 - `confirmOperation()` - potwierdzenie usunięcia roślin
 - `cancelOperation()` - anulowanie operacji
 
 #### `useAnalytics` (`src/lib/hooks/useAnalytics.ts`)
+
 **Odpowiedzialność:** Wysyłanie zdarzeń analitycznych
 
 **Funkcjonalność:**
+
 - Wysyłanie eventów do API: POST /api/analytics/events
 - Graceful failure - nie blokuje głównego flow
 - Helper `createAreaTypedEvent` dla eventu area_typed
@@ -61,9 +70,11 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 ### 3. Komponenty UI
 
 #### `SelectionOverlay` (`src/components/editor/GridCanvas/SelectionOverlay.tsx`)
+
 **Odpowiedzialność:** Wizualizacja zaznaczonego obszaru
 
 **Elementy:**
+
 - Semi-transparent overlay z borderem primary
 - Badge z wymiarami w prawym górnym rogu
 - Absolute positioned, pointer-events-none
@@ -71,9 +82,11 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 - Dokładne pozycjonowanie z uwzględnieniem gap między komórkami i padding kontenera
 
 #### `AreaTypePanel` (`src/components/editor/AreaTypePanel.tsx`)
+
 **Odpowiedzialność:** Floating panel do wyboru typu obszaru
 
 **Elementy:**
+
 - Info o zaznaczeniu (liczba komórek, wymiary)
 - Dropdown Select z typami (GRID_CELL_TYPE_LABELS)
 - Przycisk "Zastosuj" z loading spinner
@@ -82,20 +95,24 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 - Animacja slide-in
 
 **Accessibility:**
+
 - `role="dialog"`
 - `aria-label`
 - aria-live region dla screen readers
 
 #### `AreaTypeConfirmDialog` (`src/components/editor/modals/AreaTypeConfirmDialog.tsx`)
+
 **Odpowiedzialność:** Modal potwierdzenia usunięcia roślin
 
 **Elementy:**
+
 - AlertDialog z shadcn/ui
 - Tytuł: "Usunąć rośliny?"
 - Opis z liczbą roślin i wymiarami obszaru
 - Przyciski: "Anuluj" i "Potwierdź i usuń" (destructive)
 
 **Szczegóły:**
+
 - Controlled przez prop `isOpen` (= `pendingOperation !== null`)
 - Polskie lokalizacje z poprawnymi odmianami
 - Destructive styling dla akcji usunięcia
@@ -103,7 +120,9 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 ### 4. Rozszerzone komponenty
 
 #### `GridCanvas` (`src/components/editor/GridCanvas/GridCanvas.tsx`)
+
 **Dodane:**
+
 - Integracja `useGridSelection`
 - Event handlers: onMouseDown, onMouseEnter, onMouseUp, onMouseLeave
 - Renderowanie `SelectionOverlay`
@@ -111,13 +130,17 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 - Conditional event handling na podstawie currentTool
 
 #### `useGridEditor` (`src/lib/hooks/useGridEditor.ts`)
+
 **Dodane:**
+
 - Akcja `clearSelection()`
 - Derived state `selectionInfo: SelectionInfo | null`
 - Derived state `hasActiveSelection: boolean`
 
 #### `EditorLayout` (`src/components/editor/EditorLayout.tsx`)
+
 **Dodane:**
+
 - Integracja `useAreaTypeWithConfirmation`
 - Integracja `useAnalytics`
 - Handler `handleApplyAreaType`
@@ -126,12 +149,15 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 - Callback `onSuccess` z toast i analytics
 
 #### `useSetAreaType` (`src/lib/hooks/mutations/useSetAreaType.ts`)
+
 **Poprawki:**
+
 - Rozszerzono obiekt błędu 409 o pole `status` dla łatwiejszej identyfikacji
 
 ## Flow użytkownika
 
 ### Scenariusz 1: Zaznaczanie obszaru myszką
+
 1. Użytkownik wybiera tool "select" w EditorToolbar
 2. Kliknięcie na komórce → `startSelection(x, y)`
 3. Przeciąganie myszy → `updateSelection(x, y)` (throttled 50ms)
@@ -140,6 +166,7 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 6. AreaTypePanel pojawia się automatycznie
 
 ### Scenariusz 2: Zmiana typu bez roślin (sukces 200)
+
 1. Zaznaczono obszar
 2. Wybrano typ z dropdown
 3. Kliknięto "Zastosuj"
@@ -150,6 +177,7 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 8. Siatka odświeżona (React Query invalidation)
 
 ### Scenariusz 3: Zmiana typu z roślinami (konflikt 409)
+
 1. Zaznaczono obszar z roślinami
 2. Wybrano typ z dropdown
 3. Kliknięto "Zastosuj"
@@ -170,6 +198,7 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 ## Accessibility
 
 **Implementowane funkcje:**
+
 - ARIA labels na wszystkich interaktywnych elementach
 - `role` attributes (dialog, region, gridcell)
 - aria-live regions dla zmian stanu
@@ -180,6 +209,7 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 ## Stylowanie i UX
 
 **Zaimplementowane:**
+
 - Animacje: fade-in dla SelectionOverlay, slide-in dla AreaTypePanel
 - Cursor styles: crosshair dla select tool, grabbing podczas drag
 - Hover states na GridCell
@@ -209,6 +239,7 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 ## Testy manualne (do wykonania)
 
 **Scenariusze testowe:**
+
 1. ✅ Zaznacz obszar 5×3 myszką, zmień typ na "water"
 2. ✅ Zaznacz obszar klawiaturą (Spacja + Shift+Arrows)
 3. ✅ Zaznacz obszar z roślinami, zmień typ, potwierdź usunięcie
@@ -223,6 +254,7 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 ## Statystyki implementacji
 
 **Nowe pliki:** 8
+
 - `src/lib/hooks/useGridSelection.ts`
 - `src/lib/hooks/useAreaTypeWithConfirmation.ts`
 - `src/lib/hooks/useAnalytics.ts`
@@ -232,6 +264,7 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 - `.ai/implementations/features/grid-area-selection-report.md`
 
 **Rozszerzone pliki:** 5
+
 - `src/types.ts` - nowe ViewModels i constants
 - `src/lib/hooks/useGridEditor.ts` - nowe akcje i derived state
 - `src/lib/hooks/mutations/useSetAreaType.ts` - poprawki obsługi 409
@@ -243,6 +276,7 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 ## Zależności
 
 **Wykorzystane istniejące:**
+
 - @tanstack/react-query - mutations i cache invalidation
 - shadcn/ui - Select, AlertDialog, Button
 - lucide-react - ikony (Loader2)
@@ -254,10 +288,12 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 ## Poprawki po implementacji
 
 ### Poprawka pozycjonowania overlay (2025-11-22)
+
 **Problem:** Overlay zaznaczenia był przesunięty względem rzeczywistej siatki.
 
 **Rozwiązanie:**
-- Dodano parametr `gapPx` do `SelectionOverlay` 
+
+- Dodano parametr `gapPx` do `SelectionOverlay`
 - Uwzględniono gap między komórkami w obliczeniach pozycji i rozmiaru
 - Uwzględniono padding kontenera (32px) jako offset
 - Wzór pozycji: `x * (cellSize + gap) + containerPadding`
@@ -266,6 +302,7 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 ## Znane ograniczenia i przyszłe usprawnienia
 
 **Możliwe usprawnienia:**
+
 1. Performance na bardzo dużych siatkach (>100×100):
    - Virtualizacja GridCanvas
    - Debounce zamiast throttle dla updateSelection
@@ -280,6 +317,7 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 ## Zgodność z planem implementacji
 
 ✅ Wszystkie punkty z planu implementacji zostały zrealizowane:
+
 - Krok 1-15 completed
 - Struktura komponentów zgodna z planem
 - API integration zgodna z specyfikacją
@@ -292,4 +330,3 @@ Zaimplementowano pełną funkcjonalność zaznaczania prostokątnego obszaru sia
 Implementacja została ukończona zgodnie z planem. System zaznaczania obszaru i przypisywania typu działa stabilnie, z pełną obsługą konfliktów i analytics. Kod jest dobrze zorganizowany, z wyraźnym podziałem odpowiedzialności między komponenty i hooki.
 
 Następny krok: Testy manualne przez użytkownika końcowego.
-

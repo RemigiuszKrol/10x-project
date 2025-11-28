@@ -8,12 +8,14 @@ import type {
 } from "@/types";
 import type { DeletePlantPlacementResult } from "@/lib/validation/plant-placements";
 import { encodePlantPlacementCursor } from "@/lib/validation/plant-placements";
+import { ValidationError } from "@/lib/http/errors";
 
 /**
  * Tworzy lub aktualizuje nasadzenie rośliny w danej komórce siatki
  * @param supabase - Klient Supabase z kontekstu
  * @param command - Dane polecenia zawierające plan_id, współrzędne, payload i user_id
  * @returns Utworzone lub zaktualizowane nasadzenie rośliny
+ * @throws ValidationError - gdy współrzędne wykraczają poza granice siatki
  * @throws Błąd jeśli operacja nie powiodła się (np. błąd bazy danych, naruszenie RLS)
  */
 export async function upsertPlantPlacement(
@@ -21,6 +23,37 @@ export async function upsertPlantPlacement(
   command: UpsertPlantPlacementCommand
 ): Promise<PlantPlacementDto> {
   const { planId, x, y, payload } = command;
+
+  // 1. Pobierz plan i zweryfikuj wymiary siatki
+  const { data: planData, error: planError } = await supabase
+    .from("plans")
+    .select("id, grid_width, grid_height")
+    .eq("id", planId)
+    .maybeSingle();
+
+  if (planError) {
+    throw planError;
+  }
+
+  if (!planData) {
+    throw new Error("Plan not found");
+  }
+
+  // 2. Walidacja wymiarów siatki
+  const gridWidth = (planData as { grid_width: number | null }).grid_width;
+  const gridHeight = (planData as { grid_height: number | null }).grid_height;
+
+  if (gridWidth === null || gridHeight === null) {
+    throw new ValidationError("Grid dimensions are not set for this plan", "grid_dimensions");
+  }
+
+  // 3. Walidacja zakresów współrzędnych
+  if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight) {
+    throw new ValidationError(
+      `Coordinates out of bounds. Grid dimensions: ${gridWidth}x${gridHeight}, provided: x=${x}, y=${y}`,
+      "x"
+    );
+  }
 
   // Przygotuj dane do upsert
   const upsertData = {
@@ -79,6 +112,17 @@ export async function listPlantPlacements(
   command: ListPlantPlacementsCommand
 ): Promise<ListPlantPlacementsResult> {
   const { planId, limit, cursorKey, name } = command;
+
+  // 1. Pobierz plan i zweryfikuj jego istnienie
+  const { data: planData, error: planError } = await supabase.from("plans").select("id").eq("id", planId).maybeSingle();
+
+  if (planError) {
+    throw planError;
+  }
+
+  if (!planData) {
+    throw new Error("Plan not found");
+  }
 
   // Buduj bazowe zapytanie z limitowanymi kolumnami
   let query = supabase
@@ -152,6 +196,7 @@ export async function listPlantPlacements(
  * @param supabase - Klient Supabase z kontekstu
  * @param command - Dane polecenia zawierające plan_id, współrzędne i user_id
  * @returns Informację o sukcesie operacji
+ * @throws ValidationError - gdy współrzędne wykraczają poza granice siatki
  * @throws Błąd jeśli operacja nie powiodła się lub nie znaleziono nasadzenia
  */
 export async function deletePlantPlacement(
@@ -159,6 +204,37 @@ export async function deletePlantPlacement(
   command: DeletePlantPlacementCommand
 ): Promise<DeletePlantPlacementResult> {
   const { planId, x, y } = command;
+
+  // 1. Pobierz plan i zweryfikuj wymiary siatki
+  const { data: planData, error: planError } = await supabase
+    .from("plans")
+    .select("id, grid_width, grid_height")
+    .eq("id", planId)
+    .maybeSingle();
+
+  if (planError) {
+    throw planError;
+  }
+
+  if (!planData) {
+    throw new Error("Plan not found");
+  }
+
+  // 2. Walidacja wymiarów siatki
+  const gridWidth = (planData as { grid_width: number | null }).grid_width;
+  const gridHeight = (planData as { grid_height: number | null }).grid_height;
+
+  if (gridWidth === null || gridHeight === null) {
+    throw new ValidationError("Grid dimensions are not set for this plan", "grid_dimensions");
+  }
+
+  // 3. Walidacja zakresów współrzędnych
+  if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight) {
+    throw new ValidationError(
+      `Coordinates out of bounds. Grid dimensions: ${gridWidth}x${gridHeight}, provided: x=${x}, y=${y}`,
+      "x"
+    );
+  }
 
   // Wykonaj usunięcie nasadzenia
   const { error, count } = await supabase

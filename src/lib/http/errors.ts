@@ -37,6 +37,16 @@ export class PlantRemovalRequiresConfirmationError extends Error {
 }
 
 /**
+ * Błąd rzucany gdy zasób nie został znaleziony
+ */
+export class NotFoundError extends Error {
+  constructor(message = "Resource not found") {
+    super(message);
+    this.name = "NotFoundError";
+  }
+}
+
+/**
  * Tworzy standardową strukturę odpowiedzi błędu API
  * @param code - Kod błędu (ValidationError, Unauthorized, itp.)
  * @param message - Komunikat dla użytkownika

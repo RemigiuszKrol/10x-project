@@ -40,19 +40,19 @@ npm run test:e2e:report
 
 ```typescript
 // e2e/pages/MyPage.ts
-import { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { Page, Locator } from "@playwright/test";
+import { BasePage } from "./BasePage";
 
 export class MyPage extends BasePage {
   readonly myElement: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.myElement = page.getByRole('button', { name: /click me/i });
+    this.myElement = page.getByRole("button", { name: /click me/i });
   }
 
   async navigate() {
-    await this.goto('/my-page');
+    await this.goto("/my-page");
   }
 
   async performAction() {
@@ -65,16 +65,16 @@ export class MyPage extends BasePage {
 
 ```typescript
 // e2e/my-feature.spec.ts
-import { test, expect } from '@playwright/test';
-import { MyPage } from './pages/MyPage';
+import { test, expect } from "@playwright/test";
+import { MyPage } from "./pages/MyPage";
 
-test.describe('My Feature', () => {
-  test('should work correctly', async ({ page }) => {
+test.describe("My Feature", () => {
+  test("should work correctly", async ({ page }) => {
     const myPage = new MyPage(page);
     await myPage.navigate();
     await myPage.performAction();
-    
-    await expect(page.locator('.success')).toBeVisible();
+
+    await expect(page.locator(".success")).toBeVisible();
   });
 });
 ```
@@ -90,16 +90,19 @@ test.describe('My Feature', () => {
 ## Debugowanie
 
 ### Debug mode
+
 ```bash
 npm run test:e2e:debug
 ```
 
 ### UI mode
+
 ```bash
 npm run test:e2e:ui
 ```
 
 ### Codegen - nagrywanie testów
+
 ```bash
 npm run test:e2e:codegen http://localhost:4321
 ```
@@ -107,4 +110,3 @@ npm run test:e2e:codegen http://localhost:4321
 ## Więcej informacji
 
 Zobacz [TESTING.md](../TESTING.md) w głównym katalogu projektu.
-

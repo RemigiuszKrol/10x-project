@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-interface DeletePlanDialogProps {
+export interface DeletePlanDialogProps {
   open: boolean;
   planName: string;
   isDeleting: boolean;

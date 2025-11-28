@@ -125,7 +125,16 @@ export function ParametersTab({ plan, onUpdate, isUpdating }: ParametersTabProps
     }
 
     if (Object.keys(updates).length > 0) {
-      await onUpdate(updates);
+      try {
+        await onUpdate(updates);
+      } catch (error) {
+        if (error instanceof Error) {
+          logger.error("Błąd podczas aktualizacji parametrów planu", { error: error.message });
+        } else {
+          logger.error("Nieoczekiwany błąd podczas aktualizacji parametrów planu", { error: String(error) });
+        }
+        // Błąd jest obsłużony - komponent pozostaje w stanie, w którym był
+      }
     }
   };
 

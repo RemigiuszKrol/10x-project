@@ -8,15 +8,27 @@ import type { PlanCursorKey } from "@/types";
  */
 export const PlanCreateSchema = z
   .object({
-    name: z.string().trim().min(1, "Plan name is required"),
+    name: z.string({ required_error: "Plan name is required" }).trim().min(1, "Plan name is required"),
     width_m: z.number().positive("Width must be a positive number"),
     height_m: z.number().positive("Height must be a positive number"),
     cell_size_cm: z.union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)], {
       errorMap: () => ({ message: "Cell size must be 10, 25, 50, or 100 cm" }),
     }),
-    orientation: z.number().int().min(0, "Orientation must be between 0 and 359").max(359),
-    latitude: z.number().gte(-90, "Latitude must be between -90 and 90").lte(90).optional(),
-    longitude: z.number().gte(-180, "Longitude must be between -180 and 180").lte(180).optional(),
+    orientation: z
+      .number()
+      .int()
+      .min(0, "Orientation must be between 0 and 359")
+      .max(359, "Orientation must be between 0 and 359"),
+    latitude: z
+      .number()
+      .gte(-90, "Latitude must be between -90 and 90")
+      .lte(90, "Latitude must be between -90 and 90")
+      .optional(),
+    longitude: z
+      .number()
+      .gte(-180, "Longitude must be between -180 and 180")
+      .lte(180, "Longitude must be between -180 and 180")
+      .optional(),
     hemisphere: z
       .enum(["northern", "southern"], {
         errorMap: () => ({ message: "Hemisphere must be 'northern' or 'southern'" }),
@@ -75,6 +87,15 @@ export const PlanCreateSchema = z
     (data) => {
       const gridWidth = (data.width_m * 100) / data.cell_size_cm;
       const gridHeight = (data.height_m * 100) / data.cell_size_cm;
+      // Sprawdź grid dimensions tylko jeśli maxDimension jest OK
+      // (aby uniknąć duplikowania błędów, gdy maxDimension jest przekroczony)
+      const scaleInMeters = data.cell_size_cm / 100;
+      const maxDimension = 200 * scaleInMeters;
+      // Jeśli maxDimension jest przekroczony, błąd został już zwrócony przez poprzednie refine
+      // Ale sprawdzamy grid dimensions tylko gdy maxDimension jest OK
+      if (data.width_m > maxDimension || data.height_m > maxDimension) {
+        return true;
+      }
       return gridWidth >= 1 && gridWidth <= 200 && gridHeight >= 1 && gridHeight <= 200;
     },
     {
@@ -104,12 +125,23 @@ export const PlanUpdateSchema = z
       })
       .optional(),
     orientation: z.number().int().min(0, "Orientation must be between 0 and 359").max(359).optional(),
-    latitude: z.number().gte(-90, "Latitude must be between -90 and 90").lte(90).optional(),
-    longitude: z.number().gte(-180, "Longitude must be between -180and 180").lte(180).optional(),
+    latitude: z
+      .number()
+      .gte(-90, "Latitude must be between -90 and 90")
+      .lte(90, "Latitude must be between -90 and 90")
+      .nullable()
+      .optional(),
+    longitude: z
+      .number()
+      .gte(-180, "Longitude must be between -180 and 180")
+      .lte(180, "Longitude must be between -180 and 180")
+      .nullable()
+      .optional(),
     hemisphere: z
       .enum(["northern", "southern"], {
         errorMap: () => ({ message: "Hemisphere must be 'northern' or 'southern'" }),
       })
+      .nullable()
       .optional(),
   })
   .strict()
@@ -174,7 +206,17 @@ export type PlanUpdateInput = z.infer<typeof PlanUpdateSchema>;
  * Schemat walidacji dla query parametrów PATCH /api/plans/:plan_id
  */
 export const PlanUpdateQuerySchema = z.object({
-  confirm_regenerate: z.coerce.boolean().optional().default(false),
+  confirm_regenerate: z
+    .preprocess((val) => {
+      if (typeof val === "boolean") return val;
+      if (typeof val === "string") {
+        if (val === "true" || val === "1") return true;
+        if (val === "false" || val === "0") return false;
+      }
+      return val;
+    }, z.boolean())
+    .optional()
+    .default(false),
 });
 
 /**
@@ -267,20 +309,25 @@ export const PlanListQuerySchema = z
     sort: z.enum(["updated_at"], { errorMap: () => ({ message: "Sort field must be 'updated_at'" }) }).optional(),
     order: z.enum(["asc", "desc"], { errorMap: () => ({ message: "Order must be 'asc' or 'desc'" }) }).optional(),
   })
+  .superRefine((data, ctx) => {
+    // Dekoduj cursor jeśli obecny
+    if (data.cursor) {
+      const cursorKey = decodePlanCursor(data.cursor);
+      if (!cursorKey) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid cursor format",
+          path: ["cursor"],
+        });
+        return;
+      }
+    }
+  })
   .transform((data) => {
     // Dekoduj cursor jeśli obecny
     let cursorKey: PlanCursorKey | null = null;
     if (data.cursor) {
       cursorKey = decodePlanCursor(data.cursor);
-      if (!cursorKey) {
-        throw new z.ZodError([
-          {
-            code: "custom",
-            message: "Invalid cursor format",
-            path: ["cursor"],
-          },
-        ]);
-      }
     }
 
     return {

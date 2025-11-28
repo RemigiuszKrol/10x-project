@@ -3,6 +3,7 @@ import type { ApiItemResponse, GridCellDto } from "@/types";
 import { getPlanGridMetadata, updateGridCellType } from "@/lib/services/grid-cells.service";
 import { gridCellUpdatePathSchema, gridCellUpdateSchema } from "@/lib/validation/grid";
 import { jsonResponse, errorResponse, ValidationError } from "@/lib/http/errors";
+import { PlanNotFoundError } from "@/lib/http/weather.errors";
 
 /**
  * Wyłączenie pre-renderingu dla tego endpointu (SSR only)
@@ -145,7 +146,7 @@ export async function PUT(ctx: APIContext): Promise<Response> {
     }
 
     // Update: Wykonaj aktualizację komórki
-    const gridCell = await updateGridCellType(supabase, plan_id, x, y, command);
+    const gridCell = await updateGridCellType(supabase, user.id, plan_id, x, y, command);
 
     // Success: Zwróć zaktualizowaną komórkę
     const response: ApiItemResponse<GridCellDto> = {
@@ -154,15 +155,25 @@ export async function PUT(ctx: APIContext): Promise<Response> {
 
     return jsonResponse(response, 200);
   } catch (error) {
-    // Obsługa ValidationError z serwisu (422 Unprocessable - naruszenia constraintów)
+    // Obsługa PlanNotFoundError z serwisu (404)
+    if (error instanceof PlanNotFoundError) {
+      return jsonResponse(errorResponse("NotFound", error.message), 404);
+    }
+
+    // Obsługa ValidationError z serwisu (422 Unprocessable - naruszenia constraintów lub współrzędne poza zakresem)
     if (error instanceof ValidationError) {
       const fieldErrors: Record<string, string> = {};
       if (error.field) {
         fieldErrors[error.field] = error.message;
       }
 
-      // ValidationError z serwisu oznacza naruszenie constraintu (422), nie błąd walidacji wejścia (400)
-      return jsonResponse(errorResponse("UnprocessableEntity", error.message, { field_errors: fieldErrors }), 422);
+      // ValidationError z serwisu oznacza naruszenie constraintu (422) lub współrzędne poza zakresem (400)
+      // Sprawdzamy czy to błąd współrzędnych (zawiera "out of bounds") - wtedy 400, w przeciwnym razie 422
+      const isBoundsError = error.message.toLowerCase().includes("out of bounds");
+      const statusCode = isBoundsError ? 400 : 422;
+      const errorCode = isBoundsError ? "ValidationError" : "UnprocessableEntity";
+
+      return jsonResponse(errorResponse(errorCode, error.message, { field_errors: fieldErrors }), statusCode);
     }
 
     // Obsługa błędów RLS (Forbidden)

@@ -59,7 +59,13 @@ const reactConfig = tseslint.config({
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   {
-    ignores: ["src/db/database.types.ts"],
+    ignores: [
+      "src/db/database.types.ts",
+      "**/*.test.{ts,tsx}",
+      "**/*.spec.{ts,tsx}",
+      "**/__tests__/**",
+      "**/__mocks__/**",
+    ],
   },
   baseConfig,
   jsxA11yConfig,

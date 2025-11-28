@@ -23,6 +23,11 @@ export function OrientationCompass({ value, onChange, className = "" }: Orientat
   const [inputValue, setInputValue] = useState(value.toString());
   const [isDark, setIsDark] = useState(false);
 
+  // Synchronizuj inputValue z value prop
+  useEffect(() => {
+    setInputValue(value.toString());
+  }, [value]);
+
   // Sprawdź motyw bezpośrednio z HTML (działa nawet bez ThemeProvider)
   useEffect(() => {
     const checkTheme = () => {
@@ -69,11 +74,12 @@ export function OrientationCompass({ value, onChange, className = "" }: Orientat
    */
   const handleInputBlur = useCallback(() => {
     const numVal = parseInt(inputValue, 10);
-    if (isNaN(numVal)) {
+    if (isNaN(numVal) || inputValue.trim() === "") {
       setInputValue(value.toString());
     } else {
       const normalized = normalizeOrientation(numVal);
       setInputValue(normalized.toString());
+      // Zawsze wywołaj onChange po normalizacji, aby upewnić się że wartość jest w zakresie
       onChange(normalized);
     }
   }, [inputValue, value, onChange, normalizeOrientation]);
@@ -82,19 +88,29 @@ export function OrientationCompass({ value, onChange, className = "" }: Orientat
    * Zwiększa orientację o 15 stopni
    */
   const increment = useCallback(() => {
-    const newValue = normalizeOrientation(value + 15);
+    // Użyj aktualnej wartości z inputValue (po parsowaniu) lub value prop jako fallback
+    const currentValue = (() => {
+      const parsed = parseInt(inputValue, 10);
+      return !isNaN(parsed) ? parsed : value;
+    })();
+    const newValue = normalizeOrientation(currentValue + 15);
     onChange(newValue);
     setInputValue(newValue.toString());
-  }, [value, onChange, normalizeOrientation]);
+  }, [inputValue, value, onChange, normalizeOrientation]);
 
   /**
    * Zmniejsza orientację o 15 stopni
    */
   const decrement = useCallback(() => {
-    const newValue = normalizeOrientation(value - 15);
+    // Użyj aktualnej wartości z inputValue (po parsowaniu) lub value prop jako fallback
+    const currentValue = (() => {
+      const parsed = parseInt(inputValue, 10);
+      return !isNaN(parsed) ? parsed : value;
+    })();
+    const newValue = normalizeOrientation(currentValue - 15);
     onChange(newValue);
     setInputValue(newValue.toString());
-  }, [value, onChange, normalizeOrientation]);
+  }, [inputValue, value, onChange, normalizeOrientation]);
 
   return (
     <div className={`flex flex-col gap-4 ${className}`}>
@@ -161,7 +177,11 @@ export function OrientationCompass({ value, onChange, className = "" }: Orientat
           })}
 
           {/* Wskaźnik orientacji (strzałka) */}
-          <g transform={`rotate(${value} 80 80)`} className="transition-transform duration-300 ease-out">
+          <g
+            transform={`rotate(${value} 80 80)`}
+            className="transition-transform duration-300 ease-out"
+            data-testid="orientation-indicator"
+          >
             {/* Linia wskaźnika */}
             <line x1="80" y1="80" x2="80" y2="20" stroke="currentColor" strokeWidth="3" className="text-primary" />
             {/* Grotka strzałki */}

@@ -1,6 +1,12 @@
 import type { APIContext } from "astro";
 import type { ApiItemResponse, GridAreaTypeResultDto } from "@/types";
-import { errorResponse, jsonResponse, PlantRemovalRequiresConfirmationError, ValidationError } from "@/lib/http/errors";
+import {
+  errorResponse,
+  jsonResponse,
+  NotFoundError,
+  PlantRemovalRequiresConfirmationError,
+  ValidationError,
+} from "@/lib/http/errors";
 import { logApiError } from "@/lib/http/error-handler";
 import { setAreaType } from "@/lib/services/grid-area.service";
 import { gridAreaTypePathSchema, gridAreaTypePayloadSchema } from "@/lib/validation/grid-area";
@@ -128,30 +134,7 @@ export async function POST(ctx: APIContext) {
       confirmPlantRemoval: confirm_plant_removal,
     });
 
-    // 7. Sprawdź czy plan istniał (jeśli affected_cells === 0 i removed_plants === 0, może nie istnieć)
-    // Ale to jest edge case - serwis zwraca 0,0 gdy plan nie istnieje
-    // Musimy to sprawdzić osobno dla pewności
-    if (result.affected_cells === 0 && result.removed_plants === 0) {
-      // Sprawdź czy plan rzeczywiście istnieje
-      const { data: planCheck } = await supabase
-        .from("plans")
-        .select("id")
-        .eq("id", plan_id)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!planCheck) {
-        logApiError(new Error("Plan not found"), {
-          endpoint: "POST /api/plans/:plan_id/grid/area-type",
-          method: "POST",
-          user_id: user.id,
-          params: { plan_id },
-        });
-        return jsonResponse(errorResponse("NotFound", "Plan not found."), 404);
-      }
-    }
-
-    // 8. Zwróć sukces
+    // 7. Zwróć sukces
     const body: ApiItemResponse<GridAreaTypeResultDto> = { data: result };
     return jsonResponse(body, 200);
   } catch (e: unknown) {
@@ -163,6 +146,11 @@ export async function POST(ctx: APIContext) {
       user_id: user.id,
       params: { plan_id },
     });
+
+    // Plan nie został znaleziony
+    if (e instanceof NotFoundError) {
+      return jsonResponse(errorResponse("NotFound", e.message), 404);
+    }
 
     // Błąd walidacji z serwisu (współrzędne poza granicami)
     if (e instanceof ValidationError) {

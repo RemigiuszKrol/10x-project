@@ -12,6 +12,7 @@
 ### 1.1 Cel biznesowy
 
 Obecnie system oceny dopasowania rośliny (`checkPlantFit`) uwzględnia tylko 3 metryki:
+
 - `sunlight_score` - nasłonecznienie
 - `humidity_score` - wilgotność powietrza
 - `precip_score` - opady
@@ -21,12 +22,14 @@ Obecnie system oceny dopasowania rośliny (`checkPlantFit`) uwzględnia tylko 3 
 ### 1.2 Obecny stan
 
 ✅ **Zaimplementowane:**
+
 - Temperatura jest już pobierana z Open-Meteo i zapisywana w bazie danych (`weather_monthly.temperature`)
 - Temperatura jest znormalizowana do skali 0-100 (zakres -30°C do +50°C)
 - Temperatura jest przekazywana w `PlantFitContext.weather_monthly[].temperature`
 - Temperatura jest wyświetlana w prompt użytkownika (ale błędnie jako °C zamiast znormalizowanej wartości)
 
 ❌ **Brakuje:**
+
 - Osobna metryka `temperature_score` w odpowiedzi AI
 - Uwzględnienie temperatury w system prompt jako osobnej metryki do oceny
 - Aktualizacja JSON Schema dla odpowiedzi fit
@@ -48,6 +51,7 @@ Obecnie system oceny dopasowania rośliny (`checkPlantFit`) uwzględnia tylko 3 
 ### 2.1 Normalizacja temperatury
 
 **Funkcja normalizacji:**
+
 ```typescript
 // src/lib/services/weather.service.ts
 function normalizeTemperature(celsius: number): number {
@@ -56,11 +60,13 @@ function normalizeTemperature(celsius: number): number {
 ```
 
 **Zakres:**
+
 - Wejście: -30°C do +50°C
 - Wyjście: 0-100
 - Formuła denormalizacji: `((temp / 100) * 80) - 30`
 
 **Przykłady:**
+
 - -30°C → 0
 - 0°C → 37.5
 - 10°C → 50
@@ -70,6 +76,7 @@ function normalizeTemperature(celsius: number): number {
 ### 2.2 Obecna struktura danych
 
 **PlantFitContext** (już zawiera temperaturę):
+
 ```typescript
 weather_monthly?: {
   month: number;
@@ -81,12 +88,13 @@ weather_monthly?: {
 ```
 
 **PlantFitResultDto** (brakuje temperature_score):
+
 ```typescript
 interface PlantFitResultDto {
-  sunlight_score: number;    // 1-5
-  humidity_score: number;    // 1-5
-  precip_score: number;      // 1-5
-  overall_score: number;     // 1-5
+  sunlight_score: number; // 1-5
+  humidity_score: number; // 1-5
+  precip_score: number; // 1-5
+  overall_score: number; // 1-5
   explanation?: string;
   // ❌ BRAKUJE: temperature_score
 }
@@ -95,6 +103,7 @@ interface PlantFitResultDto {
 ### 2.3 Obecny system prompt
 
 **Metryki do oceny (linia 421-425):**
+
 ```
 METRYKI DO OCENY:
 1. sunlight_score: Nasłonecznienie (sunlight + sunlight_hours)
@@ -108,8 +117,9 @@ METRYKI DO OCENY:
 ### 2.4 Obecny prompt użytkownika
 
 **Błędne wyświetlanie temperatury (linia 460):**
+
 ```typescript
-`- Miesiąc ${m.month}: temp ${m.temperature}°C, słońce ${m.sunlight}/100, wilgotność ${m.humidity}/100, opady ${m.precip}/100`
+`- Miesiąc ${m.month}: temp ${m.temperature}°C, słońce ${m.sunlight}/100, wilgotność ${m.humidity}/100, opady ${m.precip}/100`;
 ```
 
 **Problem:** `m.temperature` jest znormalizowane (0-100), a wyświetlane jako °C.
@@ -123,9 +133,11 @@ METRYKI DO OCENY:
 **Plik:** `src/types.ts`
 
 **Zmiany:**
+
 1. Dodanie `temperature_score` do `PlantFitResultDto`
 
 **Przed:**
+
 ```typescript
 export interface PlantFitResultDto {
   sunlight_score: NonNullable<DbPlantPlacement["sunlight_score"]>;
@@ -137,6 +149,7 @@ export interface PlantFitResultDto {
 ```
 
 **Po:**
+
 ```typescript
 export interface PlantFitResultDto {
   sunlight_score: NonNullable<DbPlantPlacement["sunlight_score"]>;
@@ -149,6 +162,7 @@ export interface PlantFitResultDto {
 ```
 
 **Uwagi:**
+
 - Używamy tego samego typu co `sunlight_score` (1-5)
 - `temperature_score` jest wymagane (nie opcjonalne)
 
@@ -161,11 +175,13 @@ export interface PlantFitResultDto {
 **Metoda:** `buildSystemPrompt(type: 'fit')`
 
 **Zmiany:**
+
 1. Dodanie `temperature_score` jako 4. metryki do oceny
 2. Aktualizacja sekcji "METRYKI DO OCENY"
 3. Aktualizacja sekcji "FORMAT ODPOWIEDZI"
 
 **Przed:**
+
 ```
 METRYKI DO OCENY:
 1. sunlight_score: Nasłonecznienie (sunlight + sunlight_hours)
@@ -184,6 +200,7 @@ FORMAT ODPOWIEDZI:
 ```
 
 **Po:**
+
 ```
 METRYKI DO OCENY:
 1. sunlight_score: Nasłonecznienie (sunlight + sunlight_hours)
@@ -204,6 +221,7 @@ FORMAT ODPOWIEDZI:
 ```
 
 **Uwagi:**
+
 - `temperature_score` jest oceniane na podstawie średniej miesięcznej temperatury w °C
 - AI powinno uwzględniać wymagania temperaturowe rośliny (min/max temperatura, optymalna temperatura)
 - `overall_score` powinien uwzględniać wszystkie 4 metryki (nie tylko 3)
@@ -217,10 +235,12 @@ FORMAT ODPOWIEDZI:
 **Metoda:** `buildResponseFormat(type: 'fit')`
 
 **Zmiany:**
+
 1. Dodanie `temperature_score` do `properties`
 2. Dodanie `temperature_score` do `required`
 
 **Przed:**
+
 ```typescript
 schema: {
   type: 'object',
@@ -237,6 +257,7 @@ schema: {
 ```
 
 **Po:**
+
 ```typescript
 schema: {
   type: 'object',
@@ -262,6 +283,7 @@ schema: {
 **Zmiana:** `PlantFitResultSchema`
 
 **Przed:**
+
 ```typescript
 const PlantFitResultSchema = z.object({
   sunlight_score: z.number().int().min(1).max(5),
@@ -273,6 +295,7 @@ const PlantFitResultSchema = z.object({
 ```
 
 **Po:**
+
 ```typescript
 const PlantFitResultSchema = z.object({
   sunlight_score: z.number().int().min(1).max(5),
@@ -293,10 +316,12 @@ const PlantFitResultSchema = z.object({
 **Metoda:** `buildUserPrompt(type: 'fit', data: PlantFitContext)`
 
 **Zmiany:**
+
 1. Denormalizacja temperatury z 0-100 do °C przed wyświetleniem
 2. Poprawne formatowanie temperatury w prompt
 
 **Funkcja pomocnicza (dodaj przed `buildUserPrompt`):**
+
 ```typescript
 /**
  * Denormalizuje temperaturę z 0-100 do °C
@@ -308,6 +333,7 @@ private denormalizeTemperature(normalized: number): number {
 ```
 
 **Przed:**
+
 ```typescript
 const weatherMonthlyText =
   context.weather_monthly && context.weather_monthly.length > 0
@@ -321,6 +347,7 @@ const weatherMonthlyText =
 ```
 
 **Po:**
+
 ```typescript
 const weatherMonthlyText =
   context.weather_monthly && context.weather_monthly.length > 0
@@ -334,6 +361,7 @@ const weatherMonthlyText =
 ```
 
 **Uwagi:**
+
 - Temperatura jest denormalizowana do °C dla czytelności
 - Formatowanie do 1 miejsca po przecinku (`toFixed(1)`)
 - Pozostałe metryki pozostają znormalizowane (0-100)
@@ -345,20 +373,23 @@ const weatherMonthlyText =
 **Plik:** `src/pages/api/ai/plants/fit.ts`
 
 **Zmiany:**
+
 1. Denormalizacja temperatury przed obliczeniem średniej rocznej
 2. Poprawne wyświetlanie średniej temperatury w prompt
 
 **Funkcja pomocnicza (dodaj na początku pliku):**
+
 ```typescript
 /**
  * Denormalizuje temperaturę z 0-100 do °C
  */
 function denormalizeTemperature(normalized: number): number {
-  return ((normalized / 100) * 80) - 30;
+  return (normalized / 100) * 80 - 30;
 }
 ```
 
 **Przed:**
+
 ```typescript
 climate: {
   annual_temp_avg:
@@ -368,6 +399,7 @@ climate: {
 ```
 
 **Po:**
+
 ```typescript
 climate: {
   annual_temp_avg:
@@ -379,6 +411,7 @@ climate: {
 ```
 
 **Uwagi:**
+
 - `annual_temp_avg` powinien być w °C (nie znormalizowany)
 - Obecnie jest błędnie obliczany jako średnia z znormalizowanych wartości
 
@@ -420,26 +453,31 @@ climate: {
 ## 5. Checklist wdrożenia
 
 ### Faza 1: Typy i schemas
+
 - [ ] Aktualizacja `PlantFitResultDto` w `src/types.ts` (dodanie `temperature_score`)
 - [ ] Aktualizacja `PlantFitResultSchema` w `openrouter.service.ts` (dodanie walidacji)
 - [ ] Aktualizacja JSON Schema w `buildResponseFormat()` (dodanie `temperature_score`)
 
 ### Faza 2: Prompty AI
+
 - [ ] Aktualizacja system prompt (dodanie `temperature_score` jako 4. metryki)
 - [ ] Aktualizacja prompt użytkownika (denormalizacja temperatury do °C)
 - [ ] Dodanie funkcji `denormalizeTemperature()` w `openrouter.service.ts`
 
 ### Faza 3: Endpoint API
+
 - [ ] Aktualizacja obliczania `annual_temp_avg` w `fit.ts` (denormalizacja)
 - [ ] Dodanie funkcji `denormalizeTemperature()` w `fit.ts`
 
 ### Faza 4: Testowanie
+
 - [ ] Test endpoint fit - weryfikacja `temperature_score` w odpowiedzi
 - [ ] Test prompt użytkownika - weryfikacja formatowania temperatury
 - [ ] Test system prompt - weryfikacja że AI zwraca `temperature_score`
 - [ ] Test kompatybilności wstecznej - obsługa starych odpowiedzi
 
 ### Faza 5: Dokumentacja
+
 - [ ] Aktualizacja dokumentacji API (dodanie `temperature_score` do przykładów)
 - [ ] Aktualizacja komentarzy w kodzie
 - [ ] Aktualizacja `.ai/docs/openrouter-implementation-summary.md`
@@ -453,6 +491,7 @@ climate: {
 **Problem:** AI może nie zwracać `temperature_score` w odpowiedzi (stare zachowanie).
 
 **Rozwiązanie:**
+
 - JSON Schema wymusza zwracanie `temperature_score` (strict mode)
 - Zod schema waliduje obecność `temperature_score`
 - Jeśli brakuje, walidacja zwróci błąd z opisem
@@ -462,6 +501,7 @@ climate: {
 **Problem:** Formuła denormalizacji może być niepoprawna.
 
 **Rozwiązanie:**
+
 - Weryfikacja formuły: `((normalized / 100) * 80) - 30`
 - Testy jednostkowe dla różnych wartości
 - Sprawdzenie wartości granicznych (-30°C, 0°C, 50°C)
@@ -471,6 +511,7 @@ climate: {
 **Problem:** Stare odpowiedzi AI mogą nie zawierać `temperature_score`.
 
 **Rozwiązanie:**
+
 - JSON Schema w strict mode wymusza wszystkie pola
 - Jeśli AI nie zwróci `temperature_score`, walidacja zwróci błąd
 - Użytkownik zobaczy komunikat błędu i może spróbować ponownie
@@ -480,6 +521,7 @@ climate: {
 **Problem:** Obecnie `annual_temp_avg` jest obliczane jako średnia z znormalizowanych wartości (0-100), a powinno być w °C.
 
 **Rozwiązanie:**
+
 - Denormalizacja każdej wartości przed obliczeniem średniej
 - Weryfikacja że wynik jest w °C (np. dla Polski: ~5-10°C)
 
@@ -492,6 +534,7 @@ climate: {
 **Pytanie:** Wyświetlać temperaturę w °C czy jako znormalizowaną wartość (0-100)?
 
 **Opcje:**
+
 - **A:** °C (denormalizacja) - bardziej czytelne dla AI
 - **B:** 0-100 (znormalizowana) - spójność z innymi metrykami
 
@@ -502,6 +545,7 @@ climate: {
 **Pytanie:** Czy temperatura powinna mieć taką samą wagę jak pozostałe metryki w `overall_score`?
 
 **Opcje:**
+
 - **A:** Równa waga (1/4 dla każdej metryki)
 - **B:** Wyższa waga dla temperatury (np. 1/3 dla temperatury, 1/3 dla pozostałych)
 - **C:** AI decyduje dynamicznie w zależności od rośliny
@@ -528,6 +572,7 @@ climate: {
 Plan zakłada minimalne zmiany w istniejącej architekturze, dodając `temperature_score` jako 4. metrykę oceny dopasowania rośliny. Wszystkie zmiany są backward-compatible z wyjątkiem walidacji odpowiedzi AI (która wymusza `temperature_score`).
 
 **Kluczowe zmiany:**
+
 1. Dodanie `temperature_score` do `PlantFitResultDto`
 2. Aktualizacja system prompt (4. metryka)
 3. Aktualizacja JSON Schema (wymuszenie `temperature_score`)
@@ -535,6 +580,7 @@ Plan zakłada minimalne zmiany w istniejącej architekturze, dodając `temperatu
 5. Poprawa obliczania `annual_temp_avg` (denormalizacja)
 
 **Następne kroki:**
+
 1. Zatwierdzenie planu
 2. Podjęcie decyzji dotyczących punktów z sekcji 7
 3. Rozpoczęcie implementacji zgodnie z checklist (sekcja 5)
@@ -544,4 +590,3 @@ Plan zakłada minimalne zmiany w istniejącej architekturze, dodając `temperatu
 **Przygotował:** AI Assistant  
 **Data:** 2025-01-23  
 **Status:** ✅ Ready for Implementation
-

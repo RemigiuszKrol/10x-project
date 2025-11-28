@@ -13,12 +13,14 @@
 Kompleksowa implementacja serwisu AI zawierająca:
 
 #### Interfejsy i typy
+
 - `OpenRouterConfig` - konfiguracja serwisu
 - `PlantFitContext` - kontekst dla oceny dopasowania rośliny
 - `CompletionConfig` - konfiguracja zapytania do API
 - `ResponseFormat` - format odpowiedzi JSON Schema
 
 #### Hierarchia błędów
+
 - `OpenRouterError` - bazowa klasa błędów
 - `TimeoutError` - przekroczenie limitu czasu (10s)
 - `RateLimitError` - zbyt wiele zapytań
@@ -28,11 +30,13 @@ Kompleksowa implementacja serwisu AI zawierająca:
 - `InsufficientCreditsError` - brak środków na koncie
 
 #### Metody publiczne
+
 - `searchPlants(query: string)` - wyszukiwanie roślin po nazwie
 - `checkPlantFit(context: PlantFitContext)` - ocena dopasowania rośliny
 - `testConnection()` - test połączenia z API
 
 #### Metody prywatne
+
 - `normalizeConfig()` - normalizacja konfiguracji z defaultami
 - `validateConfig()` - walidacja parametrów konfiguracji
 - `buildSystemPrompt()` - generowanie promptów systemowych dla search/fit
@@ -47,6 +51,7 @@ Kompleksowa implementacja serwisu AI zawierająca:
 - `logError()` - logowanie błędów (console w dev, Sentry w prod)
 
 #### Zabezpieczenia
+
 - Timeout 10s (zgodnie z wymaganiami MVP)
 - Retry logic z exponential backoff (1s, 2s, 4s...)
 - Sanityzacja inputów użytkownika (max 200 znaków, usunięcie HTML)
@@ -64,6 +69,7 @@ Singleton pattern dla serwisu OpenRouter:
 - `resetOpenRouterService()` - resetuje instance (dla testów)
 
 **Inicjalizacja ze zmiennych środowiskowych:**
+
 - `OPENROUTER_API_KEY` (wymagany)
 - `OPENROUTER_SEARCH_MODEL` (domyślnie: `openai/gpt-4o-mini`)
 - `OPENROUTER_FIT_MODEL` (domyślnie: `openai/gpt-4o-mini`)
@@ -79,6 +85,7 @@ Singleton pattern dla serwisu OpenRouter:
 Wyszukiwanie roślin po nazwie używając AI.
 
 **Request body:**
+
 ```json
 {
   "query": "pomidor"
@@ -86,6 +93,7 @@ Wyszukiwanie roślin po nazwie używając AI.
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -101,6 +109,7 @@ Wyszukiwanie roślin po nazwie używając AI.
 ```
 
 **Obsługa błędów:**
+
 - 401 Unauthorized - brak użytkownika
 - 400 ValidationError - nieprawidłowe zapytanie (min 2, max 200 znaków)
 - 429 RateLimited - zbyt wiele zapytań
@@ -114,6 +123,7 @@ Wyszukiwanie roślin po nazwie używając AI.
 Sprawdzanie dopasowania rośliny do warunków działki.
 
 **Request body:**
+
 ```json
 {
   "plan_id": "uuid",
@@ -124,6 +134,7 @@ Sprawdzanie dopasowania rośliny do warunków działki.
 ```
 
 **Response 200:**
+
 ```json
 {
   "data": {
@@ -137,6 +148,7 @@ Sprawdzanie dopasowania rośliny do warunków działki.
 ```
 
 **Obsługa błędów:**
+
 - 401 Unauthorized - brak użytkownika
 - 400 ValidationError - nieprawidłowe dane
 - 403 Forbidden - brak dostępu do planu
@@ -147,6 +159,7 @@ Sprawdzanie dopasowania rośliny do warunków działki.
 - 500 InternalError - nieznany błąd
 
 **Logika endpointu:**
+
 1. Sprawdzenie autoryzacji użytkownika
 2. Walidacja request body (Zod)
 3. Pobranie danych planu z bazy (lokalizacja, orientacja, hemisphere)
@@ -162,6 +175,7 @@ Sprawdzanie dopasowania rośliny do warunków działki.
 ### 4. Konfiguracja zmiennych środowiskowych
 
 #### `.env.example`
+
 ```bash
 # OpenRouter API key
 OPENROUTER_API_KEY=###
@@ -177,7 +191,9 @@ PUBLIC_USE_MOCK_AI=false
 ```
 
 #### `src/env.d.ts`
+
 Dodano typowanie dla nowych zmiennych środowiskowych:
+
 - `OPENROUTER_API_KEY`
 - `OPENROUTER_SEARCH_MODEL`
 - `OPENROUTER_FIT_MODEL`
@@ -192,16 +208,19 @@ Dodano typowanie dla nowych zmiennych środowiskowych:
 Skrypt testowy do weryfikacji działania serwisu OpenRouter:
 
 **Testy:**
+
 1. **Connection test** - sprawdza połączenie z OpenRouter API
 2. **Search test** - testuje wyszukiwanie roślin (query: "pomidor")
 3. **Fit test** - testuje ocenę dopasowania (Pomidor w Warszawie)
 
 **Uruchomienie:**
+
 ```bash
 npm run test:openrouter
 ```
 
 **Wymagania:**
+
 - Skonfigurowany `OPENROUTER_API_KEY` w `.env`
 - Zainstalowane zależności: `tsx`, `dotenv`
 
@@ -210,11 +229,13 @@ npm run test:openrouter
 ## Zależności
 
 ### Zainstalowane pakiety
+
 - `openai` (v6.9.1) - SDK kompatybilny z OpenRouter API
 - `tsx` (v4.20.6) - TypeScript execution dla test scriptu
 - `dotenv` (v17.2.3) - ładowanie zmiennych środowiskowych
 
 ### Istniejące zależności
+
 - `zod` (v3.23.8) - walidacja schematów
 - `@tanstack/react-query` (v5.90.10) - hooki do mutations
 
@@ -223,6 +244,7 @@ npm run test:openrouter
 ## Prompty AI
 
 ### Search prompt (system)
+
 - Ekspert ogrodniczy
 - Zwraca 1-5 najbardziej pasujących roślin
 - Rozpoznaje język zapytania (polski, angielski, łaciński)
@@ -230,6 +252,7 @@ npm run test:openrouter
 - Wymusza format JSON z nazwą zwyczajną i łacińską
 
 ### Fit prompt (system)
+
 - Ekspert ogrodniczy oceniający dopasowanie
 - System scoringu 1-5:
   - 5 (Doskonałe): ≥90% zgodności
@@ -248,11 +271,14 @@ npm run test:openrouter
 ## Zgodność z istniejącym kodem
 
 ### Hooki React Query
+
 Istniejące hooki w `src/lib/hooks/mutations/useAIMutations.ts` są w pełni kompatybilne:
+
 - `useSearchPlants()` - wywołuje `/api/ai/plants/search`
 - `useCheckPlantFit()` - wywołuje `/api/ai/plants/fit`
 
 ### Mock service
+
 Stary mock service w `src/lib/services/ai.service.ts` nadal działa dla trybu developmentu z `PUBLIC_USE_MOCK_AI=true`.
 
 ---
@@ -260,6 +286,7 @@ Stary mock service w `src/lib/services/ai.service.ts` nadal działa dla trybu de
 ## Checklist deployment
 
 ### Przed deploymentem
+
 - [x] `.env` ma poprawny `OPENROUTER_API_KEY`
 - [x] `.env.example` jest zaktualizowany (BEZ prawdziwego klucza!)
 - [x] `.gitignore` zawiera `.env` i `.env.local`
@@ -267,6 +294,7 @@ Stary mock service w `src/lib/services/ai.service.ts` nadal działa dla trybu de
 - [x] Wszystkie pliki bez błędów lintingu
 
 ### Po deploymencie
+
 - [ ] Sprawdź Dashboard OpenRouter: https://openrouter.ai/activity
 - [ ] Monitoruj koszty przez pierwszy tydzień
 - [ ] Ustaw alerty na OpenRouter (>$X dziennie)
@@ -278,6 +306,7 @@ Stary mock service w `src/lib/services/ai.service.ts` nadal działa dla trybu de
 ## Dalszy rozwój (post-MVP)
 
 Możliwe optymalizacje i rozszerzenia:
+
 - Caching odpowiedzi AI (Redis)
 - Streaming responses dla fit (server-sent events)
 - Multimodal AI (image recognition dla roślin)
@@ -292,6 +321,7 @@ Możliwe optymalizacje i rozszerzenia:
 ## Podsumowanie
 
 ✅ **Zaimplementowano pełną integrację z OpenRouter:**
+
 - Serwis OpenRouter z pełną obsługą błędów i retry logic
 - 2 endpointy API (search, fit)
 - Test script do weryfikacji
@@ -299,6 +329,7 @@ Możliwe optymalizacje i rozszerzenia:
 - Zgodność z istniejącym kodem (hooki, typy)
 
 🎯 **Zgodność z planem implementacji:**
+
 - Wszystkie wymagania MVP spełnione
 - Timeout 10s
 - Rate limiting (429)
@@ -308,4 +339,3 @@ Możliwe optymalizacje i rozszerzenia:
 - Mock mode dla developmentu
 
 🚀 **Gotowe do testów i deploymentu!**
-

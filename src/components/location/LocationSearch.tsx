@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Search, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { logger } from "@/lib/utils/logger";
 import type { GeocodeResult } from "@/types";
 
 export interface LocationSearchProps {
@@ -54,7 +56,16 @@ export function LocationSearch({ onSearch, isLoading }: LocationSearchProps) {
       return;
     }
 
-    await onSearch(query);
+    try {
+      await onSearch(query);
+    } catch (error) {
+      // Obsługujemy błąd, aby uniknąć unhandled rejection
+      // Błąd jest przekazywany do komponentu nadrzędnego przez onSearchError
+      // ale jeśli onSearchError nie jest obsłużony, nie rzucamy błędu dalej
+      logger.error("Błąd podczas wyszukiwania lokalizacji", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }, [query, onSearch, validateQuery]);
 
   /**
@@ -93,12 +104,12 @@ export function LocationSearch({ onSearch, isLoading }: LocationSearchProps) {
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             disabled={isLoading}
-            aria-describedby="location-search-help"
+            aria-describedby={validationError ? "location-search-error location-search-help" : "location-search-help"}
             aria-invalid={validationError !== null}
-            className={validationError ? "border-red-500" : ""}
+            className={cn(validationError && "!border-red-500")}
           />
           {validationError && (
-            <p className="text-xs text-red-600 dark:text-red-400 mt-1" role="alert">
+            <p id="location-search-error" className="text-xs text-red-600 dark:text-red-400 mt-1" role="alert">
               {validationError}
             </p>
           )}

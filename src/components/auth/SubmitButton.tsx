@@ -7,13 +7,15 @@ interface SubmitButtonProps {
   disabled?: boolean;
   children: React.ReactNode;
   className?: string;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export function SubmitButton({ isLoading = false, disabled = false, children, className }: SubmitButtonProps) {
+export function SubmitButton({ isLoading = false, disabled = false, children, className, onClick }: SubmitButtonProps) {
   return (
     <Button
       type="submit"
       disabled={disabled || isLoading}
+      onClick={onClick}
       className={cn(
         "w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700",
         "shadow-md hover:shadow-lg transition-all duration-200",

@@ -10,7 +10,10 @@ export function FormError({ message, className }: FormErrorProps) {
 
   return (
     <div
-      className={cn("rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 p-4", className)}
+      className={cn(
+        "rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 p-4",
+        className
+      )}
       role="alert"
       aria-live="assertive"
     >

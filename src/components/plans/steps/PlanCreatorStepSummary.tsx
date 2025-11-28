@@ -20,15 +20,15 @@ export interface PlanCreatorStepSummaryProps {
  */
 export function PlanCreatorStepSummary({ data, onEditStep }: PlanCreatorStepSummaryProps) {
   // Obliczenia pomocnicze
-  const widthCm = data.width_m ? data.width_m * 100 : 0;
-  const heightCm = data.height_m ? data.height_m * 100 : 0;
+  const widthCm = data.width_m !== undefined ? data.width_m * 100 : 0;
+  const heightCm = data.height_m !== undefined ? data.height_m * 100 : 0;
   const gridWidth = widthCm && data.cell_size_cm ? widthCm / data.cell_size_cm : 0;
   const gridHeight = heightCm && data.cell_size_cm ? heightCm / data.cell_size_cm : 0;
   const totalCells = gridWidth * gridHeight;
 
   // Wyświetlanie wymiarów w metrach
-  const widthDisplay = data.width_m ? `${data.width_m.toFixed(2)} m` : "—";
-  const heightDisplay = data.height_m ? `${data.height_m.toFixed(2)} m` : "—";
+  const widthDisplay = data.width_m !== undefined ? `${data.width_m.toFixed(2)} m` : "—";
+  const heightDisplay = data.height_m !== undefined ? `${data.height_m.toFixed(2)} m` : "—";
 
   // Etykiety półkuli
   const hemisphereLabel = data.hemisphere === "northern" ? "Północna" : "Południowa";

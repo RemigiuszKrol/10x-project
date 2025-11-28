@@ -8,9 +8,9 @@ export const loginSchema = z.object({
     .string({
       required_error: "Email jest wymagany",
     })
-    .email("Nieprawidłowy format adresu email")
     .trim()
-    .toLowerCase(),
+    .toLowerCase()
+    .email("Nieprawidłowy format adresu email"),
   password: z
     .string({
       required_error: "Hasło jest wymagane",
@@ -27,9 +27,9 @@ export const registerSchema = z
       .string({
         required_error: "Email jest wymagany",
       })
-      .email("Nieprawidłowy format adresu email")
       .trim()
-      .toLowerCase(),
+      .toLowerCase()
+      .email("Nieprawidłowy format adresu email"),
     password: z
       .string({
         required_error: "Hasło jest wymagane",
@@ -55,9 +55,9 @@ export const forgotPasswordSchema = z.object({
     .string({
       required_error: "Email jest wymagany",
     })
-    .email("Nieprawidłowy format adresu email")
     .trim()
-    .toLowerCase(),
+    .toLowerCase()
+    .email("Nieprawidłowy format adresu email"),
 });
 
 /**
