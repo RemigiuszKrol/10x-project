@@ -1,33 +1,33 @@
 /**
- * Dane testowe używane w testach E2E
+ * Dane testowe dla testów E2E
+ * Zawiera przykładowe dane użytkowników, planów i innych encji używanych w testach
  */
 
 export const TEST_USERS = {
   valid: {
-    email: "test@example.com",
-    password: "TestPassword123!",
-    fullName: "Test User",
+    email: process.env.E2E_USER_EMAIL || "test@example.com",
+    password: process.env.E2E_USER_PASSWORD || "Test1234!",
   },
   invalid: {
     email: "invalid@example.com",
-    password: "WrongPassword123!",
+    password: "wrongpassword",
   },
-};
+} as const;
 
-export const TEST_PLANS = {
-  basic: {
-    name: "Mój ogród testowy",
-    width: 10,
-    height: 10,
-    cellSize: 50,
-    locationName: "Warszawa, Polska",
-    latitude: 52.2297,
-    longitude: 21.0122,
-  },
-};
+/**
+ * Funkcja pomocnicza do generowania unikalnego emaila testowego
+ * @param prefix - Prefiks dla emaila (domyślnie "test")
+ * @returns Unikalny email z timestamp
+ */
+export function generateTestEmail(prefix = "test"): string {
+  const timestamp = Date.now();
+  return `${prefix}-${timestamp}@example.com`;
+}
 
-export const TIMEOUTS = {
-  short: 5000,
-  medium: 10000,
-  long: 30000,
-};
+/**
+ * Funkcja pomocnicza do generowania unikalnego hasła testowego
+ * @returns Hasło spełniające wymagania walidacji
+ */
+export function generateTestPassword(): string {
+  return "Test1234!";
+}

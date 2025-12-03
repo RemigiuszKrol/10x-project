@@ -1,8 +1,8 @@
-import { Page, Locator } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 /**
- * Bazowa klasa dla Page Object Model
- * Zawiera wspólne metody używane przez wszystkie strony
+ * Bazowa klasa Page Object Model dla wszystkich stron
+ * Zawiera wspólne metody i właściwości używane przez wszystkie Page Objects
  */
 export class BasePage {
   readonly page: Page;
@@ -12,44 +12,48 @@ export class BasePage {
   }
 
   /**
-   * Przejdź do określonego URL
+   * Nawigacja do podanego URL
+   * @param url - URL do którego chcemy przejść (może być względny lub bezwzględny)
    */
-  async goto(path: string) {
-    await this.page.goto(path);
+  async goto(url: string) {
+    await this.page.goto(url);
   }
 
   /**
-   * Czekaj aż element będzie widoczny
+   * Oczekiwanie na załadowanie strony
+   * Sprawdza czy strona jest w stanie "load"
    */
-  async waitForElement(locator: Locator) {
-    await locator.waitFor({ state: "visible" });
+  async waitForLoad() {
+    await this.page.waitForLoadState("load");
   }
 
   /**
-   * Kliknij element i czekaj na nawigację
+   * Oczekiwanie na załadowanie sieci
+   * Sprawdza czy wszystkie żądania sieciowe zostały zakończone
    */
-  async clickAndWaitForNavigation(locator: Locator) {
-    await Promise.all([this.page.waitForLoadState("networkidle"), locator.click()]);
+  async waitForNetworkIdle() {
+    await this.page.waitForLoadState("networkidle");
   }
 
   /**
-   * Wypełnij pole formularza
-   */
-  async fillField(locator: Locator, value: string) {
-    await locator.fill(value);
-  }
-
-  /**
-   * Pobierz tytuł strony
+   * Pobranie tytułu strony
    */
   async getTitle(): Promise<string> {
     return await this.page.title();
   }
 
   /**
-   * Zrób screenshot
+   * Pobranie aktualnego URL
    */
-  async takeScreenshot(name: string) {
-    await this.page.screenshot({ path: `test-results/${name}.png` });
+  getUrl(): string {
+    return this.page.url();
+  }
+
+  /**
+   * Oczekiwanie na zmianę URL
+   * @param urlPattern - Wzorzec URL (może być string lub RegExp)
+   */
+  async waitForURL(urlPattern: string | RegExp) {
+    await this.page.waitForURL(urlPattern);
   }
 }

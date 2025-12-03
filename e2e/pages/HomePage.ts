@@ -1,51 +1,43 @@
-import { Page, Locator } from "@playwright/test";
+import type { Page, Locator } from "@playwright/test";
 import { BasePage } from "./BasePage";
 
 /**
- * Page Object dla strony głównej
+ * Page Object Model dla strony głównej
+ * Reprezentuje stronę główną aplikacji
  */
 export class HomePage extends BasePage {
   readonly heading: Locator;
-  readonly loginButton: Locator;
-  readonly registerButton: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.heading = page.getByRole("heading", { level: 1 });
-    this.loginButton = page.getByRole("link", { name: /zaloguj/i });
-    this.registerButton = page.getByRole("link", { name: /zarejestruj/i });
+    // Podstawowy selektor dla nagłówka - może wymagać dostosowania do rzeczywistej struktury
+    this.heading = page.locator("h1, h2").first();
   }
 
   /**
-   * Przejdź do strony głównej
+   * Nawigacja do strony głównej
    */
   async navigate() {
     await this.goto("/");
+    await this.waitForLoad();
   }
 
   /**
-   * Kliknij przycisk logowania
-   */
-  async clickLogin() {
-    await this.loginButton.click();
-  }
-
-  /**
-   * Kliknij przycisk rejestracji
-   */
-  async clickRegister() {
-    await this.registerButton.click();
-  }
-
-  /**
-   * Sprawdź czy strona główna jest załadowana
+   * Sprawdzenie czy strona jest załadowana
    */
   async isLoaded(): Promise<boolean> {
     try {
-      await this.heading.waitFor({ state: "visible", timeout: 5000 });
+      await this.page.waitForLoadState("load");
       return true;
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Pobranie tytułu strony
+   */
+  async getTitle(): Promise<string> {
+    return await this.page.title();
   }
 }

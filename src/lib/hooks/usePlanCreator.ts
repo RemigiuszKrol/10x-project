@@ -457,11 +457,37 @@ export function usePlanCreator(): UsePlanCreatorReturn {
 
           setState((prev) => ({ ...prev, currentStep: stepWithError }));
         } else {
-          setState((prev) => ({
-            ...prev,
-            isSubmitting: false,
-            apiError: errorData.error.message,
-          }));
+          // Dla błędów bez field_errors (np. 409 Conflict) - sprawdź czy to błąd konfliktu nazwy
+          // Mapuj błąd 409 Conflict na errors.name i wróć do kroku "basics"
+          if (response.status === 409 && errorData.error.code === "Conflict") {
+            // Sprawdź czy komunikat dotyczy nazwy planu
+            const errorMessage = errorData.error.message.toLowerCase();
+            if (errorMessage.includes("name") || errorMessage.includes("nazwie") || errorMessage.includes("plan")) {
+              setState((prev) => ({
+                ...prev,
+                isSubmitting: false,
+                errors: {
+                  name: errorData.error.message || "Plan o tej nazwie już istnieje. Wybierz inną nazwę.",
+                },
+                apiError: null, // Nie pokazuj w Alert, tylko w FormError
+                currentStep: "basics", // Wróć do kroku podstaw
+              }));
+            } else {
+              // Inny konflikt - pokaż w apiError
+              setState((prev) => ({
+                ...prev,
+                isSubmitting: false,
+                apiError: errorData.error.message,
+              }));
+            }
+          } else {
+            // Inne błędy - pokaż w apiError
+            setState((prev) => ({
+              ...prev,
+              isSubmitting: false,
+              apiError: errorData.error.message,
+            }));
+          }
         }
 
         return null;

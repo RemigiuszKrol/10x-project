@@ -56,6 +56,16 @@ const reactConfig = tseslint.config({
   },
 });
 
+const vitestSetupConfig = tseslint.config({
+  files: ["vitest.setup.ts"],
+  rules: {
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-useless-constructor": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+  },
+});
+
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   {
@@ -70,6 +80,7 @@ export default tseslint.config(
   baseConfig,
   jsxA11yConfig,
   reactConfig,
+  vitestSetupConfig,
   eslintPluginAstro.configs["flat/recommended"],
   eslintPluginPrettier
 );

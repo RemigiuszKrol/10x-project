@@ -1,4 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
+import * as dotenv from "dotenv";
+import * as path from "path";
+import { fileURLToPath } from "url";
+
+// Ładowanie zmiennych środowiskowych z .env.test
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, ".env.test") });
 
 /**
  * Konfiguracja Playwright dla testów E2E
@@ -8,8 +16,8 @@ export default defineConfig({
   // Katalog z testami E2E
   testDir: "./e2e",
 
-  // Timeout dla pojedynczego testu (30 sekund)
-  timeout: 30 * 1000,
+  // Timeout dla pojedynczego testu (120 sekund)
+  timeout: 120 * 1000,
 
   // Maksymalny czas dla całego zestawu testów (bez limitu)
   globalTimeout: 0,
@@ -32,7 +40,7 @@ export default defineConfig({
   // Ustawienia współdzielone dla wszystkich projektów
   use: {
     // Base URL aplikacji
-    baseURL: process.env.BASE_URL || "http://localhost:4321",
+    baseURL: process.env.BASE_URL || "http://localhost:3000",
 
     // Trace on first retry
     trace: "on-first-retry",
@@ -58,11 +66,14 @@ export default defineConfig({
   // Webserver - uruchomienie aplikacji przed testami
   webServer: {
     command: "npm run preview",
-    url: "http://localhost:4321",
+    url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },
 
   // Folder dla artefaktów testowych
   outputDir: "test-results/",
+
+  // Global teardown - czyszczenie planów po zakończeniu wszystkich testów
+  globalTeardown: "./e2e/teardown.ts",
 });

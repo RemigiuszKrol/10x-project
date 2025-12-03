@@ -435,96 +435,93 @@ describe('temperature conversion', () => {
 
 #### Przepływy autentykacji
 
-- **Rejestracja i pierwsze logowanie**
-  1. Rejestracja nowego użytkownika z poprawnymi danymi
-  2. Weryfikacja przekierowania na stronę sukcesu
-  3. (Opcjonalnie) Weryfikacja emaila przez Inbucket
-  4. Pierwsze logowanie z nowymi danymi
-  5. Weryfikacja przekierowania na listę planów
+- **Rejestracja i pierwsze logowanie** ✅ Zaimplementowane
+  1. Rejestracja nowego użytkownika z poprawnymi danymi (`/auth/register` - `RegisterForm`)
+  2. Weryfikacja przekierowania na stronę sukcesu (`/auth/register-success`)
+  3. Pierwsze logowanie z nowymi danymi (`/auth/login` - `LoginForm`)
+  4. Weryfikacja przekierowania na listę planów (`/plans` - `PlansList`)
 
-- **Logowanie i wylogowanie**
-  1. Logowanie z poprawnymi danymi
-  2. Weryfikacja dostępu do chronionych stron
-  3. Wylogowanie
-  4. Weryfikacja przekierowania na stronę logowania
+- **Logowanie i wylogowanie** ✅ Zaimplementowane
+  1. Logowanie z poprawnymi danymi (`/auth/login` - `LoginForm`)
+  2. Weryfikacja dostępu do chronionych stron (`/plans`, `/profile`, `/plans/new`)
+  3. Wylogowanie użytkownika (`Navbar` - UserMenu)
+  4. Weryfikacja przekierowania na stronę logowania (`/auth/login`)
   5. Weryfikacja braku dostępu do chronionych stron
 
-- **Reset hasła**
-  1. Kliknięcie "Forgot password"
-  2. Wprowadzenie emaila
-  3. Sprawdzenie emaila w Inbucket
-  4. Kliknięcie linku resetującego
-  5. Ustawienie nowego hasła
-  6. Logowanie z nowym hasłem
+- **Scenariusze błędów autentykacji** ✅ Zaimplementowane
+  1. Rejestracja z istniejącym emailem (błąd 409) (`/auth/register` - `RegisterForm` - `FormError`)
+  2. Logowanie z niepoprawnym hasłem (błąd 401) (`/auth/login` - `LoginForm` - `FormError`)
+  3. Validation error - niepoprawne dane w formularzu rejestracji (`/auth/register` - `RegisterForm` - `FormError`)
+
+- **Reset hasła** ⚠️ Nie zaimplementowane w MVP
+  - Funkcjonalność poza zakresem testów E2E w fazie MVP
 
 #### Przepływy zarządzania planami
 
-- **Tworzenie nowego planu (pełny przepływ kreatora)**
-  1. Przejście do `/plans/new`
+- **Tworzenie nowego planu (pełny przepływ kreatora)** ✅ Zaimplementowane
+  1. Przejście do `/plans/new` (`PlanCreator`)
   2. **Krok 1 - Podstawy:**
-     - Wprowadzenie nazwy planu
+     - Wprowadzenie nazwy planu (`PlanCreatorStepBasics`)
      - Przejście do następnego kroku
   3. **Krok 2 - Lokalizacja:**
-     - Wyszukanie adresu (geokodowanie)
+     - Wyszukanie adresu (geokodowanie) (`PlanCreatorStepLocation`)
      - Wybór lokalizacji na mapie
      - Weryfikacja współrzędnych
      - Przejście do następnego kroku
   4. **Krok 3 - Wymiary:**
-     - Ustawienie wymiarów (width, height)
+     - Ustawienie wymiarów (width, height) (`PlanCreatorStepDimensions`)
      - Wybór rozmiaru komórki (10/25/50/100 cm)
      - Ustawienie orientacji (kompas)
      - Wybór półkuli (northern/southern)
      - Weryfikacja podglądu wymiarów siatki
   5. **Krok 4 - Podsumowanie:**
-     - Przegląd wszystkich danych
+     - Przegląd wszystkich danych (`PlanCreatorStepSummary`)
      - Kliknięcie "Utwórz plan"
   6. **Weryfikacja:**
-     - Przekierowanie na stronę edytora `/plans/:id`
-     - Wyświetlenie siatki
+     - Przekierowanie na stronę edytora `/plans/:id` (`EditorLayout`)
+     - Wyświetlenie siatki (`GridCanvas`)
      - Poprawne wymiary siatki
 
-- **Edycja istniejącego planu**
-  1. Otworzenie listy planów
-  2. Wybór planu do edycji
-  3. Kliknięcie "Edytuj parametry"
-  4. Zmiana nazwy planu
-  5. Zmiana lokalizacji
-  6. Zapisanie zmian
-  7. Weryfikacja aktualizacji danych
-
-- **Usuwanie planu**
-  1. Otworzenie listy planów
+- **Usuwanie planu** ✅ Zaimplementowane
+  1. Otworzenie listy planów (`/plans` - `PlansList`)
   2. Kliknięcie "Usuń" przy wybranym planie
-  3. Potwierdzenie usunięcia w dialogu
+  3. Potwierdzenie usunięcia w dialogu (`DeletePlanDialog`)
   4. Weryfikacja usunięcia z listy
+
+- **Scenariusze błędów zarządzania planami** ✅ Zaimplementowane
+  1. Validation error - niepoprawne wymiary planu (za duża siatka >200×200) (`/plans/new` - `PlanCreator` - `PlanCreatorStepDimensions`)
+  2. Konflikt - próba utworzenia planu z istniejącą nazwą (`/plans/new` - `PlanCreator` - `PlanCreatorStepBasics` - `FormError`)
+
+- **Edycja istniejącego planu** ⚠️ Nie zaimplementowane w MVP
+  - Funkcjonalność poza zakresem testów E2E w fazie MVP
 
 #### Przepływy pracy z siatką
 
-- **Edycja typu komórek**
-  1. Otworzenie planu w edytorze
+- **Edycja typu komórek** ✅ Zaimplementowane
+  1. Otworzenie planu w edytorze (`/plans/[id]` - `EditorLayout`)
   2. Wybór narzędzia "Select"
-  3. Zaznaczenie obszaru komórek (przeciągnięcie myszą)
-  4. Wybór typu z panelu (soil, path, water, building)
+  3. Zaznaczenie obszaru komórek (przeciągnięcie myszą) (`GridCanvas`)
+  4. Wybór typu z panelu (soil, path, water, building) (`AreaTypePanel`)
   5. Kliknięcie "Zastosuj"
   6. Weryfikacja zmiany kolorów komórek
 
-- **Edycja z potwierdzeniem usunięcia roślin**
+- **Edycja z potwierdzeniem usunięcia roślin** ✅ Zaimplementowane
   1. Dodanie roślin do obszaru 'soil'
-  2. Zaznaczenie obszaru zawierającego rośliny
-  3. Zmiana typu na 'path'
-  4. Weryfikacja wyświetlenia dialogu potwierdzenia
+  2. Zaznaczenie obszaru zawierającego rośliny (`GridCanvas`)
+  3. Zmiana typu na 'path' (`AreaTypePanel`)
+  4. Weryfikacja wyświetlenia dialogu potwierdzenia (`AreaTypeConfirmDialog`)
   5. Potwierdzenie usunięcia roślin
   6. Weryfikacja zmiany typu i usunięcia roślin
 
 #### Przepływy pracy z roślinami
 
-- **Dodawanie rośliny z AI (pełny przepływ)**
-  1. Otworzenie planu w edytorze
+- **Dodawanie rośliny z AI (pełny przepływ)** ✅ Zaimplementowane
+  1. Otworzenie planu w edytorze (`/plans/[id]` - `EditorLayout`)
   2. Wybór narzędzia "Add plant"
-  3. Kliknięcie na komórkę typu 'soil'
-  4. Otwarcie dialogu dodawania rośliny
-  5. **Zakładka "Wyszukaj":**
-     - Wprowadzenie nazwy rośliny (np. "Pomidor")
+  3. Kliknięcie na komórkę typu 'soil' (`GridCanvas`)
+  4. Otwarcie formularza wyszukiwania w panelu bocznym (`SideDrawer` - `PlantsTab` - `PlantSearchForm`)
+  5. **Wyszukiwanie:**
+     - Wprowadzenie nazwy rośliny (np. "Pomidor") w pole wyszukiwania
      - Kliknięcie "Szukaj"
      - Weryfikacja loading state
      - Wyświetlenie listy kandydatów
@@ -533,69 +530,63 @@ describe('temperature conversion', () => {
      - Automatyczne przejście do oceny dopasowania
   7. **Ocena dopasowania:**
      - Weryfikacja loading state
-     - Wyświetlenie scoring (sunlight, humidity, precip, temperature, overall)
+     - Wyświetlenie scoring (sunlight, humidity, precip, temperature, overall) w panelu bocznym
      - Wyświetlenie wyjaśnienia AI
   8. **Potwierdzenie:**
      - Kliknięcie "Dodaj roślinę"
-     - Zamknięcie dialogu
-     - Weryfikacja ikony rośliny na siatce
-  9. **Weryfikacja w liście roślin:**
-     - Otwarcie zakładki "Rośliny" w panelu bocznym
-     - Sprawdzenie czy roślina jest na liście
+     - Weryfikacja ikony rośliny na siatce (`PlantIcon`)
 
-- **Dodawanie rośliny ręcznie (bez AI)**
-  1. Otworzenie dialogu dodawania rośliny
-  2. Przełączenie na zakładkę "Dodaj ręcznie"
-  3. Wprowadzenie nazwy rośliny
-  4. Kliknięcie "Dodaj"
-  5. Weryfikacja dodania rośliny (bez scoring)
+- **Dodawanie rośliny bez oceny AI (fallback)** ✅ Zaimplementowane
+  1. Otworzenie formularza wyszukiwania w panelu bocznym (`PlantSearchForm`)
+  2. Wprowadzenie nazwy rośliny i kliknięcie "Szukaj"
+  3. Jeśli brak wyników wyszukiwania AI:
+     - Wyświetlenie przycisku "Dodaj bez oceny"
+     - Kliknięcie przycisku
+  4. Weryfikacja dodania rośliny (bez scoring)
 
-- **Usuwanie rośliny**
-  1. Kliknięcie prawym przyciskiem na komórkę z rośliną
+- **Usuwanie rośliny** ✅ Zaimplementowane
+  1. Kliknięcie prawym przyciskiem na komórkę z rośliną (`GridCanvas`)
   2. Wybór "Usuń roślinę" z menu kontekstowego
-  3. Potwierdzenie usunięcia w dialogu
+  3. Potwierdzenie usunięcia w dialogu (`DeletePlantConfirmDialog`)
   4. Weryfikacja usunięcia ikony
   5. Weryfikacja usunięcia z listy roślin
 
-- **Przeglądanie listy roślin**
-  1. Otwarcie zakładki "Rośliny" w panelu bocznym
-  2. Weryfikacja wyświetlenia wszystkich roślin
-  3. Filtrowanie po nazwie
-  4. Sortowanie listy
-  5. Kliknięcie na roślinę w liście (highlight na siatce)
+- **Scenariusze błędów pracy z roślinami** ✅ Zaimplementowane
+  1. Konflikt - próba dodania rośliny do komórki typu 'path' (`/plans/[id]` - `EditorLayout` - `CellNotSoilDialog`)
+
+- **Przeglądanie listy roślin** ⚠️ Nie zaimplementowane w MVP
+  - Filtrowanie i sortowanie poza zakresem testów E2E w fazie MVP
 
 #### Przepływy pracy z pogodą
 
-- **Automatyczne pobieranie danych pogodowych**
+- **Automatyczne pobieranie danych pogodowych** ✅ Zaimplementowane
   1. Utworzenie planu z lokalizacją
-  2. Otwarcie zakładki "Pogoda" w panelu bocznym
+  2. Otwarcie zakładki "Pogoda" w panelu bocznym (`/plans/[id]` - `EditorLayout` - `SideDrawer` - `WeatherTab`)
   3. Weryfikacja automatycznego pobrania danych
-  4. Weryfikacja wyświetlenia wykresu miesięcznego
-  5. Weryfikacja metryk (nasłonecznienie, wilgotność, opady, temperatura)
+  4. Weryfikacja wyświetlenia wykresu miesięcznego (`WeatherMonthlyChart`)
+  5. Weryfikacja metryk (nasłonecznienie, wilgotność, opady, temperatura) (`WeatherMetricsTable`)
 
-- **Ręczne odświeżanie danych pogodowych**
-  1. Otwarcie zakładki "Pogoda"
-  2. Kliknięcie "Odśwież dane"
-  3. Weryfikacja loading state
-  4. Weryfikacja aktualizacji danych
-  5. Weryfikacja updated timestamp
+- **Ręczne odświeżanie danych pogodowych** ⚠️ Nie zaimplementowane w MVP
+  - Funkcjonalność poza zakresem testów E2E w fazie MVP
 
 #### Przepływy zarządzania profilem
 
-- **Zmiana języka interfejsu**
-  1. Przejście do `/profile`
-  2. Wybór języka z listy rozwijanej
-  3. Kliknięcie "Zapisz"
-  4. Weryfikacja zmiany języka (etykiety, komunikaty)
-  5. Odświeżenie strony – weryfikacja persistencji
-
-- **Zmiana motywu kolorystycznego**
-  1. Przejście do `/profile`
-  2. Wybór motywu (light/dark/system)
-  3. Weryfikacja live preview zmian
+- **Zmiana motywu kolorystycznego** ✅ Zaimplementowane
+  1. Przejście do `/profile` (`ProfilePageWrapper`)
+  2. Wybór motywu (light/dark/system) (`ProfileForm` - `ThemeSelector`)
+  3. Weryfikacja live preview zmian (`ThemePreview`)
   4. Kliknięcie "Zapisz"
   5. Weryfikacja zastosowania motywu
   6. Odświeżenie strony – weryfikacja persistencji
+
+- **Zmiana języka interfejsu** ⚠️ Nie zaimplementowane w MVP
+  - Funkcjonalność poza zakresem testów E2E w fazie MVP
+
+#### Scenariusze błędów (Error Scenarios)
+
+- **Network failures** ✅ Zaimplementowane
+  1. Timeout AI przy wyszukiwaniu rośliny (>10s) (`/plans/[id]` - `EditorLayout` - `SideDrawer` - `PlantSearchForm` - `AIErrorDialog`)
+  2. Błąd API (500, 503) (`/plans` - `PlansList` - `ErrorState`, `/plans/[id]` - `EditorLayout` - `ToastProvider`)
 
 **Narzędzia:**
 
@@ -688,33 +679,32 @@ test("User can add plant with AI assistance", async ({ page }) => {
   // Kliknij na komórkę typu 'soil'
   await page.click('.grid-cell[data-x="5"][data-y="5"]');
 
-  // Weryfikacja otwarcia dialogu
-  await expect(page.locator('[role="dialog"]')).toBeVisible();
+  // Weryfikacja otwarcia formularza wyszukiwania w panelu bocznym
+  await expect(page.locator('aside #plant-query')).toBeVisible();
 
-  // Wyszukaj roślinę
-  await page.fill('[name="searchQuery"]', "Pomidor");
-  await page.click('button:has-text("Szukaj")');
+  // Wyszukaj roślinę w panelu bocznym
+  await page.fill('#plant-query', "Pomidor");
+  await page.click('aside button:has-text("Szukaj")');
 
   // Oczekuj na wyniki (loading state)
   await expect(page.locator("text=Wyszukiwanie...")).toBeVisible();
   await expect(page.locator("text=Wyszukiwanie...")).not.toBeVisible({ timeout: 15000 });
 
-  // Wybierz pierwszą roślinę z listy
-  await page.click(".plant-candidate:first-child");
+  // Wybierz pierwszą roślinę z listy w panelu bocznym
+  await page.click('aside .plant-candidate:first-child');
 
   // Oczekuj na ocenę dopasowania
-  await expect(page.locator("text=Ocena dopasowania...")).toBeVisible();
-  await expect(page.locator("text=Ocena dopasowania...")).not.toBeVisible({ timeout: 15000 });
+  await expect(page.locator("text=Sprawdzanie dopasowania...")).toBeVisible();
+  await expect(page.locator("text=Sprawdzanie dopasowania...")).not.toBeVisible({ timeout: 15000 });
 
-  // Weryfikacja wyświetlenia scoring
-  await expect(page.locator('[data-score-type="sunlight"]')).toBeVisible();
-  await expect(page.locator('[data-score-type="overall"]')).toBeVisible();
+  // Weryfikacja wyświetlenia scoring w panelu bocznym
+  await expect(page.locator('aside text=Nasłonecznienie:')).toBeVisible();
+  await expect(page.locator('aside text=Ogólna ocena:')).toBeVisible();
 
   // Dodaj roślinę
-  await page.click('button:has-text("Dodaj roślinę")');
+  await page.click('aside button:has-text("Dodaj roślinę")');
 
-  // Weryfikacja zamknięcia dialogu i wyświetlenia rośliny
-  await expect(page.locator('[role="dialog"]')).not.toBeVisible();
+  // Weryfikacja wyświetlenia rośliny na siatce
   await expect(page.locator('.grid-cell[data-x="5"][data-y="5"] .plant-icon')).toBeVisible();
 
   // Weryfikacja w liście roślin
@@ -790,16 +780,40 @@ test("User can change theme and see it persist", async ({ page }) => {
 
 **Kryteria pokrycia:**
 
-- **Wszystkie kluczowe przepływy użytkownika (happy paths)** – 100% pokrycie głównych scenariuszy
-- **Scenariusze błędów:**
-  - Validation errors (niepoprawne dane w formularzach)
-  - Network failures (timeout AI, błędy API)
-  - Konflikty (duplicate names, area type conflicts)
-- **Responsywność UI:**
-  - Loading states (spinners, skeletons)
-  - Error messages (toasts, inline errors)
-  - Success confirmations (toasts, redirects)
-  - Empty states (brak danych)
+- **Wszystkie kluczowe przepływy użytkownika (happy paths)** – 100% pokrycie głównych scenariuszy ✅
+  - Autentykacja: rejestracja, logowanie, wylogowanie
+  - Zarządzanie planami: tworzenie, usuwanie
+  - Praca z siatką: zmiana typu komórek
+  - Praca z roślinami: dodawanie (AI), usuwanie
+  - Praca z pogodą: automatyczne pobieranie danych
+  - Zarządzanie profilem: zmiana motywu
+- **Scenariusze błędów:** ✅ Zaimplementowane
+  - Validation errors (niepoprawne dane w formularzach rejestracji, niepoprawne wymiary planu)
+  - Network failures (timeout AI >10s, błędy API 500/503)
+  - Konflikty (duplicate names planów, próba dodania rośliny do komórki typu 'path')
+- **Responsywność UI:** ✅ Zaimplementowane
+  - Loading states (spinners podczas wyszukiwania roślin, oceny dopasowania)
+  - Error messages (toasts, inline errors w formularzach, dialogi błędów)
+  - Success confirmations (toasts, redirects po rejestracji/logowaniu)
+  - Empty states (brak danych w liście planów)
+
+**Status implementacji testów E2E:**
+
+✅ **Zaimplementowane (22 testy):**
+- Autentykacja: 8 testów (rejestracja, logowanie, wylogowanie, błędy)
+- Zarządzanie planami: 2 testy (tworzenie, usuwanie) + 2 scenariusze błędów
+- Praca z siatką: 2 testy (zmiana typu, zmiana z potwierdzeniem)
+- Praca z roślinami: 2 testy (dodawanie AI, usuwanie) + 1 scenariusz błędu
+- Praca z pogodą: 1 test (automatyczne pobieranie)
+- Zarządzanie profilem: 1 test (zmiana motywu)
+- Scenariusze błędów: 4 testy (validation errors, network failures, konflikty)
+
+⚠️ **Nie zaimplementowane w MVP:**
+- Reset hasła (AUTH-006)
+- Edycja istniejącego planu
+- Ręczne odświeżanie danych pogodowych
+- Zmiana języka interfejsu
+- Przeglądanie listy roślin (filtrowanie, sortowanie)
 
 **Best practices:**
 
@@ -817,82 +831,88 @@ test("User can change theme and see it persist", async ({ page }) => {
 
 ### 4.1 Rejestracja i logowanie
 
-| ID       | Scenariusz                        | Kroki                                                                                                              | Oczekiwany wynik                                       | Priorytet |
-| -------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ | --------- |
-| AUTH-001 | Rejestracja z poprawnymi danymi   | 1. Otwórz /auth/register<br>2. Wypełnij email i hasło<br>3. Kliknij "Zarejestruj się"                              | Status 201, przekierowanie na /auth/register-success   | P0        |
-| AUTH-002 | Rejestracja z istniejącym emailem | 1. Zarejestruj użytkownika<br>2. Spróbuj zarejestrować ponownie z tym samym emailem                                | Status 409, komunikat "User already exists"            | P1        |
-| AUTH-003 | Logowanie z poprawnymi danymi     | 1. Otwórz /auth/login<br>2. Wprowadź email i hasło<br>3. Kliknij "Zaloguj"                                         | Status 200, przekierowanie na /plans, cookie ustawione | P0        |
-| AUTH-004 | Logowanie z niepoprawnym hasłem   | 1. Otwórz /auth/login<br>2. Wprowadź poprawny email i błędne hasło                                                 | Status 401, komunikat "Invalid credentials"            | P1        |
-| AUTH-005 | Wylogowanie                       | 1. Zaloguj się<br>2. Kliknij "Wyloguj"                                                                             | Cookie usunięte, przekierowanie na /auth/login         | P0        |
-| AUTH-006 | Reset hasła                       | 1. Kliknij "Forgot password"<br>2. Wprowadź email<br>3. Sprawdź Inbucket<br>4. Kliknij link<br>5. Ustaw nowe hasło | Email wysłany, hasło zmienione, możliwość zalogowania  | P2        |
+| ID       | Scenariusz                        | Kroki                                                                                                              | Oczekiwany wynik                                       | Priorytet | Status E2E |
+| -------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ | --------- | ---------- |
+| AUTH-001 | Rejestracja z poprawnymi danymi   | 1. Otwórz /auth/register<br>2. Wypełnij email i hasło<br>3. Kliknij "Zarejestruj się"                              | Status 201, przekierowanie na /auth/register-success   | P0        | ✅         |
+| AUTH-002 | Rejestracja z istniejącym emailem | 1. Zarejestruj użytkownika<br>2. Spróbuj zarejestrować ponownie z tym samym emailem                                | Status 409, komunikat "User already exists"            | P1        | ✅         |
+| AUTH-003 | Logowanie z poprawnymi danymi     | 1. Otwórz /auth/login<br>2. Wprowadź email i hasło<br>3. Kliknij "Zaloguj"                                         | Status 200, przekierowanie na /plans, cookie ustawione | P0        | ✅         |
+| AUTH-004 | Logowanie z niepoprawnym hasłem   | 1. Otwórz /auth/login<br>2. Wprowadź poprawny email i błędne hasło                                                 | Status 401, komunikat "Invalid credentials"            | P1        | ✅         |
+| AUTH-005 | Wylogowanie                       | 1. Zaloguj się<br>2. Kliknij "Wyloguj"                                                                             | Cookie usunięte, przekierowanie na /auth/login         | P0        | ✅         |
+| AUTH-006 | Reset hasła                       | 1. Kliknij "Forgot password"<br>2. Wprowadź email<br>3. Sprawdź Inbucket<br>4. Kliknij link<br>5. Ustaw nowe hasło | Email wysłany, hasło zmienione, możliwość zalogowania  | P2        | ⚠️         |
 
 ### 4.2 Tworzenie i zarządzanie planami
 
-| ID       | Scenariusz                                       | Kroki                                                                         | Oczekiwany wynik                                               | Priorytet |
-| -------- | ------------------------------------------------ | ----------------------------------------------------------------------------- | -------------------------------------------------------------- | --------- |
-| PLAN-001 | Utworzenie minimalnego planu                     | 1. POST /api/plans z name, width_cm, height_cm, cell_size_cm, orientation     | Status 201, plan utworzony, grid_width i grid_height obliczone | P0        |
-| PLAN-002 | Utworzenie planu z lokalizacją                   | 1. POST /api/plans z danymi + latitude, longitude, hemisphere                 | Status 201, lokalizacja zapisana                               | P0        |
-| PLAN-003 | Walidacja: za duża siatka (>200×200)             | 1. POST /api/plans z width_cm=20100, cell_size_cm=100                         | Status 400, błąd "Grid dimensions must be ≤200"                | P0        |
-| PLAN-004 | Walidacja: niepodzielne wymiary                  | 1. POST /api/plans z width_cm=503, cell_size_cm=25                            | Status 400, błąd "Width must be divisible by cell_size"        | P1        |
-| PLAN-005 | Walidacja: konflikt nazwy                        | 1. Utwórz plan "Test"<br>2. Utwórz drugi plan "Test"                          | Status 409, błąd "Plan with this name already exists"          | P1        |
-| PLAN-006 | Edycja nazwy planu                               | 1. PATCH /api/plans/:id z { name: "Nowa nazwa" }                              | Status 200, nazwa zaktualizowana                               | P0        |
-| PLAN-007 | Edycja wymiarów BEZ zmiany siatki                | 1. PATCH /api/plans/:id z proporcjonalnymi wymiarami                          | Status 200, grid_width i grid_height bez zmian                 | P1        |
-| PLAN-008 | Edycja wymiarów Z zmianą siatki (conflict)       | 1. PATCH /api/plans/:id z nowymi wymiarami (bez confirm_regenerate)           | Status 409, błąd "Set confirm_regenerate=true"                 | P0        |
-| PLAN-009 | Edycja wymiarów Z zmianą siatki (confirmed)      | 1. PATCH /api/plans/:id?confirm_regenerate=true                               | Status 200, siatka zregenerowana, rośliny usunięte             | P0        |
-| PLAN-010 | Usunięcie planu                                  | 1. DELETE /api/plans/:id                                                      | Status 204, plan usunięty (wraz z grid_cells, plants)          | P0        |
-| PLAN-011 | Listowanie planów z paginacją                    | 1. GET /api/plans?limit=5                                                     | Status 200, max 5 planów, next_cursor present (jeśli więcej)   | P0        |
-| PLAN-012 | RLS: użytkownik A nie widzi planów użytkownika B | 1. Utwórz plan jako user A<br>2. Zaloguj się jako user B<br>3. GET /api/plans | Status 200, lista nie zawiera planu user A                     | P0        |
+| ID       | Scenariusz                                       | Kroki                                                                         | Oczekiwany wynik                                               | Priorytet | Status E2E |
+| -------- | ------------------------------------------------ | ----------------------------------------------------------------------------- | -------------------------------------------------------------- | --------- | ---------- |
+| PLAN-001 | Utworzenie minimalnego planu                     | 1. POST /api/plans z name, width_cm, height_cm, cell_size_cm, orientation     | Status 201, plan utworzony, grid_width i grid_height obliczone | P0        | ✅*        |
+| PLAN-002 | Utworzenie planu z lokalizacją                   | 1. POST /api/plans z danymi + latitude, longitude, hemisphere                 | Status 201, lokalizacja zapisana                               | P0        | ✅*        |
+| PLAN-003 | Walidacja: za duża siatka (>200×200)             | 1. POST /api/plans z width_cm=20100, cell_size_cm=100                         | Status 400, błąd "Grid dimensions must be ≤200"                | P0        | ✅         |
+| PLAN-004 | Walidacja: niepodzielne wymiary                  | 1. POST /api/plans z width_cm=503, cell_size_cm=25                            | Status 400, błąd "Width must be divisible by cell_size"        | P1        | ⚠️         |
+| PLAN-005 | Walidacja: konflikt nazwy                        | 1. Utwórz plan "Test"<br>2. Utwórz drugi plan "Test"                          | Status 409, błąd "Plan with this name already exists"          | P1        | ✅         |
+| PLAN-006 | Edycja nazwy planu                               | 1. PATCH /api/plans/:id z { name: "Nowa nazwa" }                              | Status 200, nazwa zaktualizowana                               | P0        | ⚠️         |
+| PLAN-007 | Edycja wymiarów BEZ zmiany siatki                | 1. PATCH /api/plans/:id z proporcjonalnymi wymiarami                          | Status 200, grid_width i grid_height bez zmian                 | P1        | ⚠️         |
+| PLAN-008 | Edycja wymiarów Z zmianą siatki (conflict)       | 1. PATCH /api/plans/:id z nowymi wymiarami (bez confirm_regenerate)           | Status 409, błąd "Set confirm_regenerate=true"                 | P0        | ⚠️         |
+| PLAN-009 | Edycja wymiarów Z zmianą siatki (confirmed)      | 1. PATCH /api/plans/:id?confirm_regenerate=true                               | Status 200, siatka zregenerowana, rośliny usunięte             | P0        | ⚠️         |
+| PLAN-010 | Usunięcie planu                                  | 1. DELETE /api/plans/:id                                                      | Status 204, plan usunięty (wraz z grid_cells, plants)          | P0        | ✅         |
+| PLAN-011 | Listowanie planów z paginacją                    | 1. GET /api/plans?limit=5                                                     | Status 200, max 5 planów, next_cursor present (jeśli więcej)   | P0        | ⚠️         |
+| PLAN-012 | RLS: użytkownik A nie widzi planów użytkownika B | 1. Utwórz plan jako user A<br>2. Zaloguj się jako user B<br>3. GET /api/plans | Status 200, lista nie zawiera planu user A                     | P0        | ⚠️         |
+
+\* Testowane jako część pełnego flow tworzenia planu (kreator wieloetapowy)
 
 ### 4.3 Operacje na siatce
 
-| ID       | Scenariusz                                   | Kroki                                                                               | Oczekiwany wynik                                               | Priorytet |
-| -------- | -------------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------- | --------- |
-| GRID-001 | Pobieranie metadanych siatki                 | 1. GET /api/plans/:id/grid                                                          | Status 200, grid_width, grid_height, cell_size_cm, orientation | P0        |
-| GRID-002 | Listowanie komórek siatki                    | 1. GET /api/plans/:id/grid/cells                                                    | Status 200, lista komórek z x, y, type                         | P0        |
-| GRID-003 | Filtrowanie komórek po typie                 | 1. GET /api/plans/:id/grid/cells?type=soil                                          | Status 200, tylko komórki typu "soil"                          | P1        |
-| GRID-004 | Filtrowanie komórek po bbox                  | 1. GET /api/plans/:id/grid/cells?bbox=0,0,10,10                                     | Status 200, komórki w zakresie 0-10, 0-10                      | P1        |
-| GRID-005 | Aktualizacja typu pojedynczej komórki        | 1. PUT /api/plans/:id/grid/cells/5/5 z { type: "path" }                             | Status 200, type zaktualizowany                                | P0        |
-| GRID-006 | Aktualizacja typu obszaru komórek            | 1. POST /api/plans/:id/grid/area-type z x1, y1, x2, y2, type                        | Status 200, affected_cells count                               | P0        |
-| GRID-007 | Aktualizacja obszaru z roślinami (conflict)  | 1. Dodaj rośliny w obszarze<br>2. POST /grid/area-type z type != soil (bez confirm) | Status 409, komunikat o usunięciu roślin                       | P0        |
-| GRID-008 | Aktualizacja obszaru z roślinami (confirmed) | 1. POST /grid/area-type z confirm_plant_removal=true                                | Status 200, rośliny usunięte, typ zmieniony                    | P0        |
-| GRID-009 | Walidacja: współrzędne poza siatką           | 1. PUT /grid/cells/200/200 (dla siatki 40×40)                                       | Status 422, błąd "Coordinates out of bounds"                   | P1        |
+| ID       | Scenariusz                                   | Kroki                                                                               | Oczekiwany wynik                                               | Priorytet | Status E2E |
+| -------- | -------------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------- | --------- | ---------- |
+| GRID-001 | Pobieranie metadanych siatki                 | 1. GET /api/plans/:id/grid                                                          | Status 200, grid_width, grid_height, cell_size_cm, orientation | P0        | ⚠️         |
+| GRID-002 | Listowanie komórek siatki                    | 1. GET /api/plans/:id/grid/cells                                                    | Status 200, lista komórek z x, y, type                         | P0        | ⚠️         |
+| GRID-003 | Filtrowanie komórek po typie                 | 1. GET /api/plans/:id/grid/cells?type=soil                                          | Status 200, tylko komórki typu "soil"                          | P1        | ⚠️         |
+| GRID-004 | Filtrowanie komórek po bbox                  | 1. GET /api/plans/:id/grid/cells?bbox=0,0,10,10                                     | Status 200, komórki w zakresie 0-10, 0-10                      | P1        | ⚠️         |
+| GRID-005 | Aktualizacja typu pojedynczej komórki        | 1. PUT /api/plans/:id/grid/cells/5/5 z { type: "path" }                             | Status 200, type zaktualizowany                                | P0        | ⚠️         |
+| GRID-006 | Aktualizacja typu obszaru komórek            | 1. POST /api/plans/:id/grid/area-type z x1, y1, x2, y2, type                        | Status 200, affected_cells count                               | P0        | ✅         |
+| GRID-007 | Aktualizacja obszaru z roślinami (conflict)  | 1. Dodaj rośliny w obszarze<br>2. POST /grid/area-type z type != soil (bez confirm) | Status 409, komunikat o usunięciu roślin                       | P0        | ✅         |
+| GRID-008 | Aktualizacja obszaru z roślinami (confirmed) | 1. POST /grid/area-type z confirm_plant_removal=true                                | Status 200, rośliny usunięte, typ zmieniony                    | P0        | ✅         |
+| GRID-009 | Walidacja: współrzędne poza siatką           | 1. PUT /grid/cells/200/200 (dla siatki 40×40)                                       | Status 422, błąd "Coordinates out of bounds"                   | P1        | ⚠️         |
 
 ### 4.4 Nasadzenia roślin
 
-| ID        | Scenariusz                                          | Kroki                                                                             | Oczekiwany wynik                                        | Priorytet |
-| --------- | --------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------- | --------- |
-| PLANT-001 | Dodanie rośliny do komórki typu 'soil'              | 1. PUT /api/plans/:id/plants/5/5 z { plant_name: "Pomidor" }                      | Status 200, roślina dodana                              | P0        |
-| PLANT-002 | Dodanie rośliny z wszystkimi score'ami              | 1. PUT z plant_name + sunlight_score, humidity_score, precip_score, overall_score | Status 200, wszystkie score zapisane                    | P0        |
-| PLANT-003 | Aktualizacja istniejącej rośliny (upsert)           | 1. PUT na pozycję z istniejącą rośliną                                            | Status 200, roślina zaktualizowana, updated_at nowe     | P0        |
-| PLANT-004 | Próba dodania rośliny do komórki typu 'path'        | 1. Ustaw komórkę jako 'path'<br>2. PUT /plants/x/y                                | Status 422, błąd "Only 'soil' cells can contain plants" | P0        |
-| PLANT-005 | Walidacja: brak plant_name                          | 1. PUT /plants/x/y z {}                                                           | Status 400, błąd "Plant name is required"               | P1        |
-| PLANT-006 | Walidacja: score poza zakresem (1-5)                | 1. PUT z sunlight_score=10                                                        | Status 400, błąd "Score must be between 1 and 5"        | P1        |
-| PLANT-007 | Walidacja: nazwa rośliny > 100 znaków               | 1. PUT z plant_name="A".repeat(101)                                               | Status 400, błąd "Plant name max 100 characters"        | P1        |
-| PLANT-008 | Listowanie nasadzeń                                 | 1. GET /api/plans/:id/plants                                                      | Status 200, lista roślin posortowana po plant_name      | P0        |
-| PLANT-009 | Filtrowanie nasadzeń po nazwie                      | 1. GET /plants?name=Pomidor                                                       | Status 200, tylko rośliny zaczynające się na "Pomidor"  | P1        |
-| PLANT-010 | Usunięcie rośliny                                   | 1. DELETE /api/plans/:id/plants/5/5                                               | Status 204, roślina usunięta, komórka pozostaje 'soil'  | P0        |
-| PLANT-011 | RLS: użytkownik A nie może dodać rośliny do planu B | 1. Zaloguj się jako user A<br>2. PUT /plants do planu user B                      | Status 404, brak dostępu                                | P0        |
+| ID        | Scenariusz                                          | Kroki                                                                             | Oczekiwany wynik                                        | Priorytet | Status E2E |
+| --------- | --------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------- | --------- | ---------- |
+| PLANT-001 | Dodanie rośliny do komórki typu 'soil'              | 1. PUT /api/plans/:id/plants/5/5 z { plant_name: "Pomidor" }                      | Status 200, roślina dodana                              | P0        | ✅*        |
+| PLANT-002 | Dodanie rośliny z wszystkimi score'ami              | 1. PUT z plant_name + sunlight_score, humidity_score, precip_score, overall_score | Status 200, wszystkie score zapisane                    | P0        | ✅*        |
+| PLANT-003 | Aktualizacja istniejącej rośliny (upsert)           | 1. PUT na pozycję z istniejącą rośliną                                            | Status 200, roślina zaktualizowana, updated_at nowe     | P0        | ⚠️         |
+| PLANT-004 | Próba dodania rośliny do komórki typu 'path'        | 1. Ustaw komórkę jako 'path'<br>2. PUT /plants/x/y                                | Status 422, błąd "Only 'soil' cells can contain plants" | P0        | ✅         |
+| PLANT-005 | Walidacja: brak plant_name                          | 1. PUT /plants/x/y z {}                                                           | Status 400, błąd "Plant name is required"               | P1        | ⚠️         |
+| PLANT-006 | Walidacja: score poza zakresem (1-5)                | 1. PUT z sunlight_score=10                                                        | Status 400, błąd "Score must be between 1 and 5"        | P1        | ⚠️         |
+| PLANT-007 | Walidacja: nazwa rośliny > 100 znaków               | 1. PUT z plant_name="A".repeat(101)                                               | Status 400, błąd "Plant name max 100 characters"        | P1        | ⚠️         |
+| PLANT-008 | Listowanie nasadzeń                                 | 1. GET /api/plans/:id/plants                                                      | Status 200, lista roślin posortowana po plant_name      | P0        | ⚠️         |
+| PLANT-009 | Filtrowanie nasadzeń po nazwie                      | 1. GET /plants?name=Pomidor                                                       | Status 200, tylko rośliny zaczynające się na "Pomidor"  | P1        | ⚠️         |
+| PLANT-010 | Usunięcie rośliny                                   | 1. DELETE /api/plans/:id/plants/5/5                                               | Status 204, roślina usunięta, komórka pozostaje 'soil'  | P0        | ✅         |
+| PLANT-011 | RLS: użytkownik A nie może dodać rośliny do planu B | 1. Zaloguj się jako user A<br>2. PUT /plants do planu user B                      | Status 404, brak dostępu                                | P0        | ⚠️         |
+
+\* Testowane jako część flow dodawania rośliny z AI
 
 ### 4.5 Integracja z AI (OpenRouter)
 
-| ID     | Scenariusz                          | Kroki                                                  | Oczekiwany wynik                                       | Priorytet |
-| ------ | ----------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | --------- |
-| AI-001 | Wyszukiwanie rośliny                | 1. POST /api/ai/plants/search z { query: "Pomidor" }   | Status 200, candidates zawiera rośliny                 | P0        |
-| AI-002 | Ocena dopasowania rośliny           | 1. POST /api/ai/plants/fit z plan_id, x, y, plant_name | Status 200, scoring (1-5) + explanation                | P0        |
-| AI-003 | Timeout AI (>10s)                   | 1. Symuluj wolne API<br>2. POST /search lub /fit       | Status 504, błąd "AI request timeout"                  | P1        |
-| AI-004 | Błąd: niepoprawna odpowiedź JSON    | 1. Mock AI zwraca invalid JSON<br>2. POST /search      | Status 502, błąd "Invalid AI response"                 | P1        |
-| AI-005 | Rate limit AI                       | 1. Wyślij >100 żądań w minutę                          | Status 429, błąd "Rate limit exceeded"                 | P2        |
-| AI-006 | Tryb mock (PUBLIC_USE_MOCK_AI=true) | 1. Ustaw env var<br>2. POST /search lub /fit           | Status 200, mock data zamiast prawdziwej odpowiedzi AI | P1        |
+| ID     | Scenariusz                          | Kroki                                                  | Oczekiwany wynik                                       | Priorytet | Status E2E |
+| ------ | ----------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | --------- | ---------- |
+| AI-001 | Wyszukiwanie rośliny                | 1. POST /api/ai/plants/search z { query: "Pomidor" }   | Status 200, candidates zawiera rośliny                 | P0        | ✅*        |
+| AI-002 | Ocena dopasowania rośliny           | 1. POST /api/ai/plants/fit z plan_id, x, y, plant_name | Status 200, scoring (1-5) + explanation                | P0        | ✅*        |
+| AI-003 | Timeout AI (>10s)                   | 1. Symuluj wolne API<br>2. POST /search lub /fit       | Status 504, błąd "AI request timeout"                  | P1        | ✅         |
+| AI-004 | Błąd: niepoprawna odpowiedź JSON    | 1. Mock AI zwraca invalid JSON<br>2. POST /search      | Status 502, błąd "Invalid AI response"                 | P1        | ⚠️         |
+| AI-005 | Rate limit AI                       | 1. Wyślij >100 żądań w minutę                          | Status 429, błąd "Rate limit exceeded"                 | P2        | ⚠️         |
+| AI-006 | Tryb mock (PUBLIC_USE_MOCK_AI=true) | 1. Ustaw env var<br>2. POST /search lub /fit           | Status 200, mock data zamiast prawdziwej odpowiedzi AI | P1        | ⚠️         |
+
+\* Testowane jako część flow dodawania rośliny z AI
 
 ### 4.6 Integracja z Open-Meteo
 
-| ID          | Scenariusz                             | Kroki                                                    | Oczekiwany wynik                                                | Priorytet |
-| ----------- | -------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------- | --------- |
-| WEATHER-001 | Pobieranie danych pogodowych dla planu | 1. GET /api/plans/:id/weather                            | Status 200, 12 rekordów (miesiące), metryki znormalizowane      | P0        |
-| WEATHER-002 | Cache miesięczny                       | 1. GET /weather dwukrotnie w odstępie < 1 miesiąca       | Drugi GET zwraca cache (last_refreshed_at bez zmian)            | P1        |
-| WEATHER-003 | Odświeżenie danych (force)             | 1. POST /api/plans/:id/weather/refresh z { force: true } | Status 200, nowe dane pobrane, last_refreshed_at zaktualizowane | P1        |
-| WEATHER-004 | Błąd: plan bez lokalizacji             | 1. Utwórz plan bez latitude/longitude<br>2. GET /weather | Status 422, błąd "Plan location required"                       | P1        |
-| WEATHER-005 | Timeout Open-Meteo (>5s)               | 1. Symuluj wolne API<br>2. GET /weather                  | Status 504, błąd "Weather service timeout"                      | P2        |
+| ID          | Scenariusz                             | Kroki                                                    | Oczekiwany wynik                                                | Priorytet | Status E2E |
+| ----------- | -------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------- | --------- | ---------- |
+| WEATHER-001 | Pobieranie danych pogodowych dla planu | 1. GET /api/plans/:id/weather                            | Status 200, 12 rekordów (miesiące), metryki znormalizowane      | P0        | ✅         |
+| WEATHER-002 | Cache miesięczny                       | 1. GET /weather dwukrotnie w odstępie < 1 miesiąca       | Drugi GET zwraca cache (last_refreshed_at bez zmian)            | P1        | ⚠️         |
+| WEATHER-003 | Odświeżenie danych (force)             | 1. POST /api/plans/:id/weather/refresh z { force: true } | Status 200, nowe dane pobrane, last_refreshed_at zaktualizowane | P1        | ⚠️         |
+| WEATHER-004 | Błąd: plan bez lokalizacji             | 1. Utwórz plan bez latitude/longitude<br>2. GET /weather | Status 422, błąd "Plan location required"                       | P1        | ⚠️         |
+| WEATHER-005 | Timeout Open-Meteo (>5s)               | 1. Symuluj wolne API<br>2. GET /weather                  | Status 504, błąd "Weather service timeout"                      | P2        | ⚠️         |
 
 ### 4.7 Geokodowanie (OpenStreetMap)
 
@@ -961,7 +981,6 @@ npm run dev
 
 # 6. Uruchomienie testów
 npm run test          # Testy jednostkowe
-npm run test:integration # Testy integracyjne
 npm run test:e2e      # Testy E2E (wymaga uruchomionego dev server)
 ```
 
@@ -1130,7 +1149,7 @@ export default defineConfig({
   - Komponenty: GridCanvas, SideDrawer, PlantCard
 - **Testy E2E:**
   - Przepływ edycji siatki (zaznaczanie, zmiana typu)
-  - Przepływ dodawania roślin (ręcznie + AI)
+  - Przepływ dodawania roślin (AI)
   - Przepływ pracy z pogodą
 - **Cel:** 80% coverage dla grid, plants, weather
 

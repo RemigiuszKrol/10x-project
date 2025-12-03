@@ -7,6 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Search, Sprout, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
+import { DeletePlantConfirmDialog } from "@/components/editor/modals/DeletePlantConfirmDialog";
+import type { PlantPlacementDto } from "@/types";
 
 /**
  * Props dla PlantsList
@@ -32,6 +34,8 @@ export interface PlantsListProps {
 export function PlantsList({ planId, onJumpToCell, onPlantRemoved }: PlantsListProps): ReactNode {
   const [filterText, setFilterText] = useState("");
   const [deletingPlant, setDeletingPlant] = useState<{ x: number; y: number } | null>(null);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [plantToDelete, setPlantToDelete] = useState<PlantPlacementDto | null>(null);
 
   // Query do pobrania roślin
   const { data, isLoading, error } = usePlantPlacements(planId);
@@ -47,16 +51,23 @@ export function PlantsList({ planId, onJumpToCell, onPlantRemoved }: PlantsListP
     : sortedPlants;
 
   /**
-   * Handler usunięcia rośliny
+   * Handler otwarcia dialogu potwierdzenia usunięcia rośliny
    */
-  const handleRemovePlant = async (x: number, y: number) => {
+  const handleRemovePlant = (x: number, y: number) => {
     const plant = plants.find((p) => p.x === x && p.y === y);
     if (!plant) return;
 
-    if (!confirm(`Czy na pewno chcesz usunąć roślinę "${plant.plant_name}"?\n\nPozycja: (x: ${x + 1}, y: ${y + 1})`)) {
-      return;
-    }
+    setPlantToDelete(plant);
+    setConfirmDialogOpen(true);
+  };
 
+  /**
+   * Handler potwierdzenia usunięcia rośliny
+   */
+  const handleConfirmDelete = async () => {
+    if (!plantToDelete) return;
+
+    const { x, y } = plantToDelete;
     setDeletingPlant({ x, y });
 
     try {
@@ -67,11 +78,15 @@ export function PlantsList({ planId, onJumpToCell, onPlantRemoved }: PlantsListP
       });
 
       toast.success("Usunięto roślinę", {
-        description: `Roślina "${plant.plant_name}" została usunięta`,
+        description: `Roślina "${plantToDelete.plant_name}" została usunięta`,
       });
 
       // Callback
-      onPlantRemoved?.(plant.plant_name, x, y);
+      onPlantRemoved?.(plantToDelete.plant_name, x, y);
+
+      // Zamknij dialog
+      setConfirmDialogOpen(false);
+      setPlantToDelete(null);
     } catch (err) {
       // Error handled by mutation
       if (err instanceof Error) {
@@ -82,6 +97,15 @@ export function PlantsList({ planId, onJumpToCell, onPlantRemoved }: PlantsListP
     } finally {
       setDeletingPlant(null);
     }
+  };
+
+  /**
+   * Handler anulowania usunięcia rośliny
+   */
+  const handleCancelDelete = () => {
+    setConfirmDialogOpen(false);
+    setPlantToDelete(null);
+    setDeletingPlant(null);
   };
 
   /**
@@ -174,6 +198,17 @@ export function PlantsList({ planId, onJumpToCell, onPlantRemoved }: PlantsListP
           )}
         </div>
       </ScrollArea>
+
+      {/* Dialog potwierdzenia usunięcia */}
+      {plantToDelete && (
+        <DeletePlantConfirmDialog
+          isOpen={confirmDialogOpen}
+          plant={plantToDelete}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+          isDeleting={deletingPlant !== null}
+        />
+      )}
     </div>
   );
 }

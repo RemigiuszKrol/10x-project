@@ -53,9 +53,49 @@ vi.mock("@/components/editor/SideDrawer/PlantCard", () => ({
   ),
 }));
 
-// Mock window.confirm
-const mockConfirm = vi.fn();
-window.confirm = mockConfirm;
+// Mock DeletePlantConfirmDialog
+const mockOnConfirm = vi.fn();
+const mockOnCancel = vi.fn();
+vi.mock("@/components/editor/modals/DeletePlantConfirmDialog", () => ({
+  DeletePlantConfirmDialog: ({ isOpen, plant, onConfirm, onCancel, isDeleting }: any) => {
+    // Zapisz funkcje callback, aby można było je wywołać w testach
+    if (isOpen) {
+      // Użyj setTimeout, aby callbacki były dostępne po renderowaniu
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          (window as any).__deleteDialogOnConfirm = onConfirm;
+          (window as any).__deleteDialogOnCancel = onCancel;
+          (window as any).__deleteDialogIsDeleting = isDeleting;
+        }
+      }, 0);
+    }
+    
+    if (!isOpen) return null;
+    
+    return (
+      <div data-testid="delete-plant-dialog" role="alertdialog">
+        <div data-testid="dialog-plant-name">{plant.plant_name}</div>
+        <div data-testid="dialog-plant-position">
+          Pozycja: x: {plant.x + 1}, y: {plant.y + 1}
+        </div>
+        <button
+          data-testid="dialog-confirm-button"
+          onClick={onConfirm}
+          disabled={isDeleting}
+        >
+          {isDeleting ? "Usuwanie..." : "Usuń"}
+        </button>
+        <button
+          data-testid="dialog-cancel-button"
+          onClick={onCancel}
+          disabled={isDeleting}
+        >
+          Anuluj
+        </button>
+      </div>
+    );
+  },
+}));
 
 // Helper function do tworzenia mock PlantPlacementDto
 function createMockPlant(
@@ -90,7 +130,13 @@ describe("PlantsList", () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks();
-    mockConfirm.mockReturnValue(true);
+    
+    // Clear window callbacks
+    if (typeof window !== 'undefined') {
+      (window as any).__deleteDialogOnConfirm = undefined;
+      (window as any).__deleteDialogOnCancel = undefined;
+      (window as any).__deleteDialogIsDeleting = undefined;
+    }
 
     // Default props
     mockOnJumpToCell = vi.fn();
@@ -359,21 +405,18 @@ describe("PlantsList", () => {
       const deleteButton = screen.getByTestId("plant-delete-button");
       await user.click(deleteButton);
 
-      expect(mockConfirm).toHaveBeenCalledWith(
-        expect.stringContaining("Czy na pewno chcesz usunąć roślinę")
-      );
-      expect(mockConfirm).toHaveBeenCalledWith(
-        expect.stringContaining("Pomidor")
-      );
-      expect(mockConfirm).toHaveBeenCalledWith(
-        expect.stringContaining("x: 6, y: 11")
-      );
+      // Sprawdź czy dialog jest widoczny
+      await waitFor(() => {
+        expect(screen.getByTestId("delete-plant-dialog")).toBeInTheDocument();
+      });
+
+      // Sprawdź zawartość dialogu
+      expect(screen.getByTestId("dialog-plant-name")).toHaveTextContent("Pomidor");
+      expect(screen.getByTestId("dialog-plant-position")).toHaveTextContent("Pozycja: x: 6, y: 11");
     });
 
     it("should not remove plant if user cancels confirmation", async () => {
       const user = userEvent.setup();
-      mockConfirm.mockReturnValue(false);
-
       const plants = [createMockPlant("Pomidor", 5, 10)];
 
       mockUsePlantPlacements.mockReturnValue({
@@ -386,6 +429,20 @@ describe("PlantsList", () => {
 
       const deleteButton = screen.getByTestId("plant-delete-button");
       await user.click(deleteButton);
+
+      // Poczekaj na dialog
+      await waitFor(() => {
+        expect(screen.getByTestId("delete-plant-dialog")).toBeInTheDocument();
+      });
+
+      // Kliknij Anuluj
+      const cancelButton = screen.getByTestId("dialog-cancel-button");
+      await user.click(cancelButton);
+
+      // Sprawdź czy dialog zniknął
+      await waitFor(() => {
+        expect(screen.queryByTestId("delete-plant-dialog")).not.toBeInTheDocument();
+      });
 
       expect(mockRemovePlantMutation.mutateAsync).not.toHaveBeenCalled();
     });
@@ -405,6 +462,15 @@ describe("PlantsList", () => {
 
       const deleteButton = screen.getByTestId("plant-delete-button");
       await user.click(deleteButton);
+
+      // Poczekaj na dialog
+      await waitFor(() => {
+        expect(screen.getByTestId("delete-plant-dialog")).toBeInTheDocument();
+      });
+
+      // Kliknij Usuń w dialogu
+      const confirmButton = screen.getByTestId("dialog-confirm-button");
+      await user.click(confirmButton);
 
       await waitFor(() => {
         expect(mockRemovePlantMutation.mutateAsync).toHaveBeenCalledWith({
@@ -434,6 +500,15 @@ describe("PlantsList", () => {
       const deleteButton = screen.getByTestId("plant-delete-button");
       await user.click(deleteButton);
 
+      // Poczekaj na dialog
+      await waitFor(() => {
+        expect(screen.getByTestId("delete-plant-dialog")).toBeInTheDocument();
+      });
+
+      // Kliknij Usuń w dialogu
+      const confirmButton = screen.getByTestId("dialog-confirm-button");
+      await user.click(confirmButton);
+
       await waitFor(() => {
         expect(mockOnPlantRemoved).toHaveBeenCalledWith("Pomidor", 5, 10);
       });
@@ -459,6 +534,15 @@ describe("PlantsList", () => {
 
       const deleteButton = screen.getByTestId("plant-delete-button");
       await user.click(deleteButton);
+
+      // Poczekaj na dialog
+      await waitFor(() => {
+        expect(screen.getByTestId("delete-plant-dialog")).toBeInTheDocument();
+      });
+
+      // Kliknij Usuń w dialogu
+      const confirmButton = screen.getByTestId("dialog-confirm-button");
+      await user.click(confirmButton);
 
       await waitFor(() => {
         expect(toast.error).toHaveBeenCalledWith(
@@ -492,9 +576,23 @@ describe("PlantsList", () => {
       const deleteButton = screen.getByTestId("plant-delete-button");
       await user.click(deleteButton);
 
-      // Sprawdź czy przycisk jest disabled podczas usuwania
+      // Poczekaj na dialog
+      await waitFor(() => {
+        expect(screen.getByTestId("delete-plant-dialog")).toBeInTheDocument();
+      });
+
+      // Kliknij Usuń w dialogu
+      const confirmButton = screen.getByTestId("dialog-confirm-button");
+      await user.click(confirmButton);
+
+      // Sprawdź czy przycisk Delete jest disabled podczas usuwania
       await waitFor(() => {
         expect(deleteButton).toBeDisabled();
+      });
+
+      // Sprawdź czy przycisk w dialogu jest disabled
+      await waitFor(() => {
+        expect(confirmButton).toBeDisabled();
       });
 
       // Zakończ mutację
@@ -615,6 +713,15 @@ describe("PlantsList", () => {
 
       const deleteButton = screen.getByTestId("plant-delete-button");
       await user.click(deleteButton);
+
+      // Poczekaj na dialog
+      await waitFor(() => {
+        expect(screen.getByTestId("delete-plant-dialog")).toBeInTheDocument();
+      });
+
+      // Kliknij Usuń w dialogu
+      const confirmButton = screen.getByTestId("dialog-confirm-button");
+      await user.click(confirmButton);
 
       await waitFor(() => {
         expect(mockRemovePlantMutation.mutateAsync).toHaveBeenCalled();

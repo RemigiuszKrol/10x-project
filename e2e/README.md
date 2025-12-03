@@ -104,7 +104,7 @@ npm run test:e2e:ui
 ### Codegen - nagrywanie testów
 
 ```bash
-npm run test:e2e:codegen http://localhost:4321
+npm run test:e2e:codegen http://localhost:3000
 ```
 
 ## Więcej informacji
