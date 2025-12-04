@@ -72,6 +72,16 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Cache Supabase Docker images
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.docker
+            /tmp/supabase-docker
+          key: supabase-docker-${{ runner.os }}-${{ hashFiles('supabase/config.toml') }}
+          restore-keys: |
+            supabase-docker-${{ runner.os }}-
+
       - name: Start Supabase
         timeout-minutes: 5
         run: |
