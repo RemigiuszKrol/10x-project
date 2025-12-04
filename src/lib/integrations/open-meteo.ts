@@ -77,7 +77,7 @@ export function getLast12MonthsRange(): [string, string] {
  * @throws {UpstreamError} - błąd HTTP lub nieprawidłowa odpowiedź
  * @throws {UpstreamTimeoutError} - timeout podczas zapytania
  */
-export async function fetchWeatherArchive(params: OpenMeteoParams, timeoutMs = 1200): Promise<OpenMeteoRawResponse> {
+export async function fetchWeatherArchive(params: OpenMeteoParams, timeoutMs = 3000): Promise<OpenMeteoRawResponse> {
   const baseUrl = import.meta.env.OPEN_METEO_API_URL || "https://archive-api.open-meteo.com/v1/archive";
   const url = new URL(baseUrl);
 
