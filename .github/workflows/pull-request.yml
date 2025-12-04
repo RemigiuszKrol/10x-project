@@ -1,0 +1,286 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-coverage
+          path: coverage/
+          retention-days: 7
+
+  test-e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    environment: integration
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Cache Supabase Docker images
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.docker
+            /tmp/supabase-docker
+          key: supabase-docker-${{ runner.os }}-${{ hashFiles('supabase/config.toml') }}
+          restore-keys: |
+            supabase-docker-${{ runner.os }}-
+
+      - name: Start Supabase
+        timeout-minutes: 5
+        run: |
+          npx supabase start
+          npx supabase status
+
+      - name: Get Supabase credentials
+        id: supabase
+        run: |
+          # Domyślne wartości dla lokalnego Supabase
+          SUPABASE_URL="http://127.0.0.1:54321"
+          # Domyślny anon key dla lokalnego Supabase (demo project)
+          SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
+          # Domyślny service_role key dla lokalnego Supabase (demo project)
+          SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
+          
+          # Próbuj pobrać rzeczywiste wartości z supabase status (jeśli dostępne)
+          STATUS_OUTPUT=$(npx supabase status 2>/dev/null || echo "")
+          if [ -n "$STATUS_OUTPUT" ]; then
+            echo "✅ Używam domyślnych credentials dla lokalnego Supabase"
+          fi
+          
+          echo "SUPABASE_URL=$SUPABASE_URL" >> $GITHUB_ENV
+          echo "PUBLIC_SUPABASE_URL=$SUPABASE_URL" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY" >> $GITHUB_ENV
+          echo "BASE_URL=http://localhost:3000" >> $GITHUB_ENV
+
+      - name: Build application
+        run: npm run build
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          PUBLIC_SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
+          SUPABASE_KEY: ${{ env.SUPABASE_ANON_KEY }}
+          PUBLIC_USE_MOCK_AI: ${{ secrets.PUBLIC_USE_MOCK_AI || 'true' }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY || '' }}
+          OPENROUTER_SEARCH_MODEL: ${{ secrets.OPENROUTER_SEARCH_MODEL || 'openai/gpt-4o-mini' }}
+          OPENROUTER_FIT_MODEL: ${{ secrets.OPENROUTER_FIT_MODEL || 'openai/gpt-4o-mini' }}
+          OPENROUTER_APP_NAME: ${{ secrets.OPENROUTER_APP_NAME || 'PlantsPlaner' }}
+          OPENROUTER_SITE_URL: ${{ secrets.OPENROUTER_SITE_URL || '' }}
+          OPEN_METEO_API_URL: ${{ secrets.OPEN_METEO_API_URL || 'https://archive-api.open-meteo.com/v1/archive' }}
+
+      - name: Run E2E tests
+        id: e2e-run
+        continue-on-error: true
+        run: npm run test:e2e
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          PUBLIC_SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
+          SUPABASE_KEY: ${{ env.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
+          BASE_URL: ${{ env.BASE_URL }}
+          PUBLIC_USE_MOCK_AI: ${{ secrets.PUBLIC_USE_MOCK_AI || 'true' }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY || '' }}
+          OPENROUTER_SEARCH_MODEL: ${{ secrets.OPENROUTER_SEARCH_MODEL || 'openai/gpt-4o-mini' }}
+          OPENROUTER_FIT_MODEL: ${{ secrets.OPENROUTER_FIT_MODEL || 'openai/gpt-4o-mini' }}
+          OPENROUTER_APP_NAME: ${{ secrets.OPENROUTER_APP_NAME || 'PlantsPlaner' }}
+          OPENROUTER_SITE_URL: ${{ secrets.OPENROUTER_SITE_URL || '' }}
+          OPEN_METEO_API_URL: ${{ secrets.OPEN_METEO_API_URL || 'https://archive-api.open-meteo.com/v1/archive' }}
+          CI: "true"
+
+      - name: Retry failed E2E tests (attempt 1)
+        if: steps.e2e-run.outcome == 'failure'
+        id: e2e-retry-1
+        continue-on-error: true
+        run: npm run test:e2e:retry-failed
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          PUBLIC_SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
+          SUPABASE_KEY: ${{ env.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
+          BASE_URL: ${{ env.BASE_URL }}
+          PUBLIC_USE_MOCK_AI: ${{ secrets.PUBLIC_USE_MOCK_AI || 'true' }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY || '' }}
+          OPENROUTER_SEARCH_MODEL: ${{ secrets.OPENROUTER_SEARCH_MODEL || 'openai/gpt-4o-mini' }}
+          OPENROUTER_FIT_MODEL: ${{ secrets.OPENROUTER_FIT_MODEL || 'openai/gpt-4o-mini' }}
+          OPENROUTER_APP_NAME: ${{ secrets.OPENROUTER_APP_NAME || 'PlantsPlaner' }}
+          OPENROUTER_SITE_URL: ${{ secrets.OPENROUTER_SITE_URL || '' }}
+          OPEN_METEO_API_URL: ${{ secrets.OPEN_METEO_API_URL || 'https://archive-api.open-meteo.com/v1/archive' }}
+          CI: "true"
+
+      - name: Retry failed E2E tests (attempt 2)
+        if: steps.e2e-retry-1.outcome == 'failure'
+        id: e2e-retry-2
+        continue-on-error: true
+        run: npm run test:e2e:retry-failed
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          PUBLIC_SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
+          SUPABASE_KEY: ${{ env.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
+          BASE_URL: ${{ env.BASE_URL }}
+          PUBLIC_USE_MOCK_AI: ${{ secrets.PUBLIC_USE_MOCK_AI || 'true' }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY || '' }}
+          OPENROUTER_SEARCH_MODEL: ${{ secrets.OPENROUTER_SEARCH_MODEL || 'openai/gpt-4o-mini' }}
+          OPENROUTER_FIT_MODEL: ${{ secrets.OPENROUTER_FIT_MODEL || 'openai/gpt-4o-mini' }}
+          OPENROUTER_APP_NAME: ${{ secrets.OPENROUTER_APP_NAME || 'PlantsPlaner' }}
+          OPENROUTER_SITE_URL: ${{ secrets.OPENROUTER_SITE_URL || '' }}
+          OPEN_METEO_API_URL: ${{ secrets.OPEN_METEO_API_URL || 'https://archive-api.open-meteo.com/v1/archive' }}
+          CI: "true"
+
+      - name: Fail if E2E tests still failing
+        if: steps.e2e-retry-2.outcome == 'failure'
+        run: |
+          echo "❌ Testy E2E zakończyły się błędami po 2 próbach retry"
+          exit 1
+
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: test-results/
+          retention-days: 7
+
+      - name: Upload E2E coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-coverage
+          path: coverage/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Stop Supabase
+        if: always()
+        run: npx supabase stop
+
+  status-comment:
+    name: Status Comment
+    runs-on: ubuntu-latest
+    needs: [lint, test-unit, test-e2e]
+    if: always() && (needs.lint.result == 'success' && needs.test-unit.result == 'success' && needs.test-e2e.result == 'success')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create status comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const lintStatus = '${{ needs.lint.result }}' === 'success' ? '✅' : '❌';
+            const unitStatus = '${{ needs.test-unit.result }}' === 'success' ? '✅' : '❌';
+            const e2eStatus = '${{ needs.test-e2e.result }}' === 'success' ? '✅' : '❌';
+            
+            const allPassed = lintStatus === '✅' && unitStatus === '✅' && e2eStatus === '✅';
+            const emoji = allPassed ? '🎉' : '⚠️';
+            const message = allPassed 
+              ? 'Wszystkie sprawdzenia zakończyły się pomyślnie! 🎉'
+              : 'Niektóre sprawdzenia zakończyły się błędem. Sprawdź szczegóły w zakładce "Checks".';
+            
+            const comment = `## 🔍 Status sprawdzeń Pull Request ${emoji}
+            
+            | Sprawdzenie | Status |
+            |------------|--------|
+            | Lint | ${lintStatus} |
+            | Unit Tests | ${unitStatus} |
+            | E2E Tests | ${e2eStatus} |
+            
+            ${message}`;
+            
+            const prNumber = context.payload.pull_request?.number || context.issue?.number;
+            
+            if (!prNumber) {
+              console.log('Nie można znaleźć numeru PR, pomijam komentarz');
+              return;
+            }
+            
+            // Znajdź istniejący komentarz
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+            
+            const botComment = comments.data.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Status sprawdzeń Pull Request')
+            );
+            
+            if (botComment) {
+              // Aktualizuj istniejący komentarz
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment,
+              });
+            } else {
+              // Utwórz nowy komentarz
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: comment,
+              });
+            }
+

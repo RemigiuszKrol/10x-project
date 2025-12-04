@@ -32,7 +32,7 @@ export default defineConfig({
   fullyParallel: true, // Testy uruchamiane równolegle
   forbidOnly: !!process.env.CI, // Zabronione .only() w CI
   retries: process.env.CI ? 2 : 0, // 2x retry w CI, 0 lokalnie
-  workers: process.env.CI ? 1 : undefined, // W CI: 1 worker, lokalnie: auto
+  workers: process.env.CI ? 6 : undefined, // W CI: 6 workers dla szybszych testów, lokalnie: auto
 
   // Reporter
   reporter: process.env.CI ? [["html"], ["github"]] : [["html"], ["list"]],
@@ -73,6 +73,9 @@ export default defineConfig({
 
   // Folder dla artefaktów testowych
   outputDir: "test-results/",
+
+  // Global setup - tworzenie użytkownika testowego przed testami
+  globalSetup: "./e2e/global-setup.ts",
 
   // Global teardown - czyszczenie planów po zakończeniu wszystkich testów
   globalTeardown: "./e2e/teardown.ts",
