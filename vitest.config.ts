@@ -45,8 +45,8 @@ export default defineConfig({
     // Reporter
     reporters: ["verbose"],
 
-    // Timeout dla testów
-    testTimeout: 10000,
+    // Timeout dla testów (zwiększony dla testów z requestami do API)
+    testTimeout: 30000,
 
     // Mockowanie
     clearMocks: true,
