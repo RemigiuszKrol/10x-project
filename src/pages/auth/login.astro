@@ -3,7 +3,8 @@ import AuthLayout from "../../layouts/AuthLayout.astro";
 import { LoginForm } from "../../components/auth/LoginForm";
 
 // Jeśli użytkownik jest już zalogowany, przekieruj do planów
-if (Astro.locals.user) {
+// Upewnij się, że user jest obiektem z właściwością id
+if (Astro.locals.user && typeof Astro.locals.user === "object" && "id" in Astro.locals.user) {
   return Astro.redirect("/plans");
 }
 ---

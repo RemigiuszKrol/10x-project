@@ -41,6 +41,13 @@ export const createSupabaseServerInstance = (context: { headers: Headers; cookie
   const supabaseServerUrl = import.meta.env.SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL;
   const supabaseServerAnonKey = import.meta.env.SUPABASE_KEY || import.meta.env.PUBLIC_SUPABASE_KEY;
 
+  // Walidacja zmiennych środowiskowych
+  if (!supabaseServerUrl || !supabaseServerAnonKey) {
+    throw new Error(
+      "Missing Supabase environment variables. Please set SUPABASE_URL and SUPABASE_KEY (or PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_KEY) in your environment variables."
+    );
+  }
+
   const supabase = createServerClient<Database>(supabaseServerUrl, supabaseServerAnonKey, {
     cookieOptions,
     cookies: {
