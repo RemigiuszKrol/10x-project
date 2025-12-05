@@ -1,7 +1,7 @@
 {
   "name": "plantsplanner",
   "compatibility_date": "2025-12-04",
-  "main": "dist/_worker.js/index.js",
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": "dist"
 }
 
