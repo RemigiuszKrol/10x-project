@@ -1,7 +1,7 @@
 ## Tech stack – PlantsPlaner (MVP)
 
 - **Aplikacja/Framework**: Astro 5, React 19, TypeScript 5
-- **Render/adapter**: `@astrojs/node` (standalone), SSR gdzie potrzebne
+- **Render/adapter**: `@astrojs/cloudflare` (Cloudflare Pages), SSR gdzie potrzebne
 - **Integracje Astro**: `@astrojs/react`, `@astrojs/sitemap`
 - **Styling/UI**: Tailwind CSS 4 (plugin `@tailwindcss/vite`), shadcn/ui (komponenty w `src/components/ui`), Radix UI primitives, `lucide-react` (ikony)
 - **Architektura frontu**: Astro dla layoutów/static, React dla interaktywności; alias ścieżek `@/*` (tsconfig)
@@ -45,6 +45,8 @@
 - **Uruchamianie**: GitHub Actions – automatyczne testy przy każdym commit/PR
 - **Retry logic**: maksymalnie 2× retry dla testów E2E w CI
 - **Parallel execution**: testy mogą być uruchamiane równolegle dla szybszych rezultatów
+- **Pipeline CI/CD**: Github Actions
+- **Hosting**: Cloudflare Pages jako hosting aplikacji Astro
 
 ### Narzędzia developerskie i jakość
 
@@ -54,7 +56,7 @@
 
 ### Konfiguracja/projekt
 
-- `astro.config.mjs`: integracje React/Sitemap, adapter Node, Vite plugin Tailwind
+- `astro.config.mjs`: integracje React/Sitemap, adapter Cloudflare, Vite plugin Tailwind
 - `tsconfig.json`: `jsx: react-jsx`, `jsxImportSource: react`, alias `@/*`
 - Tailwind 4 działa bez dedykowanego `tailwind.config.*` (konfiguracja przez plugin Vite)
 
