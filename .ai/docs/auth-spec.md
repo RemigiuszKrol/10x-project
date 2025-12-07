@@ -1,6 +1,6 @@
 ## Specyfikacja architektury modułu rejestracji, logowania i odzyskiwania hasła (PlantsPlaner)
 
-Na podstawie PRD (`.ai/prd.md`, szczególnie US‑001, US‑002) oraz stacku (`.ai/tech-stack.md`). Specyfikacja opisuje architekturę UI (Astro + React 19 + Tailwind 4 + shadcn/ui), logikę backendową (Astro SSR + API routes), oraz integrację z Supabase Auth. Dokument nie zawiera implementacji, a jedynie precyzuje komponenty, moduły, kontrakty i przepływy. Uwzględnia wymagania niefunkcjonalne (wydajność, dostępność, i18n, obsługa błędów) oraz zachowuje spójność z pozostałym MVP.
+Na podstawie PRD (`.ai/prd.md`, szczególnie US‑001, US‑002) oraz stacku (`.ai/tech-stack.md`). Specyfikacja opisuje architekturę UI (Astro + React 19 + Tailwind 4 + shadcn/ui), logikę backendową (Astro SSR + API routes), oraz integrację z Supabase Auth. Dokument nie zawiera implementacji, a jedynie precyzuje komponenty, moduły, kontrakty i przepływy. Uwzględnia wymagania niefunkcjonalne (wydajność, dostępność, obsługa błędów) oraz zachowuje spójność z pozostałym MVP.
 
 ### 1. Architektura interfejsu użytkownika
 
@@ -14,7 +14,7 @@ Na podstawie PRD (`.ai/prd.md`, szczególnie US‑001, US‑002) oraz stacku (`.
 
 - Istniejące/planowane strony „app” (wymagają sesji, „auth layout”):
   - `src/pages/plans/index.astro` – lista planów (US‑021)
-  - `src/pages/profile/index.astro` – profil użytkownika (motyw, język; US‑004)
+  - `src/pages/profile/index.astro` – profil użytkownika (motyw; US‑004)
   - Inne strony edytora planu.
 
 - Layouty:
@@ -234,7 +234,7 @@ Zgodnie z regułami projektu.
 
 ### 7. i18n, dostępność, UX
 
-- Teksty w PL (MVP). Integracja z planowanym systemem i18n w profilu (US‑004) – docelowo klucze tłumaczeń.
+- Teksty w PL (MVP).
 - Dostępność: odpowiednie role/aria, focus, kontrasty (zgodnie z PRD).
 - Responsywność i prostota – desktop first (mysz), czytelne komunikaty błędów.
 

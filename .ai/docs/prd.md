@@ -2,7 +2,7 @@
 
 ## 1. Przegląd produktu
 
-PlantsPlaner to aplikacja webowa (desktop, obsługa myszy) wspierająca planowanie i ocenę rozmieszczenia roślin w ogrodzie. MVP umożliwia użytkownikom tworzenie planu działki na siatce, ustawienie orientacji i lokalizacji, wprowadzanie typów powierzchni, dodawanie roślin (zasada: 1 roślina = 1 pole) oraz wykorzystanie danych pogodowych (Open‑Meteo) i AI do oceny dopasowania roślin do lokalnych warunków. Aplikacja posiada proste konta użytkowników (e‑mail/hasło), stronę profilu (preferencje językowe, motyw) i minimalistyczną analitykę (4 zdarzenia).
+PlantsPlaner to aplikacja webowa (desktop, obsługa myszy) wspierająca planowanie i ocenę rozmieszczenia roślin w ogrodzie. MVP umożliwia użytkownikom tworzenie planu działki na siatce, ustawienie orientacji i lokalizacji, wprowadzanie typów powierzchni, dodawanie roślin (zasada: 1 roślina = 1 pole) oraz wykorzystanie danych pogodowych (Open‑Meteo) i AI do oceny dopasowania roślin do lokalnych warunków. Aplikacja posiada proste konta użytkowników (e‑mail/hasło), stronę profilu (preferencje motywu kolorystycznego) i minimalistyczną analitykę (4 zdarzenia).
 
 Założone persony: użytkownicy indywidualni planujący ogród przydomowy oraz projektanci zieleni oczekujący prostego, szybkiego narzędzia do weryfikacji koncepcji.
 
@@ -34,7 +34,8 @@ Planowanie ogrodu wymaga znajomości warunków lokalnych i potrzeb roślin. Dob�
 
 - Rejestracja i logowanie e‑mail/hasło (bez weryfikacji e‑mail).
 - Wylogowanie z sesji.
-- Strona profilu: zapis preferencji językowych i motywu kolorystycznego.
+- Strona profilu: zapis preferencji motywu kolorystycznego.
+- Odzyskiwanie hasła (działa podobnie jak potwierdzenie konta - przez e-mail).
 
   3.2 Plany działki (CRUD w zakresie tworzenia/odczytu/edycji)
 
@@ -59,13 +60,13 @@ Planowanie ogrodu wymaga znajomości warunków lokalnych i potrzeb roślin. Dob�
 
 - Jednorazowe pobranie danych pogodowych po ustawieniu lokalizacji lub przy pierwszym uruchomieniu AI dla planu.
 - Cache miesięczny per plan; odświeżanie po upływie miesiąca.
-- Mapowanie zmiennych: nasłonecznienie = shortwave_radiation + sunshine_duration, wilgotność = relative_humidity_2m, opady = precipitation_sum; normalizacja do wspólnej skali porównawczej.
+- Mapowanie zmiennych: nasłonecznienie = shortwave_radiation + sunshine_duration, wilgotność = relative_humidity_2m, opady = precipitation_sum, temperatura = średnia temperatura dzienna; normalizacja do wspólnej skali porównawczej.
 
   3.6 AI (wyszukiwanie i ocena dopasowania)
 
 - Wyszukiwanie roślin po nazwie z potwierdzeniem wyboru przez użytkownika.
 - Odpowiedź AI wyłącznie w stałym schemacie JSON; sanity‑check formatu i wartości po stronie aplikacji.
-- Scoring parametrów 1–5 z progami: ≥90 = 5, 80–89 = 4, 70–79 = 3, 60–69 = 2, <60 = 1.
+- Scoring parametrów 1–5 z progami: ≥90 = 5, 80–89 = 4, 70–79 = 3, 60–69 = 2, <60 = 1. Parametry oceny: nasłonecznienie, wilgotność, opady, temperatura.
 - Średnia ważona miesięcy: IV–IX waga 2, pozostałe 1; automatyczne dostosowanie do półkuli; możliwość ręcznej korekty sezonu.
 - Timeout 10 s; po przekroczeniu czytelny błąd i opcja ponowienia.
 
@@ -79,12 +80,11 @@ Planowanie ogrodu wymaga znajomości warunków lokalnych i potrzeb roślin. Dob�
 - Wydajność do 200 × 200 pól; operacje na obszarach muszą być responsywne.
 - Dostępność: czytelne kontrasty, fokusy, komunikaty o błędach; nawigacja myszą.
 - Obsługa błędów: czytelne komunikaty, możliwość ponowienia operacji (AI, pogoda, geokodowanie).
-- i18n: język aplikacji ustawiany w profilu; MVP co najmniej PL.
-- Bezpieczeństwo: sesje użytkowników, podstawowe hasła; brak weryfikacji e‑mail i resetu hasła w MVP.
+- Bezpieczeństwo: sesje użytkowników, podstawowe hasła; brak weryfikacji e‑mail w MVP; resetu i odzyskiwanie hasła działa podobnie jak potwierdzenie konta.
 
   3.9 Dane i model (wysoki poziom)
 
-- User: e‑mail, hasz hasła, preferencje (język, motyw).
+- User: e‑mail, hasz hasła, preferencje (motyw).
 - Plan: userId, nazwa, lokalizacja (współrzędne, adres), orientacja (0–359°), wymiary, jednostka kratki, siatka, rośliny.
 - GridCell: typ pola, opcjonalnie roślina.
 - PlantPlacement: identyfikator rośliny/nazwa, wynik AI, daty.
@@ -100,7 +100,7 @@ Poza zakresem MVP:
 - Zaawansowany asystent przesadzania roślin.
 - Asystent planów pielęgnacji w ciągu roku.
 - Drag&drop, cofanie, warstwy edycji.
-- Weryfikacja e‑mail, polityka złożoności haseł, CAPTCHA.
+- Polityka złożoności haseł, CAPTCHA.
 
 Ograniczenia i decyzje świadome:
 
@@ -110,11 +110,10 @@ Ograniczenia i decyzje świadome:
 
 Ryzyka i kwestie otwarte (do doprecyzowania):
 
-- Polityka bezpieczeństwa logowania (złożoność haseł, reset, rate‑limiting, CAPTCHA).
+- Polityka bezpieczeństwa logowania (złożoność haseł, rate‑limiting, CAPTCHA).
 - Dokładna funkcja normalizacji i jednostki dla metryki nasłonecznienia (ujednolicenie shortwave_radiation i sunshine_duration).
 - Zarządzanie limitami/dostępnością dostawców (progi, czasy cache, fallbacki).
 - Czy dodać eventy analityczne dla AI‑usage (np. ai_result_viewed) poza MVP.
-- Strategia lokalizacji i tłumaczeń w UI/AI, jeśli planowany zasięg międzynarodowy.
 
 ## 5. Historyjki użytkowników
 
@@ -139,7 +138,7 @@ Kryteria akceptacji:
 - Po zalogowaniu widoczna jest lista moich planów.
 - Sesja trwa między odsłonami przeglądarki do wylogowania.
 - Nie korzystamy z zewnętrznych serwisów logowania (np. Google, GitHub).
-- Odzyskiwanie hasła powinno być możliwe.
+- Odzyskiwanie hasła działa podobnie jak potwierdzenie konta - przez e-mail z linkiem resetującym.
 
 US-003
 Tytuł: Wylogowanie
@@ -149,11 +148,11 @@ Kryteria akceptacji:
 - Akcja wyloguj czyści sesję i przenosi do ekranu logowania.
 
 US-004
-Tytuł: Ustawienia profilu (język, motyw)
-Opis: Jako użytkownik chcę ustawić język UI i motyw kolorystyczny.
+Tytuł: Ustawienia profilu (motyw)
+Opis: Jako użytkownik chcę ustawić motyw kolorystyczny.
 Kryteria akceptacji:
 
-- Formularz zapisuje język i motyw do profilu użytkownika.
+- Formularz zapisuje motyw do profilu użytkownika.
 - Zmiana stosuje się natychmiast w UI i po ponownym zalogowaniu.
 
 US-005
@@ -235,7 +234,7 @@ Tytuł: Obliczenie oceny dopasowania (1–5) z wagami sezonów
 Opis: Jako użytkownik chcę zobaczyć ocenę dopasowania rośliny do warunków.
 Kryteria akceptacji:
 
-- Składniki: nasłonecznienie, wilgotność, opady – każdy oceniany 1–5 (progi: ≥90=5, 80–89=4, 70–79=3, 60–69=2, <60=1).
+- Składniki: nasłonecznienie, wilgotność, opady, temperatura – każdy oceniany 1–5 (progi: ≥90=5, 80–89=4, 70–79=3, 60–69=2, <60=1).
 - Średnia ważona miesięcy: IV–IX waga 2, pozostałe 1; automatyczna korekta dla półkuli.
 
 US-015

@@ -1,7 +1,7 @@
 <conversation_summary>
 <decisions>
 Klucze główne: uuid we wszystkich tabelach domenowych, domyślnie gen_random_uuid(). user_id jako FK do auth.users(id).
-Tabela profiles(id uuid PK) powiązana 1:1 z auth.users, przechowuje preferencje (język, motyw).
+Tabela profiles(id uuid PK) powiązana 1:1 z auth.users, przechowuje preferencje (motyw).
 plans: unikalność (user_id, name), pola audytowe created_at/updated_at timestamptz.
 Parametry planu: width_cm, height_cm, cell_size_cm ∈ {10,25,50,100}, oraz wyliczone i przechowywane grid_width, grid_height z limitem ≤ 200. orientation smallint 0–359.
 Geolokalizacja: latitude/longitude double precision (MVP bez PostGIS).
