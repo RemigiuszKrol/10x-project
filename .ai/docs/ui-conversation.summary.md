@@ -28,7 +28,7 @@
     </matched_recommendations>
 
 <ui_architecture_planning_summary>
-Główne wymagania UI obejmują: listę planów, wieloetapowy kreator tworzenia nowego planu, edytor planu z siatką i panelem parametrów oraz stronę profilu (język, motyw). Edytor zapewnia pełnoekranowy widok siatki z bocznym drawerem zawierającym parametry planu, sekcję pogody i kontrolę roślin; dostępne są operacje zaznaczania obszarów, zmiany typów pól i dodawania roślin zgodnie z API (`/grid`, `/plants`, `/ai`).
+Główne wymagania UI obejmują: listę planów, wieloetapowy kreator tworzenia nowego planu, edytor planu z siatką i panelem parametrów oraz stronę profilu (motyw). Edytor zapewnia pełnoekranowy widok siatki z bocznym drawerem zawierającym parametry planu, sekcję pogody i kontrolę roślin; dostępne są operacje zaznaczania obszarów, zmiany typów pól i dodawania roślin zgodnie z API (`/grid`, `/plants`, `/ai`).
 
 Przepływy użytkownika obejmują: logowanie (już istniejące), listę planów (US-021), tworzenie planu w kreatorze (US-005, US-007), wejście do edytora (US-009, US-011), dodawanie roślin z integracją AI i potwierdzeniami (US-012–US-016) oraz zarządzanie parametrami planu wraz z obsługą potwierdzeń skutków zmian (US-022, US-031). Główna nawigacja w topbarze przełącza pomiędzy listą planów a profilem; kontekstowe akcje edytora znajdują się w bocznym panelu.
 

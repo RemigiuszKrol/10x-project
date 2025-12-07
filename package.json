@@ -12,6 +12,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "test:openrouter": "tsx scripts/test-openrouter.ts",
+    "check-mvp": "tsx scripts/check-mvp.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
