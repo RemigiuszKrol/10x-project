@@ -1,5 +1,7 @@
 # PlantsPlaner
 
+URL: https://plants-planner.pages.dev
+
 [![Node](https://img.shields.io/badge/node-22.14.0-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Astro](https://img.shields.io/badge/astro-5.x-FF5D01?logo=astro&logoColor=white)](https://astro.build/)
 [![React](https://img.shields.io/badge/react-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
