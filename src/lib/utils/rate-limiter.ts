@@ -25,6 +25,12 @@ export class InMemoryRateLimiter {
     const lastAttempt = this.attempts.get(key) || 0;
     const timeSinceLastAttempt = now - lastAttempt;
 
+    // Automatyczny cleanup starych wpisów podczas sprawdzania (co 100 wywołań)
+    // To pozwala uniknąć użycia setInterval w globalnym scope (Cloudflare Workers)
+    if (Math.random() < 0.01) {
+      this.cleanup();
+    }
+
     if (timeSinceLastAttempt < this.windowMs) {
       return {
         allowed: false,
@@ -68,13 +74,5 @@ export const weatherRefreshLimiter = new InMemoryRateLimiter(2 * 60 * 1000);
  */
 export const aiEndpointsLimiter = new InMemoryRateLimiter(60 * 1000); // 1 minuta
 
-// Periodic cleanup co godzinę
-if (typeof setInterval !== "undefined") {
-  setInterval(
-    () => {
-      weatherRefreshLimiter.cleanup();
-      aiEndpointsLimiter.cleanup();
-    },
-    60 * 60 * 1000
-  );
-}
+// Uwaga: Cleanup jest wykonywany automatycznie w metodzie check() zamiast setInterval,
+// ponieważ Cloudflare Workers nie pozwala na operacje asynchroniczne w globalnym scope.
