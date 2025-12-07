@@ -8,7 +8,7 @@ Planowanie rozmieszczenia oraz dobór roślin ogrodowych jest bardzo trudne. Dz�
 
 - Zapisywanie i odczytywanie planu działki z określoną lokalizacją na świecie, wymiarami, jednotką pojedynczej kratki (bok o długosci 10, 25, 50 lub 100cm) siatki działki i możliwością określenia zawartości działki w konkrenym miejscu (wskazanie czy dana kratka to ziemia, ścieżka, woda, czy zabudowa)
 - Prosty system kont użytkowników do powiązania użytkownika ze stworoznymi działkami
-- Strona profilu użytkownika służąca do zapisywania preferencji językowych i motywu kolorystycznego strony
+- Strona profilu użytkownika służąca do zapisywania preferencji motywu kolorystycznego strony
 - Integracja z GoogleMaps umożliwiająca określenie lokalziacji działki w celu pobrania danych o warunkach atmosferycznych w cyklu rocznym
 - Intergacja z AI umożliwiająca wyszukiwanie roślin, sprawdzania ich wymagań do hodowli, krytycznej ocenie warunków panujacych w miejscu zlokalizowania działki pod względem wymagań rośliny, pomoc przy określeniu najlepszego miejsca do posadzenia danej rosliny uwzgledaniając orientacje działki
 

@@ -81,10 +81,10 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 ### Widok: Profil użytkownika
 
 - Ścieżka widoku: `/profile`
-- Główny cel: Umożliwić aktualizację preferencji językowych i motywu.
-- Kluczowe informacje do wyświetlenia: aktualne preferencje, dostępne języki, tryby motywu, ostatnia aktualizacja.
+- Główny cel: Umożliwić aktualizację preferencji motywu kolorystycznego.
+- Kluczowe informacje do wyświetlenia: aktualne preferencje, tryby motywu, ostatnia aktualizacja.
 - Kluczowe komponenty widoku: formularz z przełącznikami (radio/select), przycisk zapisz, podgląd motywu.
-- UX, dostępność i względy bezpieczeństwa: natychmiastowe zastosowanie motywu (preview), informacja o zapisie i fallbacku przy błędach (toast), integracja z GET/PUT `/api/profile`, przechowywanie języka w kontekście i i18n.
+- UX, dostępność i względy bezpieczeństwa: natychmiastowe zastosowanie motywu (preview), informacja o zapisie i fallbacku przy błędach (toast), integracja z GET/PUT `/api/profile`.
 
 ### Widok: Globalny modal odnowienia sesji
 
@@ -101,12 +101,12 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 3. Wybierając „Nowy plan”, użytkownik trafia do kreatora `/plans/new`. Kreator prowadzi przez kroki: (a) Nazwa i lokalizacja (wyszukiwarka + mapa), (b) Wymiary i jednostka siatki (walidacja limitu 200×200), (c) Orientacja i półkula (mini-kompas, automatycznie na podstawie lokalizacji), (d) Podsumowanie. Każdy krok zapisuje szkic lokalnie i umożliwia powrót. Na koniec użytkownik potwierdza utworzenie planu, co wywołuje POST `/api/plans` i event `plan_created`. Po sukcesie następuje przekierowanie do edytora `/plans/:id`.
 4. W edytorze domyślnie otwierana jest zakładka „Siatka”. Użytkownik może zaznaczać obszary i zmieniać typy pól (POST `/grid/area-type`, PUT `/grid/cells/:x/:y`). Gdy operacja wymaga usunięcia roślin, pojawia się modal 409 z potwierdzeniem (US-010, US-031). Zapis siatki uruchamia `grid_saved`. Drawer „Rośliny” umożliwia dodawanie roślin do komórek typu `soil` (PUT `/plants/:x/:y`), wyszukiwanie gatunków (POST `/ai/plants/search`) oraz ocenę dopasowania (POST `/ai/plants/fit`). Wyniki są prezentowane wraz z oceną i zapisywane po akceptacji (`plant_confirmed`). Błędy AI (timeout, niezgodny JSON) są obsługiwane przez toasty i komunikaty inline z opcją ponowienia lub możliwością pominięcia tego kroku (US-027, US-028).
 5. Drawer „Pogoda” prezentuje dane z GET `/weather`. Użytkownik może zainicjować odświeżenie (POST `/weather/refresh` przez serwer). Błędy API (np. 504) nie blokują edytora i są sygnalizowane w panelu statusu (US-019). Zmiany parametrów planu w drawerze „Parametry” wykonują PATCH `/plans/:id`, a w razie wymaganej regeneracji siatki UI pokazuje modal potwierdzenia, po czym ponownie pobiera dane siatki i roślin.
-6. Użytkownik może przejść do widoku profilu `/profile` z topbaru, gdzie aktualizuje preferencje (PUT `/api/profile`). Po zapisie motyw i język stosują się natychmiast, a sukces potwierdza toast.
+6. Użytkownik może przejść do widoku profilu `/profile` z topbaru, gdzie aktualizuje preferencje motywu (PUT `/api/profile`). Po zapisie motyw stosuje się natychmiast, a sukces potwierdza toast.
 7. W dowolnym momencie utrata sesji wywołuje globalny modal proszący o ponowne logowanie. Użytkownik loguje się bez opuszczania bieżącego stanu; po sukcesie odświeżane są zapytania React Query.
 
 ## 4. Układ i struktura nawigacji
 
-- Topbar (sticky): logo/brand, przyciski nawigacyjne (`Plany`, `Profil`), wskaźnik stanu sesji (avatar z menu rozwijanym: „Wyloguj”), przełącznik języka (skróty do PL/EN) oraz przycisk dodania planu (CTA w prawym rogu).
+- Topbar (sticky): logo/brand, przyciski nawigacyjne (`Plany`, `Profil`), wskaźnik stanu sesji (avatar z menu rozwijanym: „Wyloguj”) oraz przycisk dodania planu (CTA w prawym rogu).
 - Widoki auth działają bez topbaru, aby skupić uwagę na formularzach.
 - Edytor planu posiada układ trójstrefowy: topbar globalny, centralna siatka (wypełnia viewport), prawy drawer kontekstowy (parametry/rośliny/pogoda) oraz dolny panel statusu (postęp operacji, log zdarzeń, aria-live). Drawer można zwijać, ale nie zasłania siatki dzięki overlay w stylu push.
 - Nawigacja między krokami kreatora realizowana jest przez Stepper z możliwością powrotu i skipu tylko po spełnieniu walidacji. Główne CTA („Zapisz plan”, „Przejdź do edytora”) znajdują się w dolnym barze kroku.
@@ -114,7 +114,7 @@ Interfejs PlantsPlaner składa się z wąsko zdefiniowanych obszarów funkcjonal
 
 ## 5. Kluczowe komponenty
 
-- `TopbarNavigation`: stały pasek nawigacji z obsługą języka, motywu i stanu sesji.
+- `TopbarNavigation`: stały pasek nawigacji z obsługą motywu i stanu sesji.
 - `SessionWatcherModal`: globalny modal reagujący na utratę sesji Supabase, zapewniający szybkie ponowne logowanie.
 - `PlansList`: komponent listy/kafelków planów z integracją React Query i akcjami (edytuj, usuń, otwórz).
 - `PlanWizard`: krokowy kreator z lokalnym zapisem szkicu i integracją mapy, walidacją limitów siatki oraz finalnym zapisem.
